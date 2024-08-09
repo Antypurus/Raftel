@@ -1,22 +1,25 @@
 #include <iostream>
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+import GLFWInstance;
+
 int main() {
-    glfwInit();
+  raftel::GLFWInstance::Instance();
 
-    auto window = glfwCreateWindow(1280, 720, "Onto Raftael", nullptr, nullptr);
-    if(!window) return -1;
+  auto window = glfwCreateWindow(1280, 720, "Onto Raftael", nullptr, nullptr);
+  if (!window)
+    return -1;
 
-    glfwMakeContextCurrent(window);
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+  glfwMakeContextCurrent(window);
 
-    while(!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
-    }
+  while (!glfwWindowShouldClose(window)) {
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+  }
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    return 0;
+  std::cout << "iostream" << std::endl;
+
+  glfwDestroyWindow(window);
+  return 0;
 }
