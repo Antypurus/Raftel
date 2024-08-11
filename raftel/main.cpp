@@ -3,23 +3,17 @@
 #include <GLFW/glfw3.h>
 
 import GLFWInstance;
+import Window;
 
 int main() {
   raftel::GLFWInstance::Instance();
+  raftel::Window window("Raftel", 1920, 1080);
 
-  auto window = glfwCreateWindow(1280, 720, "Onto Raftael", nullptr, nullptr);
-  if (!window)
-    return -1;
-
-  glfwMakeContextCurrent(window);
-
-  while (!glfwWindowShouldClose(window)) {
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+  while(window.IsOpen()) {
+    window.Update();
   }
 
   std::cout << "iostream" << std::endl;
 
-  glfwDestroyWindow(window);
   return 0;
 }

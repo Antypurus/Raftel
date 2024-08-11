@@ -9,6 +9,7 @@ export module GLFWInstance;
 namespace raftel {
 
     export struct GLFWInstance {
+    private:
         static GLFWInstance instance;
 
         GLFWInstance() {
@@ -20,12 +21,13 @@ namespace raftel {
             gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
         }
 
-        static GLFWInstance& Instance() {
-            return instance;
-        }
-
         ~GLFWInstance() {
             glfwTerminate();
+        }
+
+    public:
+        static GLFWInstance& Instance() {
+            return instance;
         }
     };
 
