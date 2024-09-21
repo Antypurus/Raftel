@@ -1,5 +1,6 @@
 module;
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 import GLFWInstance;
@@ -24,6 +25,7 @@ namespace raftel {
         }
 
         void Update() {
+            glViewport(0, 0, 1920, 1080);
             glfwSwapBuffers(this->m_window_handle);
             glfwPollEvents();
         }
