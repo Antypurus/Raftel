@@ -1,9 +1,8 @@
 module;
 
-
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-
-#include <iostream>
+#include <glad/gl.h>
 
 export module GLFWInstance;
 namespace raftel {
@@ -12,7 +11,13 @@ export struct GLFWInstance {
 private:
   static GLFWInstance instance;
 
-  GLFWInstance() { glfwInit(); }
+  GLFWInstance() {
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  }
 
   ~GLFWInstance() { glfwTerminate(); }
 

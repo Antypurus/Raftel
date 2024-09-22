@@ -1,6 +1,11 @@
 module;
 
+#define GLFW_INCLUDE_NONE
+
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
+
+#include <iostream>
 
 import GLFWInstance;
 
@@ -18,6 +23,17 @@ public:
     this->m_window_handle =
         glfwCreateWindow(width, height, title, nullptr, nullptr);
     glfwMakeContextCurrent(this->m_window_handle);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+      std::cout << "Failed to initialize GLAD" << std::endl;
+      return;
+    }
+
+
+    if(GL_ARB_compute_shader)
+    {
+        std::cout << "compute shaders supported via extension" << std::endl;
+    }
   }
 
   ~Window() { glfwDestroyWindow(this->m_window_handle); }

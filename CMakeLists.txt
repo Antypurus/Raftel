@@ -17,25 +17,25 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_BINARY_DIR})
 
 # third party dependencies
 find_package(OpenGL REQUIRED)
-set( GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only" )
-set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
+set(GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only" )
+set(GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
 include_directories("${GLFW_SOURCE_DIR}/deps")
-set( GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad/gl.h" )
+set(GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad/gl.h" )
 add_subdirectory(ThirdParty/GLFW)
-
 add_subdirectory(ThirdParty/GLM)
+
 #find sources
 file(GLOB_RECURSE SOURCES
         raftel/*.cxx
 )
-add_library(modules ${GLAD_GL})
+add_library(modules ThirdParty/glad/src/glad.c)
 target_sources(modules
         PUBLIC
         FILE_SET CXX_MODULES FILES
         ${SOURCES}
 )
 target_include_directories(modules PRIVATE
-        ThirdParty/GLAD/include
+        ThirdParty/glad/include
         ThirdParty
 )
 target_link_libraries(modules glfw glm)
