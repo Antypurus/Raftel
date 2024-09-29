@@ -2,7 +2,12 @@ module;
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+
+#ifdef __APPLE__
 #include <glad/gl.h>
+#else
+#include <glad/glad.h>
+#endif
 
 export module GLFWInstance;
 namespace raftel {
