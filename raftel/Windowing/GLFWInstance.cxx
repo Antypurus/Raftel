@@ -4,7 +4,7 @@ module;
 #include <GLFW/glfw3.h>
 
 #ifdef __APPLE__
-#include <glad/gl.h>
+#include <GLFW/deps/glad/gl.h>
 #else
 #include <glad/glad.h>
 #endif
