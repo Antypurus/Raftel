@@ -3,14 +3,18 @@
 import GLFWInstance;
 import Window;
 
-int main() {
+int
+main()
+{
   raftel::Window window("Raftel", 1920, 1080);
+  raftel::GLSurface surface = window.create_gl_surface();
+  surface.make_current_context();
+  surface.make_current_context();
 
-  while (window.IsOpen()) {
-    window.Update();
+  while (window.is_open()) {
+    surface.clear();
+    window.update();
   }
-
-  std::cout << "iostream" << std::endl;
 
   return 0;
 }

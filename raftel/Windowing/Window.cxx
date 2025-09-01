@@ -2,6 +2,8 @@ module;
 
 #define GLFW_INCLUDE_NONE
 
+#include "../handle.h"
+
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
@@ -9,43 +11,66 @@ module;
 
 import GLFWInstance;
 
+DEFINE_HANDLE(GLFWwindow)
+
 export module Window;
 namespace raftel {
 
-export class Window {
+export class GLSurface
+{
 private:
-  GLFWwindow *m_window_handle = nullptr;
+  GLFWwindowHandle m_window_handle = nullptr;
 
 public:
-  Window(const char *title, uint32_t width, uint32_t height) {
-    raftel::GLFWInstance &instance = GLFWInstance::Instance();
+  GLSurface(GLFWwindowHandle window_handle)
+    : m_window_handle(window_handle)
+  {
+    if (GL_ARB_compute_shader) {
+      std::cout << "compute shaders supported via extension" << std::endl;
+    }
+  }
 
-    this->m_window_handle =
-        glfwCreateWindow(width, height, title, nullptr, nullptr);
-    glfwMakeContextCurrent(this->m_window_handle);
-
+  void make_current_context() const
+  {
+    glfwMakeContextCurrent(m_window_handle);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
       std::cout << "Failed to initialize GLAD" << std::endl;
       return;
     }
+  }
 
+  void clear() const
+  {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+  }
+};
 
-    if(GL_ARB_compute_shader)
-    {
-        std::cout << "compute shaders supported via extension" << std::endl;
-    }
+export class Window
+{
+private:
+  GLFWwindowHandle m_window_handle = nullptr;
+
+public:
+  Window(const char* title, uint32_t width, uint32_t height)
+  {
+    raftel::GLFWInstance& instance = GLFWInstance::Instance();
+
+    this->m_window_handle =
+      glfwCreateWindow(width, height, title, nullptr, nullptr);
   }
 
   ~Window() { glfwDestroyWindow(this->m_window_handle); }
 
-  void Update() {
-    glClearColor(0.4f, 0.3f, 0.4f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+  void update()
+  {
     glfwSwapBuffers(this->m_window_handle);
     glfwPollEvents();
   }
 
-  bool IsOpen() const { return !glfwWindowShouldClose(this->m_window_handle); }
+  bool is_open() const { return !glfwWindowShouldClose(this->m_window_handle); }
+
+  GLSurface create_gl_surface() const { return { this->m_window_handle }; }
 };
 
 } // namespace raftel
