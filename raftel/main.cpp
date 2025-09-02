@@ -12,8 +12,9 @@ main()
   surface.make_current_context();
 
   while (window.is_open()) {
-    surface.clear();
     window.update();
+    surface.swap_buffers();
+    surface.clear();
   }
 
   return 0;

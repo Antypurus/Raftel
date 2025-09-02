@@ -39,6 +39,8 @@ public:
     }
   }
 
+  void swap_buffers() const { glfwSwapBuffers(this->m_window_handle); }
+
   void clear() const
   {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -62,11 +64,7 @@ public:
 
   ~Window() { glfwDestroyWindow(this->m_window_handle); }
 
-  void update()
-  {
-    glfwSwapBuffers(this->m_window_handle);
-    glfwPollEvents();
-  }
+  void update() { glfwPollEvents(); }
 
   bool is_open() const { return !glfwWindowShouldClose(this->m_window_handle); }
 
