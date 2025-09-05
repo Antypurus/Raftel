@@ -60,6 +60,12 @@ public:
 
     this->m_window_handle =
       glfwCreateWindow(width, height, title, nullptr, nullptr);
+
+    glfwSetFramebufferSizeCallback(
+      this->m_window_handle,
+      [](GLFWwindowHandle window, int new_width, int new_height) {
+        std::cout << "Resized to [" << new_width << "x" << new_height << "]\n";
+      });
   }
 
   ~Window() { glfwDestroyWindow(this->m_window_handle); }
