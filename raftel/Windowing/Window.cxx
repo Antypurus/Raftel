@@ -1,80 +1,98 @@
 module;
 
-#define GLFW_INCLUDE_NONE
-
-#include "../handle.h"
-
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
-
+#include "GLFW.h"
+#include <functional>
 #include <iostream>
+#include <unordered_map>
+#include <vector>
 
 import GLFWInstance;
-
-DEFINE_HANDLE(GLFWwindow)
+import GLSurface;
 
 export module Window;
 namespace raftel {
 
-export class GLSurface
-{
+export class Window;
+DEFINE_HANDLE(Window)
+
+export class WindowRegistry {
 private:
-  GLFWwindowHandle m_window_handle = nullptr;
+    static WindowRegistry m_instance;
+    std::unordered_map<GLFWwindowHandle, WindowHandle> m_window_registry;
+
+private:
+    WindowRegistry() = default;
 
 public:
-  GLSurface(GLFWwindowHandle window_handle)
-    : m_window_handle(window_handle)
-  {
-    if (GL_ARB_compute_shader) {
-      std::cout << "compute shaders supported via extension" << std::endl;
-    }
-  }
+    static WindowRegistry& get_instance() { return m_instance; }
 
-  void make_current_context() const
-  {
-    glfwMakeContextCurrent(m_window_handle);
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-      std::cout << "Failed to initialize GLAD" << std::endl;
-      return;
-    }
-  }
-
-  void swap_buffers() const { glfwSwapBuffers(this->m_window_handle); }
-
-  void clear() const
-  {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-  }
+    void register_window(WindowHandle window);
 };
 
-export class Window
-{
+export class Window {
 private:
-  GLFWwindowHandle m_window_handle = nullptr;
+    GLFWwindowHandle m_window_handle = nullptr;
+    std::vector<std::function<void(int, int)>> resize_callbacks;
 
 public:
-  Window(const char* title, uint32_t width, uint32_t height)
-  {
-    raftel::GLFWInstance& instance = GLFWInstance::Instance();
+    Window(const char* title, uint32_t width, uint32_t height);
+    ~Window();
 
-    this->m_window_handle =
-      glfwCreateWindow(width, height, title, nullptr, nullptr);
-
-    glfwSetFramebufferSizeCallback(
-      this->m_window_handle,
-      [](GLFWwindowHandle window, int new_width, int new_height) {
-        std::cout << "Resized to [" << new_width << "x" << new_height << "]\n";
-      });
-  }
-
-  ~Window() { glfwDestroyWindow(this->m_window_handle); }
-
-  void update() { glfwPollEvents(); }
-
-  bool is_open() const { return !glfwWindowShouldClose(this->m_window_handle); }
-
-  GLSurface create_gl_surface() const { return { this->m_window_handle }; }
+    void update();
+    bool is_open() const;
+    GLSurface create_gl_surface() const;
+    GLFWwindowHandle get_window_handle() const;
 };
 
 } // namespace raftel
+
+namespace raftel {
+
+WindowRegistry WindowRegistry::m_instance = WindowRegistry();
+
+void WindowRegistry::register_window(WindowHandle window)
+{
+    m_window_registry.insert({ window->get_window_handle(), window });
+}
+
+Window::Window(const char* title, uint32_t width, uint32_t height)
+{
+    raftel::GLFWInstance& instance = GLFWInstance::Instance();
+
+    this->m_window_handle = glfwCreateWindow(width, height, title, nullptr, nullptr);
+
+    WindowRegistry::get_instance().register_window(this);
+
+    glfwSetFramebufferSizeCallback(
+        this->m_window_handle,
+        [](GLFWwindowHandle window, int new_width, int new_height) {
+            std::cout << "Resized to [" << new_width << "x" << new_height << "]\n";
+        });
+}
+
+Window::~Window()
+{
+    glfwDestroyWindow(this->m_window_handle);
+}
+
+void Window::update()
+{
+    glfwPollEvents();
+}
+
+bool Window::is_open() const
+{
+    return !glfwWindowShouldClose(this->m_window_handle);
+}
+
+GLSurface Window::create_gl_surface() const
+{
+    return { this->m_window_handle };
+}
+
+GLFWwindowHandle Window::get_window_handle() const
+{
+    return this->m_window_handle;
+}
+
+}
