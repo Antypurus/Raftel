@@ -27,32 +27,39 @@ public:
     static WindowRegistry& get_instance() { return m_instance; }
 
     void register_window(WindowHandle window);
+    WindowHandle operator[](GLFWwindowHandle window) const;
 };
 
 export class Window {
 private:
     GLFWwindowHandle m_window_handle = nullptr;
-    std::vector<std::function<void(int, int)>> resize_callbacks;
+    std::vector<std::function<void(int, int)>> m_resize_callbacks;
 
 public:
     Window(const char* title, uint32_t width, uint32_t height);
     ~Window();
 
-    void update();
     bool is_open() const;
-    GLSurface create_gl_surface() const;
     GLFWwindowHandle get_window_handle() const;
+
+    void update();
+    GLSurface create_gl_surface() const;
+    void register_resize_callback(const std::function<void(int, int)>& callback);
+    void invoke_resize_callbacks(int width, int height);
 };
 
-} // namespace raftel
-
-namespace raftel {
+/* ================================================================ */
 
 WindowRegistry WindowRegistry::m_instance = WindowRegistry();
 
 void WindowRegistry::register_window(WindowHandle window)
 {
     m_window_registry.insert({ window->get_window_handle(), window });
+}
+
+WindowHandle WindowRegistry::operator[](GLFWwindowHandle window) const
+{
+    return this->m_window_registry.at(window);
 }
 
 Window::Window(const char* title, uint32_t width, uint32_t height)
@@ -66,7 +73,7 @@ Window::Window(const char* title, uint32_t width, uint32_t height)
     glfwSetFramebufferSizeCallback(
         this->m_window_handle,
         [](GLFWwindowHandle window, int new_width, int new_height) {
-            std::cout << "Resized to [" << new_width << "x" << new_height << "]\n";
+            WindowRegistry::get_instance()[window]->invoke_resize_callbacks(new_width, new_height);
         });
 }
 
@@ -93,6 +100,18 @@ GLSurface Window::create_gl_surface() const
 GLFWwindowHandle Window::get_window_handle() const
 {
     return this->m_window_handle;
+}
+
+void Window::register_resize_callback(const std::function<void(int, int)>& callback)
+{
+    this->m_resize_callbacks.push_back(std::move(callback));
+}
+
+void Window::invoke_resize_callbacks(int width, int height)
+{
+    for (int i = 0; i < this->m_resize_callbacks.size(); ++i) {
+        this->m_resize_callbacks[i](width, height);
+    }
 }
 
 }
