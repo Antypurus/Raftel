@@ -9,6 +9,16 @@ module;
 import GLFWInstance;
 import GLSurface;
 
+namespace std {
+template <>
+struct hash<GLFWwindowHandle> {
+    size_t operator()(const GLFWwindowHandle handle) const
+    {
+        return (size_t)handle;
+    }
+};
+}
+
 export module Window;
 namespace raftel {
 
