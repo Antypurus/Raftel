@@ -1,8 +1,6 @@
 #include <iostream>
 
-import GLSurface;
-import GLFWInstance;
-import Window;
+#include "Windowing/Window.h"
 
 int main()
 {

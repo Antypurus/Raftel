@@ -1,26 +1,8 @@
-module;
+#include "GLSurface.h"
 
 #include "../GLFW.h"
 
 #include <iostream>
-
-export module GLSurface;
-
-namespace raftel {
-
-export class GLSurface {
-private:
-    GLFWwindowHandle m_window_handle = nullptr;
-
-public:
-    GLSurface(GLFWwindowHandle window_handle);
-
-    void make_current_context() const;
-    void swap_buffers() const;
-    void clear() const;
-};
-
-}
 
 namespace raftel {
 

@@ -26,20 +26,14 @@ add_subdirectory(ThirdParty/GLM)
 
 #find sources
 file(GLOB_RECURSE SOURCES
-        raftel/*.cxx
+        raftel/*.cpp
+        raftel/*.h
 )
-add_library(modules ThirdParty/glad/src/glad.c)
-target_sources(modules
-        PUBLIC
-        FILE_SET CXX_MODULES FILES
-        ${SOURCES}
-)
-target_include_directories(modules PRIVATE
+add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ThirdParty/glad/src/glad.c)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ThirdParty)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         ThirdParty/glad/include
         ThirdParty
 )
-target_link_libraries(modules glfw glm)
+target_link_libraries(${CMAKE_PROJECT_NAME} ${OPENGL_LIBRARIES} glfw glm)
 
-add_executable(${CMAKE_PROJECT_NAME} raftel/main.cpp)
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ThirdParty)
-target_link_libraries(${CMAKE_PROJECT_NAME} ${OPENGL_LIBRARIES} modules glfw glm)

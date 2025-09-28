@@ -1,31 +1,4 @@
-module;
-
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
-#ifdef __APPLE__
-#include <GLFW/deps/glad/gl.h>
-#else
-#include <glad/glad.h>
-#endif
-
-#include <iostream>
-
-export module GLFWInstance;
-namespace raftel {
-
-export struct GLFWInstance {
-private:
-    static GLFWInstance instance;
-
-    GLFWInstance();
-    ~GLFWInstance();
-
-public:
-    static GLFWInstance& Instance();
-};
-
-}
+#include "GLFWInstance.h"
 
 namespace raftel {
 
