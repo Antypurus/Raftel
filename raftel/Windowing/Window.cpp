@@ -1,70 +1,103 @@
 #include "Window.h"
+#include "GLFW/glfw3.h"
 
+#include <iostream>
 
 namespace raftel {
 
-WindowRegistry WindowRegistry::m_instance = WindowRegistry();
+WindowingSystem WindowingSystem::s_instance = WindowingSystem();
 
-void WindowRegistry::register_window(WindowHandle window)
+WindowingSystem& WindowingSystem::get_instance()
 {
-    m_window_registry.insert({ window->get_window_handle(), window });
+    return s_instance;
 }
 
-WindowHandle WindowRegistry::operator[](GLFWwindowHandle window) const
+WindowingSystem::WindowingSystem()
 {
-    return this->m_window_registry.at(window);
+    this->init_glfw();
+    this->load_opengl();
 }
 
-Window::Window(const char* title, uint32_t width, uint32_t height)
+WindowingSystem::~WindowingSystem()
 {
-    raftel::GLFWInstance& instance = GLFWInstance::Instance();
-
-    this->m_window_handle = glfwCreateWindow(width, height, title, nullptr, nullptr);
-
-    WindowRegistry::get_instance().register_window(this);
-
-    glfwSetFramebufferSizeCallback(
-        this->m_window_handle,
-        [](GLFWwindowHandle window, int new_width, int new_height) {
-            WindowRegistry::get_instance()[window]->invoke_resize_callbacks(new_width, new_height);
-        });
+    for (GLFWwindow* window : this->m_windows) {
+        glfwDestroyWindow(window);
+    }
+    glfwTerminate();
 }
 
-Window::~Window()
+void WindowingSystem::init_glfw() const
 {
-    glfwDestroyWindow(this->m_window_handle);
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 }
 
-void Window::update()
+void WindowingSystem::load_opengl() const
+{
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    GLFWwindow* dummy = glfwCreateWindow(1, 1, "", nullptr, nullptr);
+    if (dummy == nullptr) {
+        std::cout << "Error, Faild to create Dummy Window for OpenGL Function Loading" << std::endl;
+    }
+    glfwMakeContextCurrent(dummy);
+
+    // NOTE(Tiago): an OpenGL context must be set for us to be able to load OpenGL from it
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cout << "Failed to load OpenGL" << std::endl;
+    } else {
+        std::cout << "OpenGL has been loaded" << std::endl;
+    }
+
+    glfwDestroyWindow(dummy);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+}
+
+void WindowingSystem::global_window_resize_callback(GLFWwindow* window_handle, int new_width, int new_height)
+{
+    for (GLFWwindow* window : m_windows) {
+        if (window != window_handle)
+            continue;
+
+        std::cout << "Window resized to " << new_width << "x" << new_height << std::endl;
+    }
+}
+
+void WindowingSystem::update()
 {
     glfwPollEvents();
 }
 
-bool Window::is_open() const
+size_t WindowingSystem::create_window(std::string_view name, int width, int height)
 {
-    return !glfwWindowShouldClose(this->m_window_handle);
-}
-
-GLSurface Window::create_gl_surface() const
-{
-    return { this->m_window_handle };
-}
-
-GLFWwindowHandle Window::get_window_handle() const
-{
-    return this->m_window_handle;
-}
-
-void Window::register_resize_callback(const std::function<void(int, int)>& callback)
-{
-    this->m_resize_callbacks.push_back(std::move(callback));
-}
-
-void Window::invoke_resize_callbacks(int width, int height)
-{
-    for (int i = 0; i < this->m_resize_callbacks.size(); ++i) {
-        this->m_resize_callbacks[i](width, height);
+    GLFWwindow* window_handle = glfwCreateWindow(width, height, name.data(), nullptr, nullptr);
+    if (window_handle == nullptr) {
+        std::cout << "Failed to create requested window" << std::endl;
     }
+
+    glfwSetFramebufferSizeCallback(window_handle, [](GLFWwindow* window, int new_width, int new_height) {
+        get_instance().global_window_resize_callback(window, new_width, new_height);
+    });
+
+    this->m_windows.push_back(window_handle);
+    return this->m_windows.size() - 1;
+}
+
+bool WindowingSystem::window_is_open(int window_handle) const
+{
+    return !glfwWindowShouldClose(this->m_windows[window_handle]);
+}
+
+void WindowingSystem::make_window_current_context(int window_handle) const
+{
+    glfwMakeContextCurrent(this->m_windows[window_handle]);
+}
+
+void WindowingSystem::swap_window_framebuffers(int window_handle) const
+{
+    glfwSwapBuffers(this->m_windows[window_handle]);
 }
 
 }

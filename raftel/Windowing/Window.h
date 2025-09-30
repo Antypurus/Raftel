@@ -1,48 +1,40 @@
 #pragma once
 
-#include <functional>
-#include <unordered_map>
+#include <string_view>
 #include <vector>
 
-#include "GLFWInstance.h"
-#include "Surfaces/GLSurface.h"
+#include "GLFW.h"
 
 namespace raftel {
 
-class Window;
-DEFINE_HANDLE(Window)
-
-class WindowRegistry {
-private:
-    static WindowRegistry m_instance;
-    std::unordered_map<GLFWwindowHandle, WindowHandle> m_window_registry;
-
-private:
-    WindowRegistry() = default;
-
-public:
-    static WindowRegistry& get_instance() { return m_instance; }
-
-    void register_window(WindowHandle window);
-    WindowHandle operator[](GLFWwindowHandle window) const;
+struct Resolution {
+    size_t width;
+    size_t height;
 };
 
-class Window {
+class WindowingSystem {
 private:
-    GLFWwindowHandle m_window_handle = nullptr;
-    std::vector<std::function<void(int, int)>> m_resize_callbacks;
+    static WindowingSystem s_instance;
+
+private:
+    std::vector<GLFWwindow*> m_windows;
+    std::vector<Resolution> m_window_resolutions;
 
 public:
-    Window(const char* title, uint32_t width, uint32_t height);
-    ~Window();
-
-    bool is_open() const;
-    GLFWwindowHandle get_window_handle() const;
-
+    static WindowingSystem& get_instance();
     void update();
-    GLSurface create_gl_surface() const;
-    void register_resize_callback(const std::function<void(int, int)>& callback);
-    void invoke_resize_callbacks(int width, int height);
+    size_t create_window(std::string_view name, int width, int height);
+    bool window_is_open(int window_handle) const;
+    void make_window_current_context(int window_handle) const;
+    void swap_window_framebuffers(int window_handle) const;
+
+private:
+    WindowingSystem();
+    ~WindowingSystem();
+
+    void init_glfw() const;
+    void load_opengl() const;
+    void global_window_resize_callback(GLFWwindow* window_handle, int new_width, int new_height);
 };
 
 }
