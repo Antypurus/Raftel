@@ -85,9 +85,23 @@ size_t WindowingSystem::create_window(std::string_view name, int width, int heig
     return this->m_windows.size() - 1;
 }
 
-bool WindowingSystem::window_is_open(int window_handle) const
+bool WindowingSystem::has_open_windows() const
+{
+    for (size_t i = 0; i < this->m_windows.size(); ++i) {
+        if (this->is_window_open(i))
+            return true;
+    }
+    return false;
+}
+
+bool WindowingSystem::is_window_open(int window_handle) const
 {
     return !glfwWindowShouldClose(this->m_windows[window_handle]);
+}
+
+bool WindowingSystem::is_window_focused(int window_handle) const
+{
+    return glfwGetWindowAttrib(this->m_windows[window_handle], GLFW_FOCUSED) == GLFW_TRUE;
 }
 
 void WindowingSystem::make_window_current_context(int window_handle) const

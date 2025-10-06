@@ -12,6 +12,11 @@ struct Resolution {
     size_t height;
 };
 
+struct WindowHandle {
+    size_t handle;
+    size_t generation;
+};
+
 class WindowingSystem {
 private:
     static WindowingSystem s_instance;
@@ -24,7 +29,9 @@ public:
     static WindowingSystem& get_instance();
     void update();
     size_t create_window(std::string_view name, int width, int height);
-    bool window_is_open(int window_handle) const;
+    bool has_open_windows() const;
+    bool is_window_open(int window_handle) const;
+    bool is_window_focused(int window_handle) const;
     void make_window_current_context(int window_handle) const;
     void swap_window_framebuffers(int window_handle) const;
 
