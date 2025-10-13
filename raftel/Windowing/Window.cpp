@@ -1,6 +1,7 @@
 #include "Window.h"
 #include "GLFW/glfw3.h"
 
+#include <assert.h>
 #include <iostream>
 
 namespace raftel {
@@ -65,12 +66,27 @@ void WindowingSystem::global_window_resize_callback(GLFWwindow* window_handle, i
     }
 }
 
+WindowHandle WindowingSystem::register_window(GLFWwindow* window_handle, Resolution initial_resolution)
+{
+    size_t handle_index = this->m_windows.size();
+    size_t generation = 0;
+
+    this->m_windows.push_back(window_handle);
+    this->m_handle_generations.push_back(0);
+    this->m_window_resolutions.push_back(initial_resolution);
+
+    return {
+        .handle = handle_index,
+        .generation = generation,
+    };
+}
+
 void WindowingSystem::update()
 {
     glfwPollEvents();
 }
 
-size_t WindowingSystem::create_window(std::string_view name, int width, int height)
+WindowHandle WindowingSystem::create_window(std::string_view name, size_t width, size_t height)
 {
     GLFWwindow* window_handle = glfwCreateWindow(width, height, name.data(), nullptr, nullptr);
     if (window_handle == nullptr) {
@@ -81,37 +97,37 @@ size_t WindowingSystem::create_window(std::string_view name, int width, int heig
         get_instance().global_window_resize_callback(window, new_width, new_height);
     });
 
-    this->m_windows.push_back(window_handle);
-    return this->m_windows.size() - 1;
+    return this->register_window(window_handle, Resolution { width, height });
 }
 
 bool WindowingSystem::has_open_windows() const
 {
     for (size_t i = 0; i < this->m_windows.size(); ++i) {
-        if (this->is_window_open(i))
+        if (!glfwWindowShouldClose(this->m_windows[i]))
             return true;
     }
     return false;
 }
 
-bool WindowingSystem::is_window_open(int window_handle) const
+bool WindowingSystem::is_window_open(WindowHandle window_handle) const
 {
-    return !glfwWindowShouldClose(this->m_windows[window_handle]);
+    assert(window_handle.generation == this->m_handle_generations[window_handle.handle]);
+    return !glfwWindowShouldClose(this->m_windows[window_handle.handle]);
 }
 
-bool WindowingSystem::is_window_focused(int window_handle) const
+bool WindowingSystem::is_window_focused(WindowHandle window_handle) const
 {
-    return glfwGetWindowAttrib(this->m_windows[window_handle], GLFW_FOCUSED) == GLFW_TRUE;
+    return glfwGetWindowAttrib(this->m_windows[window_handle.handle], GLFW_FOCUSED) == GLFW_TRUE;
 }
 
-void WindowingSystem::make_window_current_context(int window_handle) const
+void WindowingSystem::make_window_current_context(WindowHandle window_handle) const
 {
-    glfwMakeContextCurrent(this->m_windows[window_handle]);
+    glfwMakeContextCurrent(this->m_windows[window_handle.handle]);
 }
 
-void WindowingSystem::swap_window_framebuffers(int window_handle) const
+void WindowingSystem::swap_window_framebuffers(WindowHandle window_handle) const
 {
-    glfwSwapBuffers(this->m_windows[window_handle]);
+    glfwSwapBuffers(this->m_windows[window_handle.handle]);
 }
 
 }

@@ -7,7 +7,7 @@ using namespace raftel;
 int main()
 {
     WindowingSystem& windowing_system = WindowingSystem::get_instance();
-    int window = windowing_system.create_window("test_window", 1920, 1080);
+    WindowHandle window = windowing_system.create_window("test_window", 1920, 1080);
     windowing_system.make_window_current_context(window);
 
     while (windowing_system.has_open_windows()) {

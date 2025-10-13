@@ -23,17 +23,18 @@ private:
 
 private:
     std::vector<GLFWwindow*> m_windows;
+    std::vector<size_t> m_handle_generations;
     std::vector<Resolution> m_window_resolutions;
 
 public:
     static WindowingSystem& get_instance();
     void update();
-    size_t create_window(std::string_view name, int width, int height);
+    WindowHandle create_window(std::string_view name, size_t width, size_t height);
     bool has_open_windows() const;
-    bool is_window_open(int window_handle) const;
-    bool is_window_focused(int window_handle) const;
-    void make_window_current_context(int window_handle) const;
-    void swap_window_framebuffers(int window_handle) const;
+    bool is_window_open(WindowHandle handle) const;
+    bool is_window_focused(WindowHandle handle) const;
+    void make_window_current_context(WindowHandle handle) const;
+    void swap_window_framebuffers(WindowHandle handle) const;
 
 private:
     WindowingSystem();
@@ -42,6 +43,7 @@ private:
     void init_glfw() const;
     void load_opengl() const;
     void global_window_resize_callback(GLFWwindow* window_handle, int new_width, int new_height);
+    WindowHandle register_window(GLFWwindow* window_handle, Resolution initial_resolution);
 };
 
 }
