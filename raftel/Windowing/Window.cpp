@@ -58,11 +58,18 @@ void WindowingSystem::load_opengl() const
 
 void WindowingSystem::global_window_resize_callback(GLFWwindow* window_handle, int new_width, int new_height)
 {
-    for (GLFWwindow* window : m_windows) {
-        if (window != window_handle)
+    for (size_t i = 0; i < this->m_windows.size(); ++i) {
+        if (this->m_windows[i] != window_handle)
             continue;
 
-        std::cout << "Window resized to " << new_width << "x" << new_height << std::endl;
+        this->m_window_resolutions[i] = Resolution {
+            .width = (size_t)new_width,
+            .height = (size_t)new_height,
+        };
+
+        for (auto& callback : this->m_resize_callbacks[i]) {
+            callback(new_width, new_height);
+        }
     }
 }
 
@@ -74,6 +81,7 @@ WindowHandle WindowingSystem::register_window(GLFWwindow* window_handle, Resolut
     this->m_windows.push_back(window_handle);
     this->m_handle_generations.push_back(0);
     this->m_window_resolutions.push_back(initial_resolution);
+    this->m_resize_callbacks.push_back({});
 
     return {
         .handle = handle_index,
@@ -109,6 +117,19 @@ bool WindowingSystem::has_open_windows() const
     return false;
 }
 
+std::vector<WindowHandle> WindowingSystem::get_active_window_list()
+{
+    std::vector<WindowHandle> result;
+    result.reserve(this->m_windows.size());
+    for (size_t i = 0; i < this->m_windows.size(); ++i) {
+        result.push_back(WindowHandle {
+            .handle = i,
+            .generation = this->m_handle_generations[i],
+        });
+    }
+    return result;
+}
+
 bool WindowingSystem::is_window_open(WindowHandle window_handle) const
 {
     assert(window_handle.generation == this->m_handle_generations[window_handle.handle]);
@@ -128,6 +149,11 @@ void WindowingSystem::make_window_current_context(WindowHandle window_handle) co
 void WindowingSystem::swap_window_framebuffers(WindowHandle window_handle) const
 {
     glfwSwapBuffers(this->m_windows[window_handle.handle]);
+}
+
+void WindowingSystem::register_window_resize_callback(WindowHandle handle, std::function<void(size_t, size_t)> callback)
+{
+    this->m_resize_callbacks[handle.handle].emplace_back(std::move(callback));
 }
 
 }

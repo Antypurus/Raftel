@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <string_view>
 #include <vector>
 
@@ -25,16 +26,19 @@ private:
     std::vector<GLFWwindow*> m_windows;
     std::vector<size_t> m_handle_generations;
     std::vector<Resolution> m_window_resolutions;
+    std::vector<std::vector<std::function<void(size_t, size_t)>>> m_resize_callbacks;
 
 public:
     static WindowingSystem& get_instance();
     void update();
     WindowHandle create_window(std::string_view name, size_t width, size_t height);
+    std::vector<WindowHandle> get_active_window_list();
     bool has_open_windows() const;
     bool is_window_open(WindowHandle handle) const;
     bool is_window_focused(WindowHandle handle) const;
     void make_window_current_context(WindowHandle handle) const;
     void swap_window_framebuffers(WindowHandle handle) const;
+    void register_window_resize_callback(WindowHandle handle, std::function<void(size_t, size_t)> callback);
 
 private:
     WindowingSystem();
