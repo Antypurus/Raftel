@@ -26,6 +26,7 @@ private:
     std::vector<GLFWwindow*> m_windows;
     std::vector<size_t> m_handle_generations;
     std::vector<Resolution> m_window_resolutions;
+    std::vector<bool> m_window_is_open;
     std::vector<std::vector<std::function<void(size_t, size_t)>>> m_resize_callbacks;
 
 public:
@@ -48,6 +49,7 @@ private:
     void load_opengl() const;
     void global_window_resize_callback(GLFWwindow* window_handle, int new_width, int new_height);
     WindowHandle register_window(GLFWwindow* window_handle, Resolution initial_resolution);
+    void remove_window(size_t index);
 };
 
 }

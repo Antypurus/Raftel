@@ -80,6 +80,7 @@ WindowHandle WindowingSystem::register_window(GLFWwindow* window_handle, Resolut
 
     this->m_windows.push_back(window_handle);
     this->m_handle_generations.push_back(0);
+    this->m_window_is_open.push_back(true);
     this->m_window_resolutions.push_back(initial_resolution);
     this->m_resize_callbacks.push_back({});
 
@@ -87,6 +88,15 @@ WindowHandle WindowingSystem::register_window(GLFWwindow* window_handle, Resolut
         .handle = handle_index,
         .generation = generation,
     };
+}
+
+void WindowingSystem::remove_window(size_t index)
+{
+    if (this->m_window_is_open[index] == false)
+        return;
+
+    this->m_window_is_open[index] = false;
+    glfwDestroyWindow(this->m_windows[index]);
 }
 
 void WindowingSystem::update()
@@ -104,6 +114,15 @@ WindowHandle WindowingSystem::create_window(std::string_view name, size_t width,
     glfwSetFramebufferSizeCallback(window_handle, [](GLFWwindow* window, int new_width, int new_height) {
         get_instance().global_window_resize_callback(window, new_width, new_height);
     });
+    glfwSetWindowCloseCallback(window_handle, [](GLFWwindow* window) {
+        WindowingSystem& instance = get_instance();
+        for (size_t i = 0; i < instance.m_windows.size(); ++i) {
+            if (instance.m_windows[i] == window) {
+                instance.remove_window(i);
+                break;
+            }
+        }
+    });
 
     return this->register_window(window_handle, Resolution { width, height });
 }
@@ -111,7 +130,7 @@ WindowHandle WindowingSystem::create_window(std::string_view name, size_t width,
 bool WindowingSystem::has_open_windows() const
 {
     for (size_t i = 0; i < this->m_windows.size(); ++i) {
-        if (!glfwWindowShouldClose(this->m_windows[i]))
+        if (this->m_window_is_open[i])
             return true;
     }
     return false;
@@ -122,6 +141,9 @@ std::vector<WindowHandle> WindowingSystem::get_active_window_list()
     std::vector<WindowHandle> result;
     result.reserve(this->m_windows.size());
     for (size_t i = 0; i < this->m_windows.size(); ++i) {
+        if (this->m_window_is_open[i] == false)
+            continue;
+
         result.push_back(WindowHandle {
             .handle = i,
             .generation = this->m_handle_generations[i],
