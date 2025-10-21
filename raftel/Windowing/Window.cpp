@@ -22,6 +22,8 @@ WindowingSystem::WindowingSystem()
 WindowingSystem::~WindowingSystem()
 {
     for (GLFWwindow* window : this->m_windows) {
+        if (window == nullptr)
+            continue;
         glfwDestroyWindow(window);
     }
     glfwTerminate();

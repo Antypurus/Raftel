@@ -196,7 +196,9 @@ def run_target(target):
     if TARGET_OS == "Windows":
         target_run_command = target_run_command + ".exe"
     print(target_run_command)
-    os.system(target_run_command)
+    exe_path = os.path.abspath(target_run_command)
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    os.system(exe_path)
 
 
 def run_project_build():
