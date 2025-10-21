@@ -26,6 +26,9 @@ WindowingSystem::~WindowingSystem()
             continue;
         glfwDestroyWindow(window);
     }
+    if (this->gl_dummy_window != nullptr) {
+        glfwDestroyWindow(this->gl_dummy_window);
+    }
     glfwTerminate();
 }
 
@@ -54,7 +57,7 @@ void WindowingSystem::load_opengl() const
         std::cout << "OpenGL has been loaded" << std::endl;
     }
 
-    glfwDestroyWindow(dummy);
+    gl_dummy_window = dummy;
     glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
 }
 

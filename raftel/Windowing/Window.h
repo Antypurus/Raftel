@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "GLFW.h"
+#include "GLFW/glfw3.h"
 
 namespace raftel {
 
@@ -23,6 +24,7 @@ private:
     static WindowingSystem s_instance;
 
 private:
+    mutable GLFWwindow* gl_dummy_window = nullptr;
     std::vector<GLFWwindow*> m_windows;
     std::vector<size_t> m_handle_generations;
     std::vector<Resolution> m_window_resolutions;
