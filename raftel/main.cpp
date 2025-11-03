@@ -1,12 +1,18 @@
 #include <iostream>
 
+#include <cassert>
 #include <fstream>
 #include <string>
 
 #include "Windowing/Window.h"
-#include "glad/glad.h"
 
 using namespace raftel;
+
+enum class ShaderType {
+    vertex = GL_VERTEX_SHADER,
+    fragment = GL_FRAGMENT_SHADER,
+    compute = GL_COMPUTE_SHADER,
+};
 
 std::string load_shader(std::string_view path)
 {
@@ -24,25 +30,37 @@ std::string load_shader(std::string_view path)
     return shader_code;
 }
 
+unsigned int load_and_compile_shader(std::string_view path, ShaderType type)
+{
+    std::string shadertext = load_shader(path);
+
+    unsigned int shader_handle = -1;
+    shader_handle = glCreateShader((int)type);
+
+    const char* shader_to_compile[] = { shadertext.c_str() };
+    glShaderSource(shader_handle, 1, shader_to_compile, nullptr);
+    glCompileShader(shader_handle);
+
+    int status = 0;
+    glGetShaderiv(shader_handle, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE) {
+        char log[1024];
+        glGetShaderInfoLog(shader_handle, 1024, nullptr, log);
+        std::cout << "Shader Compilation Failed\n"
+                  << log << std::endl;
+        return -1;
+    }
+
+    return shader_handle;
+}
+
 int main()
 {
     WindowingSystem& windowing_system = WindowingSystem::get_instance();
     WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
 
-    unsigned int vertex_shader_handle = 0;
-    std::string vertex_shader = load_shader("shaders/basic/vert.glsl");
-    vertex_shader_handle = glCreateShader(GL_VERTEX_SHADER);
-    const char* shaders[] = { vertex_shader.c_str() };
-    glShaderSource(vertex_shader_handle, 1, shaders, nullptr);
-    glCompileShader(vertex_shader_handle);
-    int status = 0;
-    glGetShaderiv(vertex_shader_handle, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE) {
-        char log[1024];
-        glGetShaderInfoLog(vertex_shader_handle, 1024, nullptr, log);
-        std::cout << "Shader Compilation Failed\n"
-                  << log << std::endl;
-    }
+    unsigned int vertex_shader_handle = load_and_compile_shader("shaders/basic/vert.glsl", ShaderType::vertex);
+    assert((vertex_shader_handle != -1ul));
 
     float vertices[] = {
         -0.5f, -0.5f, 0.0f,
