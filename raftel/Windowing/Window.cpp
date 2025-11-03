@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "GLFW/glfw3.h"
+#include "glad/glad.h"
 
 #include <assert.h>
 #include <iostream>
@@ -122,7 +123,7 @@ void WindowingSystem::update()
 
 WindowHandle WindowingSystem::create_window(std::string_view name, size_t width, size_t height)
 {
-    GLFWwindow* window_handle = glfwCreateWindow(width, height, name.data(), nullptr, nullptr);
+    GLFWwindow* window_handle = glfwCreateWindow(width, height, name.data(), nullptr, gl_dummy_window);
     if (window_handle == nullptr) {
         std::cout << "Failed to create requested window" << std::endl;
     }
@@ -173,6 +174,8 @@ bool WindowingSystem::is_window_focused(WindowHandle window_handle) const
 void WindowingSystem::make_window_current_context(WindowHandle window_handle) const
 {
     glfwMakeContextCurrent(this->m_windows[window_handle.handle]);
+    Resolution res = this->m_window_resolutions[window_handle.handle];
+    glViewport(0, 0, res.width, res.height);
 }
 
 void WindowingSystem::swap_window_framebuffers(WindowHandle window_handle) const
