@@ -74,22 +74,46 @@ unsigned int create_shader_program(const std::vector<unsigned int> shaders)
     return shader_program_handle;
 }
 
-int main()
+unsigned int create_graphics_program(std::string_view vertex_shader_path, std::string_view fragment_shader_path)
 {
-    WindowingSystem& windowing_system = WindowingSystem::get_instance();
-    WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
-    WindowHandle second_window = windowing_system.create_window("test_window_2", 1920, 1080);
-    windowing_system.make_window_current_context(second_window);
-
-    unsigned int vertex_shader_handle = load_and_compile_shader("shaders/basic/vert.glsl", ShaderType::vertex);
-    unsigned int fragment_shader_handle = load_and_compile_shader("shaders/basic/frag.glsl", ShaderType::fragment);
-    unsigned int basic_shader_program = create_shader_program({ vertex_shader_handle, fragment_shader_handle });
+    unsigned int vertex_shader_handle = load_and_compile_shader(vertex_shader_path, ShaderType::vertex);
+    unsigned int fragment_shader_handle = load_and_compile_shader(fragment_shader_path, ShaderType::fragment);
+    unsigned int shader_program = create_shader_program({ vertex_shader_handle, fragment_shader_handle });
     glDeleteShader(vertex_shader_handle);
     glDeleteShader(fragment_shader_handle);
+
+    return shader_program;
+}
+
+unsigned int create_vertex_buffer(const float* vertices, size_t vertex_count)
+{
+    std::cout << vertex_count << std::endl;
 
     unsigned int vao_handle;
     glGenVertexArrays(1, &vao_handle);
     glBindVertexArray(vao_handle);
+
+    unsigned int vbo_handle = 0;
+    glGenBuffers(1, &vbo_handle);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_handle);
+    glBufferData(GL_ARRAY_BUFFER, vertex_count * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    return vao_handle;
+}
+
+int main()
+{
+    WindowingSystem& windowing_system = WindowingSystem::get_instance();
+    WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
+    windowing_system.make_window_current_context(first_window);
+
+    unsigned int basic_shader_program = create_graphics_program("shaders/basic/vert.glsl", "shaders/basic/frag.glsl");
 
     float vertices[] = {
         -0.5f, -0.5f, 0.0f,
@@ -97,16 +121,7 @@ int main()
         0.0f, 0.5f, 0.0f
     };
 
-    unsigned int vbo_handle = 0;
-    glGenBuffers(1, &vbo_handle);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_handle);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    unsigned int vao_handle = create_vertex_buffer(vertices, sizeof(vertices) / 3 / sizeof(float));
 
     while (windowing_system.has_open_windows()) {
         windowing_system.update();
