@@ -4,7 +4,6 @@
 #include <string_view>
 #include <vector>
 
-#include "GLFW.h"
 #include "GLFW/glfw3.h"
 
 namespace raftel {
@@ -39,8 +38,6 @@ public:
     bool has_open_windows() const;
     bool is_window_open(WindowHandle handle) const;
     bool is_window_focused(WindowHandle handle) const;
-    void make_window_current_context(WindowHandle handle) const;
-    void swap_window_framebuffers(WindowHandle handle) const;
     void register_window_resize_callback(WindowHandle handle, std::function<void(size_t, size_t)> callback);
 
 private:
@@ -48,7 +45,6 @@ private:
     ~WindowingSystem();
 
     void init_glfw() const;
-    void load_opengl() const;
     void global_window_resize_callback(GLFWwindow* window_handle, int new_width, int new_height);
     WindowHandle register_window(GLFWwindow* window_handle, Resolution initial_resolution);
     void remove_window(size_t index);
