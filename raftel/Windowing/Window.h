@@ -4,7 +4,21 @@
 #include <string_view>
 #include <vector>
 
+#ifdef _WIN32
+    #define GLFW_EXPOSE_NATIVE_WIN32
+    #define WINDOW_HANDLE_NATIVE_TYPE HWND
+#elifdef __APPLE__
+    #define GLFW_EXPOSE_NATIVE_COCOA
+    #include "GLFW/glfw3native.h"
+    #define WINDWINDOW_HANDLE_NATIVE_TYPE NSWindow*
+#elifdef __linux__
+    #define GLFW_EXPOSE_NATIVE_X11
+    #define GLFW_EXPOSE_NATIVE_WAYLAND
+    #define WINWINDOW_HANDLE_NATIVE_TYPE void*
+#endif
 #include "GLFW/glfw3.h"
+#include "GLFW/glfw3native.h"
+using WindowHandleNativeType = WINDOW_HANDLE_NATIVE_TYPE;
 
 namespace raftel {
 
@@ -39,6 +53,7 @@ public:
     bool is_window_open(WindowHandle handle) const;
     bool is_window_focused(WindowHandle handle) const;
     void register_window_resize_callback(WindowHandle handle, std::function<void(size_t, size_t)> callback);
+    WindowHandleNativeType get_native_window_handle(WindowHandle handle) const;
 
 private:
     WindowingSystem();

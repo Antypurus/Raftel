@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "GLFW/glfw3.h"
+#include "GLFW/glfw3native.h"
 
 #include <assert.h>
 #include <iostream>
@@ -149,6 +150,23 @@ bool WindowingSystem::is_window_focused(WindowHandle window_handle) const
 void WindowingSystem::register_window_resize_callback(WindowHandle handle, std::function<void(size_t, size_t)> callback)
 {
     this->m_resize_callbacks[handle.handle].emplace_back(std::move(callback));
+}
+
+WindowHandleNativeType WindowingSystem::get_native_window_handle(WindowHandle handle) const
+{
+    GLFWwindow* window_handle = this->m_windows[handle.handle];
+#ifdef _WIN32
+    return glfwGetWin32Window(window_handle);
+#elifdef __APPLE__
+    return glfwGetCocoaWindow(window_handle);
+#elifdef __linux__
+    if (glfwGetWaylandDisplay()) {
+        return glfwGetWaylandWindow(window_handle);
+    } else {
+        return glfwGetX11Window(window_handle);
+    }
+#endif
+    return nullptr;
 }
 
 }
