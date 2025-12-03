@@ -4,18 +4,21 @@
 #include <string_view>
 #include <vector>
 
-#ifdef _WIN32
+#if defined(_WIN32)
     #define GLFW_EXPOSE_NATIVE_WIN32
     #define WINDOW_HANDLE_NATIVE_TYPE HWND
-#elifdef __APPLE__
+#elif defined(__APPLE__)
     #define GLFW_EXPOSE_NATIVE_COCOA
     #include "GLFW/glfw3native.h"
-    #define WINDWINDOW_HANDLE_NATIVE_TYPE NSWindow*
-#elifdef __linux__
+    #define WINDOW_HANDLE_NATIVE_TYPE NSWindow*
+#elif defined(__linux__)
     #define GLFW_EXPOSE_NATIVE_X11
     #define GLFW_EXPOSE_NATIVE_WAYLAND
-    #define WINWINDOW_HANDLE_NATIVE_TYPE void*
+    #define WINDOW_HANDLE_NATIVE_TYPE void*
+#else
+    #define WINDOW_HANDLE_NATIVE_TYPE void*
 #endif
+#define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 #include "GLFW/glfw3native.h"
 using WindowHandleNativeType = WINDOW_HANDLE_NATIVE_TYPE;

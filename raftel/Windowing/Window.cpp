@@ -163,7 +163,7 @@ WindowHandleNativeType WindowingSystem::get_native_window_handle(WindowHandle ha
     if (glfwGetWaylandDisplay()) {
         return glfwGetWaylandWindow(window_handle);
     } else {
-        return glfwGetX11Window(window_handle);
+        return (void*)glfwGetX11Window(window_handle);
     }
 #endif
     return nullptr;
