@@ -30,8 +30,10 @@ file(GLOB_RECURSE SOURCES
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ThirdParty)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-        ThirdParty/glad/include
         ThirdParty
 )
 target_link_libraries(${CMAKE_PROJECT_NAME} ${OPENGL_LIBRARIES} glfw glm)
+if(WIN32)
+    target_link_libraries(${CMAKE_PROJECT_NAME} dxgi dxguid d3d12)
+endif()
 
