@@ -31,6 +31,7 @@ add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ThirdParty)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         ThirdParty
+        raftel
 )
 target_link_libraries(${CMAKE_PROJECT_NAME} ${OPENGL_LIBRARIES} glfw glm)
 if(WIN32)
