@@ -3,13 +3,17 @@
 
 #include "Rendering/API/DX12/DX12Renderer.h"
 #include "Windowing/Window.h"
+#include "logger.h"
 
 using namespace raftel;
 
 int main()
 {
+    auto& logger = logger::create_logger();
     WindowingSystem& windowing_system = WindowingSystem::get_instance();
     WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
+
+    logger.log("test\n");
 
 #ifdef _WIN32
     dx12::DX12Renderer renderer;
