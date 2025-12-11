@@ -36,3 +36,6 @@ cmake-build-*
 .idea/
 .cache
 compile_commands.json
+
+#engine logs
+rafter_engine_log.txt
