@@ -1,6 +1,7 @@
 #include "DX12Renderer.h"
 
 #include <iostream>
+#include <logger.h>
 
 namespace raftel::dx12 {
 
@@ -13,14 +14,14 @@ DX12Renderer::DX12Renderer()
     }
     m_debug_controller->EnableDebugLayer();
     m_debug_controller->SetEnableGPUBasedValidation(TRUE);
-    std::cout << "D3D12 Debug Controller Loaded & Activated" << std::endl;
+    LOG_INFO("D3D12 Debug Controller Loaded & Activated");
 
     result = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&this->m_dxgi_factory));
     if (result != S_OK) {
-        std::cout << "Failed to create DXGI Factory" << std::endl;
+        LOG_ERROR("Failed to create DXGI Factory");
         exit(-1);
     }
-    std::cout << "DXGI Factory created" << std::endl;
+    LOG_INFO("DXGI Factory created");
 
     unsigned int adapter_index = 0;
     IDXGIAdapter1* adapter = nullptr;

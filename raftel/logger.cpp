@@ -14,13 +14,15 @@ logger logger::s_instance = {};
 
 logger& logger::create_logger()
 {
-    s_instance.m_log_file = std::ofstream("raftel_engine_log.txt", std::ios::out | std::ios::trunc);
+    if (!s_instance.m_log_file.is_open()) {
+        s_instance.m_log_file = std::ofstream("raftel_engine_log.txt", std::ios::out | std::ios::trunc);
+    }
     return logger::s_instance;
 }
 
 logger& logger::get_logger()
 {
-    return logger::s_instance;
+    return logger::create_logger();
 }
 
 void logger::log(log_level level, std::string_view message)

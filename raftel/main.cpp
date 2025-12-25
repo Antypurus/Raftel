@@ -12,8 +12,6 @@ int main()
     WindowingSystem& windowing_system = WindowingSystem::get_instance();
     WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
 
-    LOG_INFO("test {}", 5);
-
 #ifdef _WIN32
     dx12::DX12Renderer renderer;
 #endif
