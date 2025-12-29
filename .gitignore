@@ -34,7 +34,8 @@
 build/
 cmake-build-*
 .idea/
-.cache
+.cache/
+.zed/
 compile_commands.json
 
 #engine logs

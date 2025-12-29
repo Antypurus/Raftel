@@ -12,7 +12,7 @@ private:
     ComPtr<IDXGIFactory7> m_dxgi_factory;
 
 public:
-    DX12Renderer();
+    DX12Renderer(HWND window_handle);
 };
 
 }

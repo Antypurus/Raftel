@@ -13,7 +13,7 @@ int main()
     WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
 
 #ifdef _WIN32
-    dx12::DX12Renderer renderer;
+    dx12::DX12Renderer renderer(windowing_system.get_native_window_handle(first_window));
 #endif
 
     while (windowing_system.has_open_windows()) {
