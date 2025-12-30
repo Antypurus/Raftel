@@ -1,6 +1,9 @@
 #include "DX12Renderer.h"
 
+#include <dxgi.h>
+#include <dxgi1_2.h>
 #include <dxgi1_5.h>
+#include <dxgiformat.h>
 #include <iostream>
 #include <logger.h>
 
@@ -37,7 +40,7 @@ DX12Renderer::DX12Renderer(HWND window_handle)
     LOG_SUCCESS("Created D3D12 Device");
 
     ComPtr<ID3D12CommandQueue> command_queue;
-    D3D12_COMMAND_QUEUE_DESC queue_desc = {
+    const D3D12_COMMAND_QUEUE_DESC queue_desc = {
         .Type = D3D12_COMMAND_LIST_TYPE_DIRECT,
         .Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
         .Flags = D3D12_COMMAND_QUEUE_FLAG_NONE,
@@ -46,11 +49,24 @@ DX12Renderer::DX12Renderer(HWND window_handle)
     WIN_CALL(device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&command_queue)), "Failed to fetch D3D12 Graphics Queue");
     LOG_SUCCESS("Obtained D3D12 Graphics Queue");
 
-    DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
-
+    const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
+        .Width = 1920,
+        .Height = 1080,
+        .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
+        .Stereo = false,
+        .SampleDesc = DXGI_SAMPLE_DESC {
+            .Count = 1,
+            .Quality = 0,
+        },
+        .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
+        .BufferCount = 2,
+        .Scaling = DXGI_SCALING_STRETCH,
+        .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
+        .AlphaMode = DXGI_ALPHA_MODE_IGNORE,
+        .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
     };
     ComPtr<IDXGISwapChain1> swapchain = nullptr;
-    WIN_CALL(this->m_dxgi_factory->CreateSwapChainForHwnd(device.Get(), window_handle, &swapchain_desc, nullptr, nullptr, swapchain.GetAddressOf()), "Failed to create D3D12 rendering swapchain");
+    WIN_CALL(this->m_dxgi_factory->CreateSwapChainForHwnd(command_queue.Get(), window_handle, &swapchain_desc, nullptr, nullptr, swapchain.GetAddressOf()), "Failed to create D3D12 rendering swapchain");
     LOG_SUCCESS("D3D12 Swapchain Created")
 }
 
