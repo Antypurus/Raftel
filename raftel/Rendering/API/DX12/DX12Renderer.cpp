@@ -1,13 +1,46 @@
 #include "DX12Renderer.h"
 
-#include <dxgi.h>
-#include <dxgi1_2.h>
-#include <dxgi1_5.h>
-#include <dxgiformat.h>
+#include <combaseapi.h>
+#include <dxgi1_6.h>
 #include <iostream>
 #include <logger.h>
 
 namespace raftel::dx12 {
+
+std::vector<AdapterInfo> DX12Renderer::GetDeviceList()
+{
+    std::vector<AdapterInfo> adaptors;
+
+    ComPtr<IDXGIFactory7> factory = nullptr;
+#ifndef NDEBUG
+    unsigned int flags = DXGI_CREATE_FACTORY_DEBUG;
+#else
+    unsigned int flags = 0;
+#endif
+    WIN_CALL(CreateDXGIFactory2(flags, IID_PPV_ARGS(&factory)), "Failed to create temporary factory for device listing");
+
+    unsigned int adapter_index = 0;
+    IDXGIAdapter1* adapter = nullptr;
+    while (factory->EnumAdapters1(adapter_index++, &adapter) == S_OK) {
+        IDXGIAdapter4* interface_adapter = nullptr;
+        WIN_CALL(adapter->QueryInterface(IID_PPV_ARGS(&interface_adapter)), "Failed to upcast device adaptor");
+
+        DXGI_ADAPTER_DESC3 adapter_desc;
+        WIN_CALL(interface_adapter->GetDesc3(&adapter_desc), "Failed to get device adaptor information");
+
+        adaptors.push_back({
+            .adapter = interface_adapter,
+            .vendor = (AdapterVendor)adapter_desc.VendorId,
+            .name = adapter_desc.Description,
+            .dedicated_memory_bytes = adapter_desc.DedicatedVideoMemory,
+        });
+
+        interface_adapter->Release();
+        adapter->Release();
+    }
+
+    return adaptors;
+}
 
 DX12Renderer::DX12Renderer(HWND window_handle)
 {
@@ -20,20 +53,6 @@ DX12Renderer::DX12Renderer(HWND window_handle)
     WIN_CALL(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&this->m_dxgi_factory)),
         "Failed to create DXGI Factory");
     LOG_INFO("DXGI Factory created");
-
-    unsigned int adapter_index = 0;
-    IDXGIAdapter1* adapter = nullptr;
-    while (this->m_dxgi_factory->EnumAdapters1(adapter_index++, &adapter) == S_OK) {
-        IDXGIAdapter4* interface_adapter = nullptr;
-        WIN_CALL(adapter->QueryInterface(IID_PPV_ARGS(&interface_adapter)),
-            "Failed to move factory interface from version 1 to version 4");
-
-        DXGI_ADAPTER_DESC3 adapter_desc;
-        interface_adapter->GetDesc3(&adapter_desc);
-        std::wcout << adapter_index - 1 << ":" << adapter_desc.Description << std::endl;
-
-        interface_adapter->Release();
-    }
 
     ComPtr<ID3D12Device14> device;
     WIN_CALL(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&device)), "Failed to create D3D12 device");
