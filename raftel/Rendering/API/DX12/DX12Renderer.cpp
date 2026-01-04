@@ -1,4 +1,5 @@
 #include "DX12Renderer.h"
+#include "Windowing/Window.h"
 
 #include <combaseapi.h>
 #include <dxgi1_6.h>
@@ -42,7 +43,7 @@ std::vector<AdapterInfo> DX12Renderer::GetDeviceList()
     return adaptors;
 }
 
-DX12Renderer::DX12Renderer(HWND window_handle)
+DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
 {
     WIN_CALL(D3D12GetDebugInterface(IID_PPV_ARGS(&this->m_debug_controller)),
         "Failed to load D3D12 Debug Controller");
@@ -54,18 +55,16 @@ DX12Renderer::DX12Renderer(HWND window_handle)
         "Failed to create DXGI Factory");
     LOG_INFO("DXGI Factory created");
 
-    ComPtr<ID3D12Device14> device;
-    WIN_CALL(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&device)), "Failed to create D3D12 device");
+    WIN_CALL(D3D12CreateDevice(gpuAdapter, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&this->m_device)), "Failed to create D3D12 device");
     LOG_SUCCESS("Created D3D12 Device");
 
-    ComPtr<ID3D12CommandQueue> command_queue;
     const D3D12_COMMAND_QUEUE_DESC queue_desc = {
         .Type = D3D12_COMMAND_LIST_TYPE_DIRECT,
         .Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
         .Flags = D3D12_COMMAND_QUEUE_FLAG_NONE,
         .NodeMask = 0,
     };
-    WIN_CALL(device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&command_queue)), "Failed to fetch D3D12 Graphics Queue");
+    WIN_CALL(m_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&this->m_graphics_command_queue)), "Failed to fetch D3D12 Graphics Queue");
     LOG_SUCCESS("Obtained D3D12 Graphics Queue");
 
     const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
@@ -84,8 +83,13 @@ DX12Renderer::DX12Renderer(HWND window_handle)
         .AlphaMode = DXGI_ALPHA_MODE_IGNORE,
         .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
     };
-    ComPtr<IDXGISwapChain1> swapchain = nullptr;
-    WIN_CALL(this->m_dxgi_factory->CreateSwapChainForHwnd(command_queue.Get(), window_handle, &swapchain_desc, nullptr, nullptr, swapchain.GetAddressOf()), "Failed to create D3D12 rendering swapchain");
+    ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;
+    WIN_CALL(this->m_dxgi_factory->CreateSwapChainForHwnd(
+                 this->m_graphics_command_queue.Get(),
+                 WindowingSystem::get_instance().get_native_window_handle(window),
+                 &swapchain_desc, nullptr, nullptr, intermediate_swapchain.GetAddressOf()),
+        "Failed to create D3D12 rendering swapchain");
+    WIN_CALL(intermediate_swapchain->QueryInterface(IID_PPV_ARGS(&this->m_swapchain)), "Failed to upcast to swapchain version 4");
     LOG_SUCCESS("D3D12 Swapchain Created")
 }
 

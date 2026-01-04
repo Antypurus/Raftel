@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Windowing/Window.h"
 #include <Rendering/API/DX12/DX12.h>
 #include <vector>
 
@@ -22,11 +23,14 @@ struct AdapterInfo {
 
 struct DX12Renderer {
 private:
-    ComPtr<ID3D12Debug6> m_debug_controller;
     ComPtr<IDXGIFactory7> m_dxgi_factory;
+    ComPtr<ID3D12Debug6> m_debug_controller;
+    ComPtr<ID3D12Device14> m_device;
+    ComPtr<IDXGISwapChain4> m_swapchain;
+    ComPtr<ID3D12CommandQueue> m_graphics_command_queue;
 
 public:
-    DX12Renderer(HWND window_handle);
+    DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter = nullptr);
 
     static std::vector<AdapterInfo> GetDeviceList();
 };
