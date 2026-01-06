@@ -1,8 +1,6 @@
 #include "DX12Renderer.h"
 #include "Windowing/Window.h"
 
-#include <combaseapi.h>
-#include <dxgi1_6.h>
 #include <iostream>
 #include <logger.h>
 
@@ -90,7 +88,21 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
                  &swapchain_desc, nullptr, nullptr, intermediate_swapchain.GetAddressOf()),
         "Failed to create D3D12 rendering swapchain");
     WIN_CALL(intermediate_swapchain->QueryInterface(IID_PPV_ARGS(&this->m_swapchain)), "Failed to upcast to swapchain version 4");
-    LOG_SUCCESS("D3D12 Swapchain Created")
+    LOG_SUCCESS("D3D12 Swapchain Created");
+
+    ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
+    const D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {
+        .Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
+        .NumDescriptors = 99,
+        .Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
+        .NodeMask = 0,
+    };
+    WIN_CALL(m_device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap)), "Failed to create RTV Heap");
+    LOG_SUCCESS("Global D3D12 Descriptor Heaps Created");
+
+    unsigned int rtvDescriptorHandleSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    unsigned int uavDescriptorHandleSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    unsigned int dsvDescriptorHandleSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
 }
