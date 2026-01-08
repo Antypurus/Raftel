@@ -22,18 +22,20 @@ include_directories("${GLFW_SOURCE_DIR}/deps")
 add_subdirectory(ThirdParty/GLFW)
 add_subdirectory(ThirdParty/GLM)
 
+find_package(Vulkan REQUIRED)
+
 #find sources
 file(GLOB_RECURSE SOURCES
         raftel/*.cpp
         raftel/*.h
 )
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ThirdParty)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         ThirdParty
         raftel
+        ${Vulkan_INCLUDE_DIRS}
 )
-target_link_libraries(${CMAKE_PROJECT_NAME} ${OPENGL_LIBRARIES} glfw glm)
+target_link_libraries(${CMAKE_PROJECT_NAME} glfw glm Vulkan::Vulkan)
 if(WIN32)
     target_link_libraries(${CMAKE_PROJECT_NAME} dxgi dxguid d3d12)
 endif()

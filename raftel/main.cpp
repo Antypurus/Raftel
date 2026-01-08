@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include "Rendering/API/DX12/DX12Renderer.h"
+#include "Rendering/API/Vulkan/vulkan.h"
 #include "Windowing/Window.h"
 #include "logger.h"
 
@@ -13,6 +14,8 @@ int main()
     auto& logger = logger::create_logger();
     WindowingSystem& windowing_system = WindowingSystem::get_instance();
     WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
+
+    init_vulkan();
 
 #ifdef _WIN32
     dx12::DX12Renderer renderer(first_window);
