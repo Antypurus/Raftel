@@ -4,13 +4,15 @@
 #include <string_view>
 #include <vector>
 
+#include "GLFW/glfw3.h"
 #if defined(_WIN32)
     #define GLFW_EXPOSE_NATIVE_WIN32
     #define WINDOW_HANDLE_NATIVE_TYPE HWND
 #elif defined(__APPLE__)
     #define GLFW_EXPOSE_NATIVE_COCOA
     #include "GLFW/glfw3native.h"
-    #define WINDOW_HANDLE_NATIVE_TYPE NSWindow*
+    // #define WINDOW_HANDLE_NATIVE_TYPE NSWindow*
+    #define WINDOW_HANDLE_NATIVE_TYPE void*
 #elif defined(__linux__)
     #define GLFW_EXPOSE_NATIVE_X11
     #define GLFW_EXPOSE_NATIVE_WAYLAND
@@ -19,8 +21,6 @@
     #define WINDOW_HANDLE_NATIVE_TYPE void*
 #endif
 #define GLFW_INCLUDE_NONE
-#include "GLFW/glfw3.h"
-#include "GLFW/glfw3native.h"
 using WindowHandleNativeType = WINDOW_HANDLE_NATIVE_TYPE;
 
 namespace raftel {

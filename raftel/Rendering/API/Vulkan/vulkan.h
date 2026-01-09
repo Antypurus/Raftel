@@ -14,7 +14,7 @@ void init_vulkan()
         .pApplicationName = "Raftel",
         .applicationVersion = 1,
         .engineVersion = 1,
-        .apiVersion = VK_API_VERSION_1_4,
+        .apiVersion = VK_API_VERSION_1_3,
     };
     const VkInstanceCreateInfo instance_desc = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
