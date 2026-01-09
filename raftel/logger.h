@@ -57,7 +57,7 @@ const char* extract_filename(const char* filepath);
 #if LOGGING_ENABLE
     #define LOG_SUCCESS(Message, ...) LOG(logger::log_level::success, Message, "SUCCESS", __VA_ARGS__)
     #define LOG_WARNING(Message, ...) LOG(logger::log_level::warning, Message, "WARNING", __VA_ARGS__)
-    #define LOG_ERROR(Message, ...) LOG(logger::log_level::error, Message, "ERROR" __VA_ARGS__)
+    #define LOG_ERROR(Message, ...) LOG(logger::log_level::error, Message, "ERROR", __VA_ARGS__)
     #define LOG_INFO(Message, ...) LOG(logger::log_level::info, Message, "INFO", __VA_ARGS__)
 #else
     #define LOG_SUCCESS(Message, ...)
