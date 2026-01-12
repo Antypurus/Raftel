@@ -1,6 +1,8 @@
 #include "DX12Renderer.h"
 #include "Windowing/Window.h"
 
+#include <combaseapi.h>
+#include <d3d12.h>
 #include <iostream>
 #include <logger.h>
 
@@ -90,19 +92,26 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
     WIN_CALL(intermediate_swapchain->QueryInterface(IID_PPV_ARGS(&this->m_swapchain)), "Failed to upcast to swapchain version 4");
     LOG_SUCCESS("D3D12 Swapchain Created");
 
-    ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
-    const D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {
+    ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap = nullptr;
+    ComPtr<ID3D12DescriptorHeap> srv_descriptor_heap = nullptr;
+    ComPtr<ID3D12DescriptorHeap> dsv_descriptor_heap = nullptr;
+    D3D12_DESCRIPTOR_HEAP_DESC heap_desc = {
         .Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
         .NumDescriptors = 99,
         .Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
         .NodeMask = 0,
     };
-    WIN_CALL(m_device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap)), "Failed to create RTV Heap");
+    WIN_CALL(m_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&rtv_descriptor_heap)), "Failed to create RTV Heap");
+    heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    WIN_CALL(m_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&dsv_descriptor_heap)), "Failed to create DSV Heap");
+    heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    WIN_CALL(m_device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&srv_descriptor_heap)), "Failed to create SRV/CBV/UAV Heap");
     LOG_SUCCESS("Global D3D12 Descriptor Heaps Created");
 
-    unsigned int rtvDescriptorHandleSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    unsigned int uavDescriptorHandleSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    unsigned int dsvDescriptorHandleSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+    unsigned int rtv_descriptor_handle_size = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    unsigned int srv_descriptor_handle_size = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    unsigned int dsv_descriptor_handle_size = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
 }
