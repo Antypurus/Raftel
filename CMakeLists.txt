@@ -39,4 +39,16 @@ target_link_libraries(${CMAKE_PROJECT_NAME} glfw glm Vulkan::Vulkan)
 if(WIN32)
     target_link_libraries(${CMAKE_PROJECT_NAME} dxgi dxguid d3d12)
 endif()
+if(APPLE)
+    # set_source_files_properties(${RAFTEL_OBJC_SOURCES} PROPERTIES COMPILE_FLAGS "-x objective-c++")
+    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+        ${COCOA_FRAMEWORK}
+        ${METAL_FRAMEWORK}
+        ${QUARTZCORE_FRAMEWORK}
+    )
+    set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE FALSE
+        XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC NO
+    )
+endif()
 

@@ -1,6 +1,9 @@
 #include <cassert>
 
-#include "Rendering/API/DX12/DX12Renderer.h"
+#ifdef _WIN32
+    #include "Rendering/API/DX12/DX12Renderer.h"
+#endif
+
 #include "Rendering/API/Vulkan/vulkan.h"
 #include "Windowing/Window.h"
 #include "logger.h"

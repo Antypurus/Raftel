@@ -9,8 +9,8 @@
     #define WINDOW_HANDLE_NATIVE_TYPE HWND
 #elif defined(__APPLE__)
     #define GLFW_EXPOSE_NATIVE_COCOA
-    #include "GLFW/glfw3native.h"
-    #define WINDOW_HANDLE_NATIVE_TYPE NSWindow*
+    // #define WINDOW_HANDLE_NATIVE_TYPE NSWindow*
+    #define WINDOW_HANDLE_NATIVE_TYPE void*
 #elif defined(__linux__)
     #define GLFW_EXPOSE_NATIVE_X11
     #define GLFW_EXPOSE_NATIVE_WAYLAND
@@ -18,6 +18,7 @@
 #else
     #define WINDOW_HANDLE_NATIVE_TYPE void*
 #endif
+
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 #include "GLFW/glfw3native.h"

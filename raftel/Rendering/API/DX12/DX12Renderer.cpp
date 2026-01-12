@@ -1,8 +1,8 @@
+#ifdef _WIN32
+
 #include "DX12Renderer.h"
 #include "Windowing/Window.h"
 
-#include <combaseapi.h>
-#include <d3d12.h>
 #include <iostream>
 #include <logger.h>
 
@@ -13,11 +13,11 @@ std::vector<AdapterInfo> DX12Renderer::GetDeviceList()
     std::vector<AdapterInfo> adaptors;
 
     ComPtr<IDXGIFactory7> factory = nullptr;
-#ifndef NDEBUG
+    #ifndef NDEBUG
     unsigned int flags = DXGI_CREATE_FACTORY_DEBUG;
-#else
+    #else
     unsigned int flags = 0;
-#endif
+    #endif
     WIN_CALL(CreateDXGIFactory2(flags, IID_PPV_ARGS(&factory)), "Failed to create temporary factory for device listing");
 
     unsigned int adapter_index = 0;
@@ -115,3 +115,5 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
 }
 
 }
+
+#endif
