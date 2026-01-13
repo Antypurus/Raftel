@@ -3,6 +3,9 @@
 #ifdef _WIN32
     #include "Rendering/API/DX12/DX12Renderer.h"
 #endif
+#ifdef __APPLE__
+    #include "Rendering/API/Metal/Metal.h"
+#endif
 
 #include "Rendering/API/Vulkan/vulkan.h"
 #include "Windowing/Window.h"
@@ -19,6 +22,10 @@ int main()
     WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
 
     init_vulkan();
+
+#ifdef __APPLE__
+    init_metal();
+#endif
 
 #ifdef _WIN32
     dx12::DX12Renderer renderer(first_window);

@@ -23,24 +23,33 @@ add_subdirectory(ThirdParty/GLFW)
 add_subdirectory(ThirdParty/GLM)
 
 find_package(Vulkan REQUIRED)
+if(APPLE)
+    find_library(COCOA_FRAMEWORK Cocoa)
+    find_library(METAL_FRAMEWORK Metal)
+    find_library(QUARTZCORE_FRAMEWORK QuartzCore)
+endif()
 
+#obj-c sources
+file(GLOB_RECURSE OBJC_SOURCES
+    raftel/*.mm
+)
 #find sources
 file(GLOB_RECURSE SOURCES
         raftel/*.cpp
         raftel/*.h
 )
-add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
+add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${OBJC_SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         ThirdParty
         raftel
         ${Vulkan_INCLUDE_DIRS}
 )
-target_link_libraries(${CMAKE_PROJECT_NAME} glfw glm Vulkan::Vulkan)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw glm Vulkan::Vulkan)
 if(WIN32)
     target_link_libraries(${CMAKE_PROJECT_NAME} dxgi dxguid d3d12)
 endif()
 if(APPLE)
-    # set_source_files_properties(${RAFTEL_OBJC_SOURCES} PROPERTIES COMPILE_FLAGS "-x objective-c++")
+    set_source_files_properties(${OBJC_SOURCES} PROPERTIES COMPILE_FLAGS "-x objective-c++")
     target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
         ${COCOA_FRAMEWORK}
         ${METAL_FRAMEWORK}
