@@ -1,6 +1,7 @@
 #include "logger.h"
 
 #include <iostream>
+#include <string.h>
 
 namespace raftel {
 
