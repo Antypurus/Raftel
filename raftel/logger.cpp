@@ -1,5 +1,7 @@
 #include "logger.h"
 
+#include <chrono>
+#include <ctime>
 #include <iostream>
 #include <string.h>
 
@@ -72,6 +74,12 @@ const char* extract_filename(const char* filepath)
         }
     }
     return nullptr;
+}
+
+std::string getTimeString()
+{
+    std::chrono::time_point now = std::chrono::system_clock::now();
+    return std::format("{:%F %T}", now);
 }
 
 }

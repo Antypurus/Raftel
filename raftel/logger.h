@@ -42,13 +42,14 @@ void logger::log(log_level level, std::string_view message, ArgT&&... params)
 }
 
 const char* extract_filename(const char* filepath);
+std::string getTimeString();
 
 }
 
 #define LOG(level, Message, level_str, ...)                                                                              \
     {                                                                                                                    \
         auto& logger = logger::get_logger();                                                                             \
-        auto time = std::time(nullptr);                                                                                  \
+        auto time = getTimeString();                                                                                     \
         auto file = raftel::extract_filename(__FILE__);                                                                  \
         logger.log(level, "[{}][{}]{}@{} -> " Message "\n", time, level_str, file, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
     }
