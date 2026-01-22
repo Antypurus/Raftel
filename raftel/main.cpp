@@ -11,8 +11,6 @@
 #include "Windowing/Window.h"
 #include "logger.h"
 
-#include <iostream>
-
 using namespace raftel;
 
 int main()
