@@ -45,11 +45,7 @@ void init_vulkan()
         .enabledExtensionCount = (std::uint32_t)instance_extensions.size(),
         .ppEnabledExtensionNames = instance_extensions.data(),
     };
-    VkResult result = vkCreateInstance(&instance_desc, nullptr, &instance);
-    if (result != VK_SUCCESS) {
-        LOG_ERROR("Failed to create Vulkan Instance, error code = {}", (std::uint32_t)result);
-        exit(-1);
-    }
+    VK_CALL(vkCreateInstance(&instance_desc, nullptr, &instance), "Failed to create vulkan instance");
     LOG_SUCCESS("Vulkan Instance created");
 }
 
