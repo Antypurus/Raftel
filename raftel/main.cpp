@@ -1,6 +1,7 @@
 #include <cassert>
 
 #ifdef _WIN32
+    #include "Rendering/API/DX11/DX11.h"
     #include "Rendering/API/DX12/DX12Renderer.h"
 #endif
 #ifdef __APPLE__
@@ -19,14 +20,15 @@ int main()
     WindowingSystem& windowing_system = WindowingSystem::get_instance();
     WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
 
-    init_vulkan();
+    // init_vulkan();
 
 #ifdef __APPLE__
     init_metal();
 #endif
 
 #ifdef _WIN32
-    dx12::DX12Renderer renderer(first_window);
+    dx11::init_d3d11();
+    // dx12::DX12Renderer renderer(first_window);
 #endif
 
 #if 0

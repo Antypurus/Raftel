@@ -46,13 +46,23 @@ std::string getTimeString();
 
 }
 
-#define LOG(level, Message, level_str, ...)                                                                              \
-    {                                                                                                                    \
-        auto& logger = logger::get_logger();                                                                             \
-        auto time = getTimeString();                                                                                     \
-        auto file = raftel::extract_filename(__FILE__);                                                                  \
-        logger.log(level, "[{}][{}]{}@{} -> " Message "\n", time, level_str, file, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
-    }
+#ifdef _WIN32
+    #define LOG(level, Message, level_str, ...)                                                                \
+        {                                                                                                      \
+            auto& logger = logger::get_logger();                                                               \
+            auto time = getTimeString();                                                                       \
+            auto file = raftel::extract_filename(__FILE__);                                                    \
+            logger.log(level, "[{}][{}]{}@{} -> " Message "\n", time, level_str, file, __LINE__, __VA_ARGS__); \
+        }
+#else
+    #define LOG(level, Message, level_str, ...)                                                                              \
+        {                                                                                                                    \
+            auto& logger = logger::get_logger();                                                                             \
+            auto time = getTimeString();                                                                                     \
+            auto file = raftel::extract_filename(__FILE__);                                                                  \
+            logger.log(level, "[{}][{}]{}@{} -> " Message "\n", time, level_str, file, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
+        }
+#endif
 
 #define LOGGING_ENABLE 1
 #if LOGGING_ENABLE

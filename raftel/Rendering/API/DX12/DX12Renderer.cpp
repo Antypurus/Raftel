@@ -1,14 +1,13 @@
-#ifdef _WIN32
-
 #include "DX12Renderer.h"
-#include "Windowing/Window.h"
 
+#include "Windowing/Window.h"
 #include <iostream>
 #include <logger.h>
 
+#ifdef _WIN32
 namespace raftel::dx12 {
 
-std::vector<AdapterInfo> DX12Renderer::GetDeviceList()
+std::vector<AdapterInfo> GetDeviceList()
 {
     std::vector<AdapterInfo> adaptors;
 

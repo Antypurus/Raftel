@@ -46,7 +46,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw glm Vulkan::Vulkan)
 if(WIN32)
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE dxgi dxguid d3d12)
+    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE dxgi dxguid d3d12 d3d11)
 endif()
 if(APPLE)
     set_source_files_properties(${OBJC_SOURCES} PROPERTIES COMPILE_FLAGS "-x objective-c++")

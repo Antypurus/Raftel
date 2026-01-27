@@ -20,6 +20,7 @@ struct AdapterInfo {
     std::wstring name;
     std::uint64_t dedicated_memory_bytes = 0;
 };
+std::vector<AdapterInfo> GetDeviceList();
 
 struct DX12Renderer {
 private:
@@ -31,8 +32,6 @@ private:
 
 public:
     DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter = nullptr);
-
-    static std::vector<AdapterInfo> GetDeviceList();
 };
 
 }
