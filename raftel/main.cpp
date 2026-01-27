@@ -29,7 +29,7 @@ int main()
     dx12::DX12Renderer renderer(first_window);
 #endif
 
-#ifndef __linux
+#if 0
     while (windowing_system.has_open_windows()) {
         windowing_system.update();
         auto handles = windowing_system.get_active_window_list();
