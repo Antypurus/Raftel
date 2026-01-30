@@ -1,6 +1,7 @@
 #include "DX11.h"
 
 #include "Rendering/API/DX12/DX12Renderer.h"
+#include "logger.h"
 
 #include <assert.h>
 #include <cstdint>
@@ -53,11 +54,12 @@ ID3D11Device5* GPUDevice::operator->()
     return this->m_device.Get();
 }
 
-void GPUDevice::DumpErrorMessages() const
+std::vector<std::string> GPUDevice::GetErrorMessages() const
 {
+    std::vector<std::string> error_messages;
+
     ComPtr<ID3D11InfoQueue> info_queue = nullptr;
     WIN_CALL(this->m_device->QueryInterface(IID_PPV_ARGS(&info_queue)), "Failed to obtain D3D11 Info-Queue");
-
     const std::uint64_t message_count = info_queue->GetNumStoredMessages();
     for (size_t i = 0; i < message_count; ++i) {
         size_t message_length = 0;
@@ -66,17 +68,26 @@ void GPUDevice::DumpErrorMessages() const
         D3D11_MESSAGE* message = (D3D11_MESSAGE*)malloc(message_length);
         WIN_CALL(info_queue->GetMessage(i, message, &message_length), "Failed to get error message");
 
-        LOG_ERROR("{}", message->pDescription);
+        error_messages.emplace_back(message->pDescription, message->DescriptionByteLength);
+        free(message);
     }
     info_queue->ClearStoredMessages();
+    return error_messages;
+}
+
+void GPUDevice::DumpErrorMessages() const
+{
+    std::vector<std::string> error_messages = this->GetErrorMessages();
+    for (const auto& message : error_messages) {
+        LOG_ERROR("{}", message);
+    }
 }
 
 void init_d3d11()
 {
     auto device = GPUDevice::CreateDevice();
 
-    device->CreateBuffer(nullptr, nullptr, nullptr);
-    device.DumpErrorMessages();
+    DX11_CALL(device->CreateBuffer(nullptr, nullptr, nullptr), device, "Failed to create buffer");
 }
 
 }

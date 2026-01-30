@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include <d3d11_4.h>
 #include <wrl.h>
 
@@ -20,8 +23,26 @@ public:
     ID3D11Device5* operator->();
 
     void DumpErrorMessages() const;
+    std::vector<std::string> GetErrorMessages() const;
 };
 
 void init_d3d11();
 
 }
+
+#define DX11_CALL(function_call, device, error_message, ...)                                                    \
+    {                                                                                                           \
+        HRESULT result##__LINE__ = function_call;                                                               \
+        if (result##__LINE__ != S_OK && result##__LINE__ != S_FALSE) {                                          \
+            auto error_message_##__LINE__ = raftel::TranslateWindowErrorCode(result##__LINE__);                 \
+            LOG_ERROR(error_message, __VA_ARGS__);                                                              \
+            LOG_ERROR("{}", std::string_view(error_message_##__LINE__.first, error_message_##__LINE__.second)); \
+            LocalFree((LPSTR)error_message_##__LINE__.first);                                                   \
+            auto d3d_error_messages = device.GetErrorMessages();                                                \
+            for (const auto& message : d3d_error_messages) {                                                    \
+                LOG_ERROR("{}", message);                                                                       \
+            }                                                                                                   \
+            __debugbreak();                                                                                     \
+            exit(-1);                                                                                           \
+        }                                                                                                       \
+    }
