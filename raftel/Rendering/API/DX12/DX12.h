@@ -27,7 +27,7 @@ static std::pair<const char*, size_t> TranslateWindowErrorCode(HRESULT code)
 #define WIN_CALL(function_call, error_message, ...)                                                             \
     {                                                                                                           \
         HRESULT result##__LINE__ = function_call;                                                               \
-        if (result##__LINE__ != S_OK) {                                                                         \
+        if (result##__LINE__ != S_OK && result##__LINE__ != S_FALSE) {                                                                         \
             auto error_message_##__LINE__ = raftel::TranslateWindowErrorCode(result##__LINE__);                 \
             LOG_ERROR("{}", std::string_view(error_message_##__LINE__.first, error_message_##__LINE__.second)); \
             LocalFree((LPSTR)error_message_##__LINE__.first);                                                   \
