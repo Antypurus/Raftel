@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Windowing/Window.h"
-#include <Rendering/API/DX12/DX12.h>
+#include <Rendering/API/DirectX/DX12/DX12.h>
+#include <Windowing/Window.h>
 #include <vector>
 
 namespace raftel::dx12 {

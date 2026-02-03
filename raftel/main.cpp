@@ -1,8 +1,8 @@
 #include <cassert>
 
 #ifdef _WIN32
-    #include "Rendering/API/DX11/DX11.h"
-    #include "Rendering/API/DX12/DX12Renderer.h"
+    #include "Rendering/API/DirectX/DX11/DX11.h"
+    #include "Rendering/API/DirectX/DX12/DX12Renderer.h"
 #endif
 #ifdef __APPLE__
     #include "Rendering/API/Metal/Metal.h"
@@ -27,7 +27,7 @@ int main()
 #endif
 
 #ifdef _WIN32
-    dx11::init_d3d11();
+    dx11::init_d3d11(first_window);
     // dx12::DX12Renderer renderer(first_window);
 #endif
 

@@ -1,6 +1,8 @@
 #include "DX12Renderer.h"
 
-#include "Windowing/Window.h"
+#include <Rendering/API/DirectX/DXGI/dxgi.h>
+#include <Windowing/Window.h>
+
 #include <iostream>
 #include <logger.h>
 
@@ -11,13 +13,7 @@ std::vector<AdapterInfo> GetDeviceList()
 {
     std::vector<AdapterInfo> adaptors;
 
-    ComPtr<IDXGIFactory7> factory = nullptr;
-    #ifndef NDEBUG
-    unsigned int flags = DXGI_CREATE_FACTORY_DEBUG;
-    #else
-    unsigned int flags = 0;
-    #endif
-    WIN_CALL(CreateDXGIFactory2(flags, IID_PPV_ARGS(&factory)), "Failed to create temporary factory for device listing");
+    ComPtr<IDXGIFactory7> factory = dxgi::GetDXGIFactory();
 
     unsigned int adapter_index = 0;
     IDXGIAdapter1* adapter = nullptr;
@@ -50,9 +46,7 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
     m_debug_controller->SetEnableGPUBasedValidation(TRUE);
     LOG_INFO("D3D12 Debug Controller Loaded & Activated");
 
-    WIN_CALL(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&this->m_dxgi_factory)),
-        "Failed to create DXGI Factory");
-    LOG_INFO("DXGI Factory created");
+    this->m_dxgi_factory = dxgi::GetDXGIFactory();
 
     WIN_CALL(D3D12CreateDevice(gpuAdapter, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&this->m_device)), "Failed to create D3D12 device");
     LOG_SUCCESS("Created D3D12 Device");

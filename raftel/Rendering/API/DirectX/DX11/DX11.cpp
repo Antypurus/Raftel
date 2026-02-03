@@ -1,7 +1,11 @@
 #include "DX11.h"
+#include "Rendering/API/DirectX/DXGI/dxgi.h"
 
-#include "Rendering/API/DX12/DX12Renderer.h"
-#include "logger.h"
+#include <Rendering/API/DirectX/DX12/DX12Renderer.h>
+#include <Windowing/Window.h>
+#include <dxgi1_2.h>
+#include <dxgi1_5.h>
+#include <logger.h>
 
 #include <assert.h>
 #include <cstdint>
@@ -54,6 +58,11 @@ ID3D11Device5* GPUDevice::operator->()
     return this->m_device.Get();
 }
 
+ID3D11Device5* GPUDevice::get()
+{
+    return this->m_device.Get();
+}
+
 std::vector<std::string> GPUDevice::GetErrorMessages() const
 {
     std::vector<std::string> error_messages;
@@ -83,9 +92,30 @@ void GPUDevice::DumpErrorMessages() const
     }
 }
 
-void init_d3d11()
+ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window)
+{
+    ComPtr<IDXGISwapChain4> swapchain = nullptr;
+    auto factory = dxgi::GetDXGIFactory();
+
+    ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;
+    const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {};
+    const DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullscreen_desc = {};
+    DX11_CALL(factory->CreateSwapChainForHwnd(
+                  this->get(),
+                  WindowingSystem::get_instance().get_native_window_handle(window),
+                  &swapchain_desc,
+                  &fullscreen_desc,
+                  nullptr,
+                  intermediate_swapchain.GetAddressOf()),
+        *this, "Failed to create swapchain");
+
+    return swapchain;
+}
+
+void init_d3d11(WindowHandle window)
 {
     auto device = GPUDevice::CreateDevice();
+    auto swapchain = device.CreateSwapchain(window);
 
     DX11_CALL(device->CreateBuffer(nullptr, nullptr, nullptr), device, "Failed to create buffer");
 }
