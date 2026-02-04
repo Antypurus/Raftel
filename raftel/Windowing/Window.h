@@ -27,8 +27,8 @@ using WindowHandleNativeType = WINDOW_HANDLE_NATIVE_TYPE;
 namespace raftel {
 
 struct Resolution {
-    size_t width;
-    size_t height;
+    std::uint32_t width;
+    std::uint32_t height;
 };
 
 struct WindowHandle {
@@ -41,9 +41,11 @@ private:
     static WindowingSystem s_instance;
 
 private:
-    mutable GLFWwindow* gl_dummy_window = nullptr;
+    // handle management
     std::vector<GLFWwindow*> m_windows;
     std::vector<size_t> m_handle_generations;
+
+    // window metadata
     std::vector<Resolution> m_window_resolutions;
     std::vector<bool> m_window_is_open;
     std::vector<std::vector<std::function<void(size_t, size_t)>>> m_resize_callbacks;
@@ -51,13 +53,14 @@ private:
 public:
     static WindowingSystem& get_instance();
     void update();
-    WindowHandle create_window(std::string_view name, size_t width, size_t height);
+    WindowHandle create_window(std::string_view name, std::uint32_t width, std::uint32_t height);
     std::vector<WindowHandle> get_active_window_list();
     bool has_open_windows() const;
     bool is_window_open(WindowHandle handle) const;
     bool is_window_focused(WindowHandle handle) const;
-    void register_window_resize_callback(WindowHandle handle, std::function<void(size_t, size_t)> callback);
+    void register_window_resize_callback(WindowHandle handle, std::function<void(std::uint32_t, std::uint32_t)> callback);
     WindowHandleNativeType get_native_window_handle(WindowHandle handle) const;
+    Resolution get_window_resolution(WindowHandle handle) const;
 
 private:
     WindowingSystem();

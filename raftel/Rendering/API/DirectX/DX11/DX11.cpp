@@ -5,6 +5,7 @@
 #include <Windowing/Window.h>
 #include <dxgi1_2.h>
 #include <dxgi1_5.h>
+#include <dxgiformat.h>
 #include <logger.h>
 
 #include <assert.h>
@@ -92,13 +93,24 @@ void GPUDevice::DumpErrorMessages() const
     }
 }
 
+// TODO(Tiago):move this method into the factory "class", we can supply it with either a dx11 or dx12 device
+// so it does not make sense to bind it to any of those devices
 ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window)
 {
+    WindowingSystem& window_system = WindowingSystem::get_instance();
+    HWND window_handle = window_system.get_native_window_handle(window);
+    Resolution window_resolution = window_system.get_window_resolution(window);
+
     ComPtr<IDXGISwapChain4> swapchain = nullptr;
     auto factory = dxgi::GetDXGIFactory();
 
     ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;
-    const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {};
+    const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
+        .Width = window_resolution.width,
+        .Height = window_resolution.height,
+        .Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+        .Stereo = false,
+    };
     const DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullscreen_desc = {};
     DXGI_CALL(factory->CreateSwapChainForHwnd(
                   this->get(),
@@ -123,6 +135,5 @@ void init_d3d11(WindowHandle window)
 
     DX11_CALL(device->CreateBuffer(nullptr, nullptr, nullptr), device, "Failed to create buffer");
 }
-
 }
 #endif

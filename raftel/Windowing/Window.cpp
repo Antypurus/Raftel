@@ -26,9 +26,6 @@ WindowingSystem::~WindowingSystem()
             continue;
         glfwDestroyWindow(window);
     }
-    if (this->gl_dummy_window != nullptr) {
-        glfwDestroyWindow(this->gl_dummy_window);
-    }
     glfwTerminate();
 }
 
@@ -45,8 +42,8 @@ void WindowingSystem::global_window_resize_callback(GLFWwindow* window_handle, i
             continue;
 
         this->m_window_resolutions[i] = Resolution {
-            .width = (size_t)new_width,
-            .height = (size_t)new_height,
+            .width = (std::uint32_t)new_width,
+            .height = (std::uint32_t)new_height,
         };
 
         for (auto& callback : this->m_resize_callbacks[i]) {
@@ -97,7 +94,7 @@ void WindowingSystem::update()
     }
 }
 
-WindowHandle WindowingSystem::create_window(std::string_view name, size_t width, size_t height)
+WindowHandle WindowingSystem::create_window(std::string_view name, std::uint32_t width, std::uint32_t height)
 {
     GLFWwindow* window_handle = glfwCreateWindow(width, height, name.data(), nullptr, nullptr);
     if (window_handle == nullptr) {
@@ -136,6 +133,12 @@ std::vector<WindowHandle> WindowingSystem::get_active_window_list()
     return result;
 }
 
+Resolution WindowingSystem::get_window_resolution(WindowHandle handle) const
+{
+    assert(handle.handle < this->m_windows.size() && handle.generation == this->m_handle_generations[handle.handle]);
+    return this->m_window_resolutions[handle.handle];
+}
+
 bool WindowingSystem::is_window_open(WindowHandle window_handle) const
 {
     assert(window_handle.generation == this->m_handle_generations[window_handle.handle]);
@@ -147,7 +150,7 @@ bool WindowingSystem::is_window_focused(WindowHandle window_handle) const
     return glfwGetWindowAttrib(this->m_windows[window_handle.handle], GLFW_FOCUSED) == GLFW_TRUE;
 }
 
-void WindowingSystem::register_window_resize_callback(WindowHandle handle, std::function<void(size_t, size_t)> callback)
+void WindowingSystem::register_window_resize_callback(WindowHandle handle, std::function<void(std::uint32_t, std::uint32_t)> callback)
 {
     this->m_resize_callbacks[handle.handle].emplace_back(std::move(callback));
 }
