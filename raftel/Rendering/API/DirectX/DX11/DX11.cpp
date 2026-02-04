@@ -3,9 +3,12 @@
 
 #include <Rendering/API/DirectX/DX12/DX12Renderer.h>
 #include <Windowing/Window.h>
+#include <combaseapi.h>
+#include <dxgi.h>
 #include <dxgi1_2.h>
 #include <dxgi1_5.h>
 #include <dxgiformat.h>
+#include <dxgitype.h>
 #include <logger.h>
 
 #include <assert.h>
@@ -95,7 +98,7 @@ void GPUDevice::DumpErrorMessages() const
 
 // TODO(Tiago):move this method into the factory "class", we can supply it with either a dx11 or dx12 device
 // so it does not make sense to bind it to any of those devices
-ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window)
+ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
 {
     WindowingSystem& window_system = WindowingSystem::get_instance();
     HWND window_handle = window_system.get_native_window_handle(window);
@@ -108,10 +111,28 @@ ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window)
     const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
         .Width = window_resolution.width,
         .Height = window_resolution.height,
-        .Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+        .Format = (DXGI_FORMAT)format,
         .Stereo = false,
+        .SampleDesc = {
+            .Count = 1,
+            .Quality = 0,
+        },
+        .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
+        .BufferCount = 2,
+        .Scaling = DXGI_SCALING_STRETCH,
+        .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
+        .AlphaMode = DXGI_ALPHA_MODE_IGNORE,
+        .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
     };
-    const DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullscreen_desc = {};
+    const DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullscreen_desc = {
+        .RefreshRate = {
+            .Numerator = 144,
+            .Denominator = 1,
+        },
+        .ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
+        .Scaling = DXGI_MODE_SCALING_STRETCHED,
+        .Windowed = true,
+    };
     DXGI_CALL(factory->CreateSwapChainForHwnd(
                   this->get(),
                   WindowingSystem::get_instance().get_native_window_handle(window),
@@ -121,6 +142,7 @@ ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window)
                   intermediate_swapchain.GetAddressOf()),
         "Failed to create swapchain");
 
+    WIN_CALL(intermediate_swapchain->QueryInterface(IID_PPV_ARGS(&swapchain)), "Failed to upcast DXGI Swapchain to version 4");
     return swapchain;
 }
 
@@ -133,7 +155,7 @@ void init_d3d11(WindowHandle window)
 
     auto swapchain = device.CreateSwapchain(window);
 
-    DX11_CALL(device->CreateBuffer(nullptr, nullptr, nullptr), device, "Failed to create buffer");
+    // DX11_CALL(device->CreateBuffer(nullptr, nullptr, nullptr), device, "Failed to create buffer");
 }
 }
 #endif

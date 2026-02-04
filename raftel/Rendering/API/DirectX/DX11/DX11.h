@@ -25,7 +25,7 @@ public:
     ID3D11Device5* get();
     ID3D11Device5* operator->();
 
-    ComPtr<IDXGISwapChain4> CreateSwapchain(WindowHandle handle);
+    ComPtr<IDXGISwapChain4> CreateSwapchain(WindowHandle handle, dxgi::ResourceFormat format = dxgi::ResourceFormat::BGRA8Unorm);
 
     void DumpErrorMessages() const;
     std::vector<std::string> GetErrorMessages() const;

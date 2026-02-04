@@ -3,6 +3,7 @@
 #include <logger.h>
 
 #include <dxgi1_6.h>
+#include <dxgiformat.h>
 #include <string>
 #include <vector>
 #include <wrl.h>
@@ -11,7 +12,22 @@ namespace raftel::dxgi {
 
 using namespace Microsoft::WRL;
 
-ComPtr<IDXGIFactory7> GetDXGIFactory();
+enum class ResourceFormat {
+    // RGBA 8bpc formats
+    RGBA8Int = DXGI_FORMAT_R8G8B8A8_SINT,
+    RGBA8Uint = DXGI_FORMAT_R8G8B8A8_UINT,
+    RGBA8Norm = DXGI_FORMAT_R8G8B8A8_SNORM,
+    RGBA8UNorm = DXGI_FORMAT_R8G8B8A8_UNORM,
+    RGBA8Typeless = DXGI_FORMAT_R8G8B8A8_TYPELESS,
+    RGBA8UNormSRGB = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+    // BGRA 8bpc formats
+    BGRA8Unorm = DXGI_FORMAT_B8G8R8A8_UNORM,
+    BGRA8UNormSRGB = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,
+    BGRA8Typeless = DXGI_FORMAT_B8G8R8A8_TYPELESS,
+};
+
+ComPtr<IDXGIFactory7>
+GetDXGIFactory();
 
 std::vector<std::string> GetDXGIErrorMessages();
 
