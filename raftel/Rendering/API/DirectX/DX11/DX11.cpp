@@ -100,14 +100,14 @@ ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window)
     ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;
     const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {};
     const DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullscreen_desc = {};
-    DX11_CALL(factory->CreateSwapChainForHwnd(
+    DXGI_CALL(factory->CreateSwapChainForHwnd(
                   this->get(),
                   WindowingSystem::get_instance().get_native_window_handle(window),
                   &swapchain_desc,
                   &fullscreen_desc,
                   nullptr,
                   intermediate_swapchain.GetAddressOf()),
-        *this, "Failed to create swapchain");
+        "Failed to create swapchain");
 
     return swapchain;
 }
@@ -115,6 +115,10 @@ ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window)
 void init_d3d11(WindowHandle window)
 {
     auto device = GPUDevice::CreateDevice();
+
+    ComPtr<ID3D11Debug> debug = nullptr;
+    WIN_CALL(device->QueryInterface(IID_PPV_ARGS(&debug)), "Failed to query debug interface");
+
     auto swapchain = device.CreateSwapchain(window);
 
     DX11_CALL(device->CreateBuffer(nullptr, nullptr, nullptr), device, "Failed to create buffer");

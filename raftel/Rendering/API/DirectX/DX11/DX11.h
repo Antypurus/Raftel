@@ -39,7 +39,7 @@ void init_d3d11(WindowHandle window);
     {                                                                                                           \
         HRESULT result##__LINE__ = (function_call);                                                             \
         if (result##__LINE__ != S_OK && result##__LINE__ != S_FALSE) {                                          \
-            auto error_message_##__LINE__ = raftel::dxgi::TranslateWindowErrorCode(result##__LINE__);           \
+            auto error_message_##__LINE__ = raftel::dxgi::TranslateWindowsErrorCode(result##__LINE__);           \
             LOG_ERROR(error_message, __VA_ARGS__);                                                              \
             LOG_ERROR("{}", std::string_view(error_message_##__LINE__.first, error_message_##__LINE__.second)); \
             LocalFree((LPSTR)error_message_##__LINE__.first);                                                   \

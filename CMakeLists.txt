@@ -30,11 +30,11 @@ if(APPLE)
 endif()
 
 #obj-c sources
-file(GLOB_RECURSE OBJC_SOURCES
+file(GLOB_RECURSE OBJC_SOURCES CONFIGURE_DEPENDS
     raftel/*.mm
 )
 #find sources
-file(GLOB_RECURSE SOURCES
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
         raftel/*.cpp
         raftel/*.h
 )
