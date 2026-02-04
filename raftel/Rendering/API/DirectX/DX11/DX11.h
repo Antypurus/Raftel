@@ -35,19 +35,11 @@ void init_d3d11(WindowHandle window);
 
 }
 
-#define DX11_CALL(function_call, device, error_message, ...)                                                    \
-    {                                                                                                           \
-        HRESULT result##__LINE__ = (function_call);                                                             \
-        if (result##__LINE__ != S_OK && result##__LINE__ != S_FALSE) {                                          \
-            auto error_message_##__LINE__ = raftel::dxgi::TranslateWindowsErrorCode(result##__LINE__);           \
-            LOG_ERROR(error_message, __VA_ARGS__);                                                              \
-            LOG_ERROR("{}", std::string_view(error_message_##__LINE__.first, error_message_##__LINE__.second)); \
-            LocalFree((LPSTR)error_message_##__LINE__.first);                                                   \
-            auto d3d_error_messages = (device).GetErrorMessages();                                              \
-            for (const auto& message : d3d_error_messages) {                                                    \
-                LOG_ERROR("{}", message);                                                                       \
-            }                                                                                                   \
-            __debugbreak();                                                                                     \
-            exit(-1);                                                                                           \
-        }                                                                                                       \
+#define DX11_ERROR_MESSAGE_PUMP(device)                                                          \
+    {                                                                                            \
+        const auto CAT(d3d_error_messages, __LINE__) = (device).GetErrorMessages();              \
+        for (const auto& CAT(d3d_error_message, __LINE__) : CAT(d3d_error_messages, __LINE__)) { \
+            LOG_ERROR("{}", CAT(d3d_error_message, __LINE__));                                   \
+        }                                                                                        \
     }
+#define DX11_CALL(function_call, device, error_message, ...) WIN_CALL_GUARD(function_call, error_message, DX11_ERROR_MESSAGE_PUMP(device), __VA_ARGS__)
