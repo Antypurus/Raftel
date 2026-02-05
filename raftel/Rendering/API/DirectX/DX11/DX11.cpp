@@ -4,6 +4,7 @@
 #include <Rendering/API/DirectX/DX12/DX12Renderer.h>
 #include <Windowing/Window.h>
 #include <combaseapi.h>
+#include <d3d11.h>
 #include <dxgi.h>
 #include <dxgi1_2.h>
 #include <dxgi1_5.h>
@@ -100,13 +101,15 @@ void GPUDevice::DumpErrorMessages() const
 // so it does not make sense to bind it to any of those devices
 ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
 {
+    auto factory = dxgi::GetDXGIFactory();
     WindowingSystem& window_system = WindowingSystem::get_instance();
     HWND window_handle = window_system.get_native_window_handle(window);
     Resolution window_resolution = window_system.get_window_resolution(window);
 
-    ComPtr<IDXGISwapChain4> swapchain = nullptr;
-    auto factory = dxgi::GetDXGIFactory();
+    const unsigned int backbuffer_count = 2;
 
+    // create the swapchain
+    ComPtr<IDXGISwapChain4> swapchain = nullptr;
     ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;
     const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
         .Width = window_resolution.width,
@@ -118,7 +121,7 @@ ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window, dxgi::Re
             .Quality = 0,
         },
         .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-        .BufferCount = 2,
+        .BufferCount = backbuffer_count,
         .Scaling = DXGI_SCALING_STRETCH,
         .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
         .AlphaMode = DXGI_ALPHA_MODE_IGNORE,
@@ -141,8 +144,38 @@ ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window, dxgi::Re
                   nullptr,
                   intermediate_swapchain.GetAddressOf()),
         "Failed to create swapchain");
-
     WIN_CALL(intermediate_swapchain->QueryInterface(IID_PPV_ARGS(&swapchain)), "Failed to upcast DXGI Swapchain to version 4");
+    LOG_SUCCESS("Swapchain Created");
+
+    // create the render target views for the swapchain
+    ComPtr<ID3D11Texture2D> backbuffer_resouce = nullptr;
+    ComPtr<ID3D11RenderTargetView> backbuffer_rtv = nullptr;
+    DXGI_CALL(swapchain->GetBuffer(0, IID_PPV_ARGS(&backbuffer_resouce)), "Failed to get swapchain backbuffer");
+    DX11_CALL(this->m_device->CreateRenderTargetView(backbuffer_resouce.Get(), nullptr, backbuffer_rtv.GetAddressOf()), *this, "Failed to create RTV for Backbuffer");
+    LOG_SUCCESS("Swapchain backbuffer and render target view created");
+
+    // create the depth stenvil view for the swapchain
+    ComPtr<ID3D11Texture2D> depth_stentil_buffer = nullptr;
+    ComPtr<ID3D11DepthStencilView> depth_stencil_view = nullptr;
+    const D3D11_TEXTURE2D_DESC depth_stentil_buffer_desc = {
+        .Width = window_resolution.width,
+        .Height = window_resolution.height,
+        .MipLevels = 1,
+        .ArraySize = 1,
+        .Format = (DXGI_FORMAT)dxgi::ResourceFormat::D24UnormS8Uint,
+        .SampleDesc = {
+            .Count = 1,
+            .Quality = 0,
+        },
+        .Usage = D3D11_USAGE_DEFAULT,
+        .BindFlags = D3D11_BIND_DEPTH_STENCIL,
+        .CPUAccessFlags = 0,
+        .MiscFlags = 0,
+    };
+    DX11_CALL(this->m_device->CreateTexture2D(&depth_stentil_buffer_desc, nullptr, depth_stentil_buffer.GetAddressOf()), *this, "Failed to create depth stencil buffer for swapchain");
+    DX11_CALL(this->m_device->CreateDepthStencilView(depth_stentil_buffer.Get(), nullptr, depth_stencil_view.GetAddressOf()), *this, "Failed to create depth stencil view for swapchain");
+    LOG_SUCCESS("Swapchain depth stencil buffer & view created");
+
     return swapchain;
 }
 

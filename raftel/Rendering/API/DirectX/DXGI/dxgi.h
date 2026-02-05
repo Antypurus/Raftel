@@ -24,6 +24,8 @@ enum class ResourceFormat {
     BGRA8Unorm = DXGI_FORMAT_B8G8R8A8_UNORM,
     BGRA8UNormSRGB = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,
     BGRA8Typeless = DXGI_FORMAT_B8G8R8A8_TYPELESS,
+    // Depth-Stencil formats
+    D24UnormS8Uint = DXGI_FORMAT_D24_UNORM_S8_UINT, 
 };
 
 ComPtr<IDXGIFactory7>
