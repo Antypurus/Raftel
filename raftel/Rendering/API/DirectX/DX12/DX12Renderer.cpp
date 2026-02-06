@@ -1,3 +1,5 @@
+#ifdef __WIN32
+
 #include "DX12Renderer.h"
 
 #include <Rendering/API/DirectX/DXGI/dxgi.h>
@@ -6,7 +8,6 @@
 #include <iostream>
 #include <logger.h>
 
-#ifdef _WIN32
 namespace raftel::dx12 {
 
 std::vector<AdapterInfo> GetDeviceList()

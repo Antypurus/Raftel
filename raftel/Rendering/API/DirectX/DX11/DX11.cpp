@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include "DX11.h"
 #include "Rendering/API/DirectX/DXGI/dxgi.h"
 
@@ -16,7 +18,6 @@
 #include <cstdint>
 #include <iostream>
 
-#ifdef _WIN32
 namespace raftel::dx11 {
 
 GPUDevice GPUDevice::CreateDevice()
@@ -191,4 +192,5 @@ void init_d3d11(WindowHandle window)
     // DX11_CALL(device->CreateBuffer(nullptr, nullptr, nullptr), device, "Failed to create buffer");
 }
 }
+
 #endif

@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include "dxgi.h"
 
 #include <cstdint>
@@ -66,3 +68,5 @@ void DumpDXGIErrorMessages()
 }
 
 }
+
+#endif
