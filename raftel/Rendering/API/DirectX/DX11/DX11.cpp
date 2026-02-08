@@ -1,22 +1,15 @@
 #ifdef _WIN32
 
-#include "DX11.h"
-#include "Rendering/API/DirectX/DXGI/dxgi.h"
+    #include "DX11.h"
+    #include "Rendering/API/DirectX/DXGI/dxgi.h"
 
-#include <Rendering/API/DirectX/DX12/DX12Renderer.h>
-#include <Windowing/Window.h>
-#include <combaseapi.h>
-#include <d3d11.h>
-#include <dxgi.h>
-#include <dxgi1_2.h>
-#include <dxgi1_5.h>
-#include <dxgiformat.h>
-#include <dxgitype.h>
-#include <logger.h>
+    #include <Rendering/API/DirectX/DX12/DX12Renderer.h>
+    #include <Windowing/Window.h>
+    #include <logger.h>
 
-#include <assert.h>
-#include <cstdint>
-#include <iostream>
+    #include <assert.h>
+    #include <cstdint>
+    #include <iostream>
 
 namespace raftel::dx11 {
 
