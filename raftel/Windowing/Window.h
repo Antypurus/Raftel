@@ -48,7 +48,7 @@ private:
     // window metadata
     std::vector<Resolution> m_window_resolutions;
     std::vector<bool> m_window_is_open;
-    std::vector<std::vector<std::function<void(size_t, size_t)>>> m_resize_callbacks;
+    std::vector<std::vector<std::function<void(std::uint32_t, std::uint32_t)>>> m_resize_callbacks;
 
 public:
     static WindowingSystem& get_instance();

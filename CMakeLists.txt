@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.28)
 project(raftel LANGUAGES C CXX)
 
+include(CMake/Warnings.cmake)
+
 # C++ Basic Configuration
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -60,4 +62,5 @@ if(APPLE)
         XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC NO
     )
 endif()
+configure_compiler_warnings(${CMAKE_PROJECT_NAME})
 

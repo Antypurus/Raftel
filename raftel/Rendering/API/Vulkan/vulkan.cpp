@@ -22,6 +22,7 @@ void init_vulkan()
         .pNext = nullptr,
         .pApplicationName = "Raftel",
         .applicationVersion = 1,
+        .pEngineName = "Raftel Engine",
         .engineVersion = 1,
         .apiVersion = VK_API_VERSION_1_3,
     };
@@ -64,6 +65,8 @@ void init_vulkan()
         for (size_t i = 0; i < device_count; ++i) {
             VkPhysicalDeviceProperties2 device_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+                .pNext = nullptr,
+                .properties = {},
             };
             vkGetPhysicalDeviceProperties2(physical_devices[i], &device_properties);
             if (device_properties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {

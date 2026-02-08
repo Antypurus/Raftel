@@ -3,6 +3,7 @@
 #include "GLFW/glfw3native.h"
 
 #include <assert.h>
+#include <cstdint>
 #include <iostream>
 
 namespace raftel {
@@ -47,7 +48,7 @@ void WindowingSystem::global_window_resize_callback(GLFWwindow* window_handle, i
         };
 
         for (auto& callback : this->m_resize_callbacks[i]) {
-            callback(new_width, new_height);
+            callback((std::uint32_t)new_width, (std::uint32_t)new_height);
         }
     }
 }
@@ -96,7 +97,7 @@ void WindowingSystem::update()
 
 WindowHandle WindowingSystem::create_window(std::string_view name, std::uint32_t width, std::uint32_t height)
 {
-    GLFWwindow* window_handle = glfwCreateWindow(width, height, name.data(), nullptr, nullptr);
+    GLFWwindow* window_handle = glfwCreateWindow((std::int32_t)width, (std::int32_t)height, name.data(), nullptr, nullptr);
     if (window_handle == nullptr) {
         std::cout << "Failed to create requested window" << std::endl;
     }

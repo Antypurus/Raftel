@@ -132,7 +132,7 @@ ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window, dxgi::Re
     };
     DXGI_CALL(factory->CreateSwapChainForHwnd(
                   this->get(),
-                  WindowingSystem::get_instance().get_native_window_handle(window),
+                  window_handle,
                   &swapchain_desc,
                   &fullscreen_desc,
                   nullptr,
