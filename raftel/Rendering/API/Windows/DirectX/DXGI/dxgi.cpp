@@ -1,6 +1,5 @@
-#ifdef _WIN32
-
 #include "dxgi.h"
+
 #include <dxgidebug.h>
 
 namespace raftel::dxgi {
@@ -23,11 +22,11 @@ std::pair<const char*, size_t> TranslateWindowsErrorCode(HRESULT code)
 ComPtr<IDXGIFactory7> GetDXGIFactory()
 {
     ComPtr<IDXGIFactory7> factory = nullptr;
-    #ifndef NDEBUG
+#ifndef NDEBUG
     unsigned int flags = DXGI_CREATE_FACTORY_DEBUG;
-    #else
+#else
     unsigned int flags = 0;
-    #endif
+#endif
     WIN_CALL(CreateDXGIFactory2(flags, IID_PPV_ARGS(&factory)), "Failed to create temporary factory for device listing");
 
     return factory;
@@ -65,5 +64,3 @@ void DumpDXGIErrorMessages()
 }
 
 }
-
-#endif

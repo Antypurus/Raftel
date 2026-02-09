@@ -1,15 +1,13 @@
-#ifdef _WIN32
+#include "DX11.h"
 
-    #include "DX11.h"
-    #include "Rendering/API/DirectX/DXGI/dxgi.h"
+#include <Rendering/API/Windows/DirectX/DX12/DX12Renderer.h>
+#include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
+#include <Windowing/Window.h>
+#include <logger.h>
 
-    #include <Rendering/API/DirectX/DX12/DX12Renderer.h>
-    #include <Windowing/Window.h>
-    #include <logger.h>
-
-    #include <assert.h>
-    #include <cstdint>
-    #include <iostream>
+#include <assert.h>
+#include <cstdint>
+#include <iostream>
 
 namespace raftel::dx11 {
 
@@ -186,4 +184,3 @@ void init_d3d11(WindowHandle window)
 }
 }
 
-#endif

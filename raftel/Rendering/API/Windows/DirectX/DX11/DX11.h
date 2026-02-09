@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Rendering/API/DirectX/DXGI/dxgi.h>
+#include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
 
 #include <d3d11_4.h>

@@ -1,8 +1,6 @@
-#ifdef _WIN32
-
 #include "DX12Renderer.h"
 
-#include <Rendering/API/DirectX/DXGI/dxgi.h>
+#include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
 
 #include <iostream>
@@ -109,5 +107,3 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
 }
 
 }
-
-#endif

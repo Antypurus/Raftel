@@ -1,7 +1,5 @@
-#ifdef __APPLE__
-
-    #include "Metal.h"
-    #import <Metal/Metal.h>
+#include "Metal.h"
+#import <Metal/Metal.h>
 
 namespace raftel {
 
@@ -12,4 +10,3 @@ void init_metal()
 }
 
 }
-#endif

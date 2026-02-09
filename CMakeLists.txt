@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 project(raftel LANGUAGES C CXX)
 
 include(CMake/Warnings.cmake)
+include(CMake/Platform.cmake)
 
 # C++ Basic Configuration
 set(CMAKE_CXX_STANDARD 23)
@@ -35,12 +36,31 @@ endif()
 file(GLOB_RECURSE OBJC_SOURCES CONFIGURE_DEPENDS
     raftel/*.mm
 )
-#find sources
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
         raftel/*.cpp
         raftel/*.h
 )
-add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${OBJC_SOURCES})
+extract_platform_dependent_sources("${SOURCES}"
+    GENERIC_SOURCES
+    WINDOWS_SOURCES
+    LINUX_SOURCES
+    MACOS_SOURCES
+    POSIX_SOURCES
+)
+set(${CMAKE_PROJECT_NAME}_SOURCES)
+list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${GENERIC_SOURCES})
+if(WIN32)
+    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${WINDOWS_SOURCES})
+elseif(APPLE)
+    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${MACOS_SOURCES})
+    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${POSIX_SOURCES})
+    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${OBJC_SOURCES})
+elseif(UNIX)
+    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${LINUX_SOURCES})
+    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${POSIX_SOURCES})
+endif()
+
+add_executable(${CMAKE_PROJECT_NAME} ${${CMAKE_PROJECT_NAME}_SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         ThirdParty
         raftel
@@ -63,4 +83,3 @@ if(APPLE)
     )
 endif()
 configure_compiler_warnings(${CMAKE_PROJECT_NAME})
-
