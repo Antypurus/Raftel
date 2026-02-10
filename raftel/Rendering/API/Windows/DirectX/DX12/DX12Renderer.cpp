@@ -12,7 +12,7 @@ std::vector<AdapterInfo> GetDeviceList()
 {
     std::vector<AdapterInfo> adaptors;
 
-    ComPtr<IDXGIFactory7> factory = dxgi::GetDXGIFactory();
+    dxgi::DXGIFactory& factory = dxgi::DXGIFactory::GetFactory();
 
     unsigned int adapter_index = 0;
     IDXGIAdapter1* adapter = nullptr;
@@ -45,8 +45,6 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
     m_debug_controller->SetEnableGPUBasedValidation(TRUE);
     LOG_INFO("D3D12 Debug Controller Loaded & Activated");
 
-    this->m_dxgi_factory = dxgi::GetDXGIFactory();
-
     WIN_CALL(D3D12CreateDevice(gpuAdapter, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&this->m_device)), "Failed to create D3D12 device");
     LOG_SUCCESS("Created D3D12 Device");
 
@@ -58,6 +56,8 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
     };
     WIN_CALL(m_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&this->m_graphics_command_queue)), "Failed to fetch D3D12 Graphics Queue");
     LOG_SUCCESS("Obtained D3D12 Graphics Queue");
+
+    dxgi::DXGIFactory& factory = dxgi::DXGIFactory::GetFactory();
 
     const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
         .Width = 1920,
@@ -76,7 +76,7 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
         .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
     };
     ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;
-    WIN_CALL(this->m_dxgi_factory->CreateSwapChainForHwnd(
+    WIN_CALL(factory->CreateSwapChainForHwnd(
                  this->m_graphics_command_queue.Get(),
                  WindowingSystem::get_instance().get_native_window_handle(window),
                  &swapchain_desc, nullptr, nullptr, intermediate_swapchain.GetAddressOf()),

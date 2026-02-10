@@ -24,7 +24,6 @@ std::vector<AdapterInfo> GetDeviceList();
 
 struct DX12Renderer {
 private:
-    ComPtr<IDXGIFactory7> m_dxgi_factory;
     ComPtr<ID3D12Debug6> m_debug_controller;
     ComPtr<ID3D12Device14> m_device;
     ComPtr<IDXGISwapChain4> m_swapchain;

@@ -1,6 +1,7 @@
 #include "dxgi.h"
 
 #include <dxgidebug.h>
+#include <mutex>
 
 namespace raftel::dxgi {
 
@@ -19,7 +20,31 @@ std::pair<const char*, size_t> TranslateWindowsErrorCode(HRESULT code)
     return { message_buffer, size };
 }
 
-ComPtr<IDXGIFactory7> GetDXGIFactory()
+std::mutex factory_guard;
+DXGIFactory DXGIFactory::s_instance = DXGIFactory();
+
+DXGIFactory& DXGIFactory::GetFactory()
+{
+    if (s_instance.m_factory == nullptr) {
+        std::lock_guard<std::mutex> guard(factory_guard);
+        if (s_instance.m_factory == nullptr) {
+            s_instance.m_factory = DXGIFactory::CreateDXGIFactory();
+        }
+    }
+    return s_instance;
+}
+
+IDXGIFactory7* DXGIFactory::operator->() const
+{
+    return this->m_factory.Get();
+}
+
+DXGIFactory::operator IDXGIFactory7*() const
+{
+    return this->m_factory.Get();
+}
+
+ComPtr<IDXGIFactory7> DXGIFactory::CreateDXGIFactory()
 {
     ComPtr<IDXGIFactory7> factory = nullptr;
 #ifndef NDEBUG
@@ -32,11 +57,10 @@ ComPtr<IDXGIFactory7> GetDXGIFactory()
     return factory;
 }
 
-std::vector<std::string> GetDXGIErrorMessages()
+std::vector<std::string> DXGIFactory::GetDXGIErrorMessages()
 {
     std::vector<std::string> error_messages;
 
-    ComPtr<IDXGIFactory> dxgi_factory = GetDXGIFactory();
     ComPtr<IDXGIInfoQueue> info_queue = nullptr;
     WIN_CALL(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&info_queue)), "Failed to get DXGI Info Queue");
 
@@ -55,7 +79,7 @@ std::vector<std::string> GetDXGIErrorMessages()
     return error_messages;
 }
 
-void DumpDXGIErrorMessages()
+void DXGIFactory::DumpDXGIErrorMessages()
 {
     std::vector<std::string> error_messages = GetDXGIErrorMessages();
     for (const auto& message : error_messages) {

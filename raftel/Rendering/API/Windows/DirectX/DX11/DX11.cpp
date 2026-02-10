@@ -93,7 +93,7 @@ void GPUDevice::DumpErrorMessages() const
 // so it does not make sense to bind it to any of those devices
 ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
 {
-    auto factory = dxgi::GetDXGIFactory();
+    auto& factory = dxgi::DXGIFactory::GetFactory();
     WindowingSystem& window_system = WindowingSystem::get_instance();
     HWND window_handle = window_system.get_native_window_handle(window);
     Resolution window_resolution = window_system.get_window_resolution(window);
@@ -183,4 +183,3 @@ void init_d3d11(WindowHandle window)
     // DX11_CALL(device->CreateBuffer(nullptr, nullptr, nullptr), device, "Failed to create buffer");
 }
 }
-
