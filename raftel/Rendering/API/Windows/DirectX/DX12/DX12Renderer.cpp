@@ -58,30 +58,7 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
     LOG_SUCCESS("Obtained D3D12 Graphics Queue");
 
     dxgi::DXGIFactory& factory = dxgi::DXGIFactory::GetFactory();
-
-    const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
-        .Width = 1920,
-        .Height = 1080,
-        .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
-        .Stereo = false,
-        .SampleDesc = DXGI_SAMPLE_DESC {
-            .Count = 1,
-            .Quality = 0,
-        },
-        .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-        .BufferCount = 2,
-        .Scaling = DXGI_SCALING_STRETCH,
-        .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
-        .AlphaMode = DXGI_ALPHA_MODE_IGNORE,
-        .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
-    };
-    ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;
-    WIN_CALL(factory->CreateSwapChainForHwnd(
-                 this->m_graphics_command_queue.Get(),
-                 WindowingSystem::get_instance().get_native_window_handle(window),
-                 &swapchain_desc, nullptr, nullptr, intermediate_swapchain.GetAddressOf()),
-        "Failed to create D3D12 rendering swapchain");
-    WIN_CALL(intermediate_swapchain->QueryInterface(IID_PPV_ARGS(&this->m_swapchain)), "Failed to upcast to swapchain version 4");
+    this->m_swapchain = factory.CreateSwapchain(this->m_graphics_command_queue.Get(), window);
     LOG_SUCCESS("D3D12 Swapchain Created");
 
     ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap = nullptr;

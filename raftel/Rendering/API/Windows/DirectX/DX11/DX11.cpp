@@ -93,50 +93,11 @@ void GPUDevice::DumpErrorMessages() const
 // so it does not make sense to bind it to any of those devices
 ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
 {
-    auto& factory = dxgi::DXGIFactory::GetFactory();
     WindowingSystem& window_system = WindowingSystem::get_instance();
-    HWND window_handle = window_system.get_native_window_handle(window);
     Resolution window_resolution = window_system.get_window_resolution(window);
 
-    const unsigned int backbuffer_count = 2;
-
-    // create the swapchain
-    ComPtr<IDXGISwapChain4> swapchain = nullptr;
-    ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;
-    const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
-        .Width = window_resolution.width,
-        .Height = window_resolution.height,
-        .Format = (DXGI_FORMAT)format,
-        .Stereo = false,
-        .SampleDesc = {
-            .Count = 1,
-            .Quality = 0,
-        },
-        .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-        .BufferCount = backbuffer_count,
-        .Scaling = DXGI_SCALING_STRETCH,
-        .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
-        .AlphaMode = DXGI_ALPHA_MODE_IGNORE,
-        .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
-    };
-    const DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullscreen_desc = {
-        .RefreshRate = {
-            .Numerator = 144,
-            .Denominator = 1,
-        },
-        .ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
-        .Scaling = DXGI_MODE_SCALING_STRETCHED,
-        .Windowed = true,
-    };
-    DXGI_CALL(factory->CreateSwapChainForHwnd(
-                  this->get(),
-                  window_handle,
-                  &swapchain_desc,
-                  &fullscreen_desc,
-                  nullptr,
-                  intermediate_swapchain.GetAddressOf()),
-        "Failed to create swapchain");
-    WIN_CALL(intermediate_swapchain->QueryInterface(IID_PPV_ARGS(&swapchain)), "Failed to upcast DXGI Swapchain to version 4");
+    auto& factory = dxgi::DXGIFactory::GetFactory();
+    auto swapchain = factory.CreateSwapchain(this->m_device.Get(), window, dxgi::SwapchainParams { .format = format });
     LOG_SUCCESS("Swapchain Created");
 
     // create the render target views for the swapchain

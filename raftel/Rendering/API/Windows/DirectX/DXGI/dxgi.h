@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Windowing/Window.h>
+#include <cstdint>
 #include <logger.h>
 
 #include <dxgi1_6.h>
@@ -28,6 +30,11 @@ enum class ResourceFormat {
     D24UnormS8Uint = DXGI_FORMAT_D24_UNORM_S8_UINT,
 };
 
+struct SwapchainParams {
+    std::uint8_t backbuffer_count = 2;
+    ResourceFormat format = ResourceFormat::BGRA8Unorm;
+};
+
 class DXGIFactory {
 private:
     static DXGIFactory s_instance;
@@ -39,6 +46,7 @@ public:
     IDXGIFactory7* operator->() const;
     operator IDXGIFactory7*() const;
 
+    ComPtr<IDXGISwapChain4> CreateSwapchain(IUnknown* device, WindowHandle window, SwapchainParams params = {});
     std::vector<std::string> GetDXGIErrorMessages();
     void DumpDXGIErrorMessages();
 
