@@ -1,16 +1,14 @@
-#include <cassert>
-
 #ifdef _WIN32
-    #include "Rendering/API/Windows/DirectX/DX11/DX11.h"
-    #include "Rendering/API/Windows/DirectX/DX12/DX12Renderer.h"
+    #include <Rendering/API/Windows/DirectX/DX11/DX11.h>
+    #include <Rendering/API/Windows/DirectX/DX12/DX12Renderer.h>
 #endif
 #ifdef __APPLE__
-    #include "Rendering/API/MacOS/Metal/Metal.h"
+    #include <Rendering/API/MacOS/Metal/Metal.h>
 #endif
 
-#include "Rendering/API/Vulkan/vulkan.h"
-#include "Windowing/Window.h"
-#include "logger.h"
+#include <Rendering/API/Vulkan/vulkan.h>
+#include <Windowing/Window.h>
+#include <logger.h>
 
 using namespace raftel;
 

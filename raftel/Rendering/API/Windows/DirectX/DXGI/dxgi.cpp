@@ -1,5 +1,6 @@
 #include "dxgi.h"
-#include "Windowing/Window.h"
+
+#include <Windowing/Window.h>
 
 #include <combaseapi.h>
 #include <dxgidebug.h>

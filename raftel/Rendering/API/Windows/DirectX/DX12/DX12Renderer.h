@@ -2,6 +2,7 @@
 
 #include <Rendering/API/Windows/DirectX/DX12/DX12.h>
 #include <Windowing/Window.h>
+
 #include <vector>
 
 namespace raftel::dx12 {

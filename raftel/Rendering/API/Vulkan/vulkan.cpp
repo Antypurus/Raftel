@@ -1,7 +1,8 @@
 #include <Rendering/API/Vulkan/vulkan.h>
 
-#include <cassert>
 #include <logger.h>
+
+#include <cassert>
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>

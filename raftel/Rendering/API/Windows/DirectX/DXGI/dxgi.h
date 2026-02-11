@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Windowing/Window.h>
-#include <cstdint>
 #include <logger.h>
 
+#include <cstdint>
 #include <dxgi1_6.h>
 #include <dxgiformat.h>
 #include <string>

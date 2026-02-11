@@ -2,8 +2,6 @@
 
 #include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
-
-#include <iostream>
 #include <logger.h>
 
 namespace raftel::dx12 {
