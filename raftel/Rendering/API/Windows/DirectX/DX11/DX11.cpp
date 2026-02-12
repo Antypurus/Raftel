@@ -42,22 +42,20 @@ GPUDevice GPUDevice::CreateDevice()
 
     ComPtr<ID3D11Device5> final_dev = nullptr;
     WIN_CALL(device->QueryInterface(IID_PPV_ARGS(&final_dev)), "Failed to upcast D3D11 device to version 5");
-    return { final_dev };
-}
-
-GPUDevice::GPUDevice(ComPtr<ID3D11Device5> device)
-    : m_device(device)
-{
+    return GPUDevice {
+        .context = context,
+        .device = final_dev,
+    };
 }
 
 ID3D11Device5* GPUDevice::operator->()
 {
-    return this->m_device.Get();
+    return this->device.Get();
 }
 
 ID3D11Device5* GPUDevice::get()
 {
-    return this->m_device.Get();
+    return this->device.Get();
 }
 
 std::vector<std::string> GPUDevice::GetErrorMessages() const
@@ -65,7 +63,7 @@ std::vector<std::string> GPUDevice::GetErrorMessages() const
     std::vector<std::string> error_messages;
 
     ComPtr<ID3D11InfoQueue> info_queue = nullptr;
-    WIN_CALL(this->m_device->QueryInterface(IID_PPV_ARGS(&info_queue)), "Failed to obtain D3D11 Info-Queue");
+    WIN_CALL(this->device->QueryInterface(IID_PPV_ARGS(&info_queue)), "Failed to obtain D3D11 Info-Queue");
     const std::uint64_t message_count = info_queue->GetNumStoredMessages();
     for (size_t i = 0; i < message_count; ++i) {
         size_t message_length = 0;
@@ -89,22 +87,20 @@ void GPUDevice::DumpErrorMessages() const
     }
 }
 
-// TODO(Tiago):move this method into the factory "class", we can supply it with either a dx11 or dx12 device
-// so it does not make sense to bind it to any of those devices
-ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
+Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
 {
     WindowingSystem& window_system = WindowingSystem::get_instance();
     Resolution window_resolution = window_system.get_window_resolution(window);
 
     auto& factory = dxgi::DXGIFactory::GetFactory();
-    auto swapchain = factory.CreateSwapchain(this->m_device.Get(), window, dxgi::SwapchainParams { .format = format });
+    auto swapchain = factory.CreateSwapchain(this->device.Get(), window, dxgi::SwapchainParams { .format = format });
     LOG_SUCCESS("Swapchain Created");
 
     // create the render target views for the swapchain
     ComPtr<ID3D11Texture2D> backbuffer_resouce = nullptr;
     ComPtr<ID3D11RenderTargetView> backbuffer_rtv = nullptr;
     DXGI_CALL(swapchain->GetBuffer(0, IID_PPV_ARGS(&backbuffer_resouce)), "Failed to get swapchain backbuffer");
-    DX11_CALL(this->m_device->CreateRenderTargetView(backbuffer_resouce.Get(), nullptr, backbuffer_rtv.GetAddressOf()), *this, "Failed to create RTV for Backbuffer");
+    DX11_CALL(this->device->CreateRenderTargetView(backbuffer_resouce.Get(), nullptr, backbuffer_rtv.GetAddressOf()), *this, "Failed to create RTV for Backbuffer");
     LOG_SUCCESS("Swapchain backbuffer and render target view created");
 
     // create the depth stenvil view for the swapchain
@@ -125,22 +121,36 @@ ComPtr<IDXGISwapChain4> GPUDevice::CreateSwapchain(WindowHandle window, dxgi::Re
         .CPUAccessFlags = 0,
         .MiscFlags = 0,
     };
-    DX11_CALL(this->m_device->CreateTexture2D(&depth_stentil_buffer_desc, nullptr, depth_stentil_buffer.GetAddressOf()), *this, "Failed to create depth stencil buffer for swapchain");
-    DX11_CALL(this->m_device->CreateDepthStencilView(depth_stentil_buffer.Get(), nullptr, depth_stencil_view.GetAddressOf()), *this, "Failed to create depth stencil view for swapchain");
+    DX11_CALL(this->device->CreateTexture2D(&depth_stentil_buffer_desc, nullptr, depth_stentil_buffer.GetAddressOf()), *this, "Failed to create depth stencil buffer for swapchain");
+    DX11_CALL(this->device->CreateDepthStencilView(depth_stentil_buffer.Get(), nullptr, depth_stencil_view.GetAddressOf()), *this, "Failed to create depth stencil view for swapchain");
     LOG_SUCCESS("Swapchain depth stencil buffer & view created");
 
-    return swapchain;
+    return Swapchain {
+        .swapchain = swapchain,
+        .depth_buffer = depth_stentil_buffer,
+        .depth_buffer_dsv = depth_stencil_view,
+        .backbuffer_rtv = backbuffer_rtv,
+    };
+}
+
+void GPUDevice::Clear(const Swapchain& swapchain)
+{
+    const float clear_value[4] = { 0.0, 0.0, 0.0, 1.0 };
+    this->context->ClearDepthStencilView(swapchain.depth_buffer_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 0, 0);
+    this->context->ClearRenderTargetView(swapchain.backbuffer_rtv.Get(), clear_value);
+}
+
+void Swapchain::Present()
+{
+    DXGI_CALL(this->swapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING), "Swapchain present failed");
 }
 
 void init_d3d11(WindowHandle window)
 {
     auto device = GPUDevice::CreateDevice();
-
-    ComPtr<ID3D11Debug> debug = nullptr;
-    WIN_CALL(device->QueryInterface(IID_PPV_ARGS(&debug)), "Failed to query debug interface");
-
     auto swapchain = device.CreateSwapchain(window);
-
-    // DX11_CALL(device->CreateBuffer(nullptr, nullptr, nullptr), device, "Failed to create buffer");
+    device.Clear(swapchain);
+    device.DumpErrorMessages();
 }
+
 }

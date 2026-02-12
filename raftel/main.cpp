@@ -25,17 +25,26 @@ int main()
 #endif
 
 #ifdef _WIN32
-    dx11::init_d3d11(first_window);
-    // dx12::DX12Renderer renderer(first_window);
+    #if 1
+    auto device = dx11::GPUDevice::CreateDevice();
+    auto swapchain = device.CreateSwapchain(first_window);
+    #else
+        // dx12::DX12Renderer renderer(first_window);
+    #endif
 #endif
 
-#if 0
+#if 1
     while (windowing_system.has_open_windows()) {
         windowing_system.update();
         auto handles = windowing_system.get_active_window_list();
         for (auto& window : handles) {
             if (!windowing_system.is_window_open(window))
                 continue;
+
+    #ifdef _WIN32
+            device.Clear(swapchain);
+            swapchain.Present();
+    #endif
         }
     }
 #endif

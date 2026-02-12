@@ -3,6 +3,7 @@
 #include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
 
+#include <d3d11.h>
 #include <d3d11_4.h>
 #include <string>
 #include <vector>
@@ -12,20 +13,32 @@ namespace raftel::dx11 {
 
 using namespace Microsoft::WRL;
 
+struct Swapchain {
+public:
+    ComPtr<IDXGISwapChain4> swapchain = nullptr;
+    ComPtr<ID3D11Texture2D> depth_buffer = nullptr;
+    ComPtr<ID3D11DepthStencilView> depth_buffer_dsv = nullptr;
+    ComPtr<ID3D11RenderTargetView> backbuffer_rtv = nullptr;
+
+public:
+    void Present();
+};
+
 struct GPUDevice {
-private:
-    ComPtr<ID3D11Device5> m_device = nullptr;
+public:
+    ComPtr<ID3D11DeviceContext> context = nullptr;
+    ComPtr<ID3D11Device5> device = nullptr;
 
 public:
     static GPUDevice CreateDevice();
 
 public:
-    GPUDevice(ComPtr<ID3D11Device5> device);
-
     ID3D11Device5* get();
     ID3D11Device5* operator->();
 
-    ComPtr<IDXGISwapChain4> CreateSwapchain(WindowHandle handle, dxgi::ResourceFormat format = dxgi::ResourceFormat::BGRA8Unorm);
+    Swapchain CreateSwapchain(WindowHandle handle, dxgi::ResourceFormat format = dxgi::ResourceFormat::BGRA8Unorm);
+
+    void Clear(const Swapchain& swapchain);
 
     void DumpErrorMessages() const;
     std::vector<std::string> GetErrorMessages() const;
