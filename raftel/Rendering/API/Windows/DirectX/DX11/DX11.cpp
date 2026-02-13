@@ -3,6 +3,7 @@
 #include <Rendering/API/Windows/DirectX/DX12/DX12Renderer.h>
 #include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
+#include <dxgi.h>
 #include <logger.h>
 
 #include <assert.h>
@@ -87,15 +88,8 @@ void GPUDevice::DumpErrorMessages() const
     }
 }
 
-Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
+SwapchainResources GPUDevice::CreateSwapchainResources(ComPtr<IDXGISwapChain4> swapchain, Resolution size)
 {
-    WindowingSystem& window_system = WindowingSystem::get_instance();
-    Resolution window_resolution = window_system.get_window_resolution(window);
-
-    auto& factory = dxgi::DXGIFactory::GetFactory();
-    auto swapchain = factory.CreateSwapchain(this->device.Get(), window, dxgi::SwapchainParams { .format = format });
-    LOG_SUCCESS("Swapchain Created");
-
     // create the render target views for the swapchain
     ComPtr<ID3D11Texture2D> backbuffer_resouce = nullptr;
     ComPtr<ID3D11RenderTargetView> backbuffer_rtv = nullptr;
@@ -107,8 +101,8 @@ Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat f
     ComPtr<ID3D11Texture2D> depth_stentil_buffer = nullptr;
     ComPtr<ID3D11DepthStencilView> depth_stencil_view = nullptr;
     const D3D11_TEXTURE2D_DESC depth_stentil_buffer_desc = {
-        .Width = window_resolution.width,
-        .Height = window_resolution.height,
+        .Width = size.width,
+        .Height = size.height,
         .MipLevels = 1,
         .ArraySize = 1,
         .Format = (DXGI_FORMAT)dxgi::ResourceFormat::D24UnormS8Uint,
@@ -125,24 +119,65 @@ Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat f
     DX11_CALL(this->device->CreateDepthStencilView(depth_stentil_buffer.Get(), nullptr, depth_stencil_view.GetAddressOf()), *this, "Failed to create depth stencil view for swapchain");
     LOG_SUCCESS("Swapchain depth stencil buffer & view created");
 
-    return Swapchain {
-        .swapchain = swapchain,
+    return SwapchainResources {
         .depth_buffer = depth_stentil_buffer,
         .depth_buffer_dsv = depth_stencil_view,
         .backbuffer_rtv = backbuffer_rtv,
     };
 }
 
-void GPUDevice::Clear(const Swapchain& swapchain)
+Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
 {
-    const float clear_value[4] = { 0.0, 0.0, 0.0, 1.0 };
-    this->context->ClearDepthStencilView(swapchain.depth_buffer_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 0, 0);
-    this->context->ClearRenderTargetView(swapchain.backbuffer_rtv.Get(), clear_value);
+    WindowingSystem& window_system = WindowingSystem::get_instance();
+    Resolution window_resolution = window_system.get_window_resolution(window);
+
+    auto& factory = dxgi::DXGIFactory::GetFactory();
+    auto swapchain = factory.CreateSwapchain(this->device.Get(), window, dxgi::SwapchainParams { .format = format });
+    LOG_SUCCESS("Swapchain Created");
+
+    return Swapchain {
+        .window = window,
+        .swapchain = swapchain,
+        .resources = this->CreateSwapchainResources(swapchain, window_resolution),
+    };
+}
+
+void GPUDevice::Clear(Swapchain& swapchain)
+{
+    const float clear_value[4] = { 1.0, 0.0, 0.0, 1.0 };
+    this->context->ClearDepthStencilView(swapchain.resources.depth_buffer_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 0, 0);
+    this->context->ClearRenderTargetView(swapchain.resources.backbuffer_rtv.Get(), clear_value);
+
+    if (swapchain.needs_resize) {
+        // unbind swapchain references
+        this->context->OMSetRenderTargets(0, nullptr, nullptr);
+        this->context->OMSetDepthStencilState(nullptr, 0);
+        this->context->Flush();
+
+        swapchain.resources.depth_buffer_dsv.Reset();
+        swapchain.resources.depth_buffer.Reset();
+        swapchain.resources.backbuffer_rtv.Reset();
+
+        DXGI_CALL(swapchain.swapchain->ResizeBuffers(2, swapchain.new_width, swapchain.new_height, (DXGI_FORMAT)dxgi::ResourceFormat::BGRA8Unorm, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING), "Failed to resize swapchain");
+        swapchain.resources = this->CreateSwapchainResources(swapchain.swapchain, {
+                                                                                      .width = swapchain.new_width,
+                                                                                      .height = swapchain.new_height,
+                                                                                  });
+
+        swapchain.needs_resize = false;
+    }
 }
 
 void Swapchain::Present()
 {
     DXGI_CALL(this->swapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING), "Swapchain present failed");
+}
+
+void Swapchain::RegisterResize(std::uint32_t width, std::uint32_t height)
+{
+    this->new_width = width;
+    this->new_height = height;
+    this->needs_resize = true;
 }
 
 void init_d3d11(WindowHandle window)

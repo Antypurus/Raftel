@@ -170,7 +170,6 @@ WindowHandleNativeType WindowingSystem::get_native_window_handle(WindowHandle ha
         return (void*)glfwGetX11Window(window_handle);
     }
 #endif
-    return nullptr;
 }
 
 }

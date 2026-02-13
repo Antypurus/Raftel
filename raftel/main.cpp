@@ -28,6 +28,7 @@ int main()
     #if 1
     auto device = dx11::GPUDevice::CreateDevice();
     auto swapchain = device.CreateSwapchain(first_window);
+    windowing_system.register_window_resize_callback(first_window, [&swapchain](std::uint32_t width, std::uint32_t height) { swapchain.RegisterResize(width, height); });
     #else
         // dx12::DX12Renderer renderer(first_window);
     #endif
@@ -42,8 +43,8 @@ int main()
                 continue;
 
     #ifdef _WIN32
-            device.Clear(swapchain);
             swapchain.Present();
+            device.Clear(swapchain);
     #endif
         }
     }
