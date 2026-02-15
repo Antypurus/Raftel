@@ -4,6 +4,10 @@
 #include <Windowing/Window.h>
 #include <logger.h>
 
+#include <cassert>
+#include <cstdint>
+#include <d3d12sdklayers.h>
+
 namespace raftel::dx12 {
 
 std::vector<AdapterInfo> GetDeviceList()
@@ -35,6 +39,22 @@ std::vector<AdapterInfo> GetDeviceList()
     return adaptors;
 }
 
+void dump_debug_messages(ComPtr<ID3D12InfoQueue> info_queue)
+{
+    assert(info_queue);
+
+    const std::uint64_t messsage_count = info_queue->GetNumStoredMessages();
+    for (size_t i = 0; i < messsage_count; ++i) {
+        size_t message_size = 0;
+        WIN_CALL(info_queue->GetMessage(i, nullptr, &message_size), "Failed to get D3D12 debug message size");
+
+        D3D12_MESSAGE* message = (D3D12_MESSAGE*)malloc(message_size);
+        WIN_CALL(info_queue->GetMessage(i, message, &message_size), "Failed to get D3D12 debug message");
+
+        LOG_INFO("{}", message->pDescription);
+    }
+}
+
 DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
 {
     WIN_CALL(D3D12GetDebugInterface(IID_PPV_ARGS(&this->m_debug_controller)),
@@ -45,6 +65,11 @@ DX12Renderer::DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter)
 
     WIN_CALL(D3D12CreateDevice(gpuAdapter, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&this->m_device)), "Failed to create D3D12 device");
     LOG_SUCCESS("Created D3D12 Device");
+
+    ComPtr<ID3D12InfoQueue1> debug_info_queue = nullptr;
+    WIN_CALL(this->m_device.As(&debug_info_queue), "Failed to obtain D3D12 Debug Info Queue");
+    LOG_SUCCESS("Obtained D3D12 Debug Info Queue");
+    dump_debug_messages(debug_info_queue);
 
     const D3D12_COMMAND_QUEUE_DESC queue_desc = {
         .Type = D3D12_COMMAND_LIST_TYPE_DIRECT,
