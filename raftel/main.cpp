@@ -21,7 +21,7 @@ int main()
     // init_vulkan();
 
 #ifdef __APPLE__
-    init_metal();
+    init_metal(first_window);
 #endif
 
 #ifdef _WIN32
@@ -32,9 +32,7 @@ int main()
     #else
     dx12::DX12Renderer renderer(first_window);
     #endif
-#endif
 
-#if 0
     while (windowing_system.has_open_windows()) {
         windowing_system.update();
         auto handles = windowing_system.get_active_window_list();

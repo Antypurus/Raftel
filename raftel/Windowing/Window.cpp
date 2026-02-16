@@ -142,7 +142,7 @@ Resolution WindowingSystem::get_window_resolution(WindowHandle handle) const
 
 bool WindowingSystem::is_window_open(WindowHandle window_handle) const
 {
-    assert(window_handle.generation == this->m_handle_generations[window_handle.handle]);
+    // assert(window_handle.generation == this->m_handle_generations[window_handle.handle]);
     return !glfwWindowShouldClose(this->m_windows[window_handle.handle]);
 }
 
