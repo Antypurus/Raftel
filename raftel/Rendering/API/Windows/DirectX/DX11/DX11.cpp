@@ -3,6 +3,7 @@
 #include <Rendering/API/Windows/DirectX/DX12/DX12Renderer.h>
 #include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
+#include <d3d11.h>
 #include <dxgi.h>
 #include <logger.h>
 
@@ -140,6 +141,41 @@ Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat f
         .swapchain = swapchain,
         .resources = this->CreateSwapchainResources(swapchain, window_resolution),
     };
+}
+
+ComPtr<ID3D11Buffer> GPUDevice::CreateVertexBuffer(const std::vector<float>& vertices)
+{
+    const D3D11_INPUT_ELEMENT_DESC vertex_desc[] = {
+        D3D11_INPUT_ELEMENT_DESC {
+            .SemanticName = "POSITION",
+            .SemanticIndex = 0,
+            .Format = DXGI_FORMAT_R32G32B32_FLOAT,
+            .InputSlot = 0,
+            .AlignedByteOffset = 0,
+            .InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+            .InstanceDataStepRate = 0,
+        },
+    };
+    ComPtr<ID3D11InputLayout> vertex_layout = nullptr;
+    DX11_CALL(this->device->CreateInputLayout(vertex_desc, _countof(vertex_desc), nullptr, 0, vertex_layout.GetAddressOf()), *this, "Failed to create vertex buffer");
+
+    const D3D11_BUFFER_DESC buffer_desc = {
+        .ByteWidth = (std::uint32_t)(vertices.size() * sizeof(float)),
+        .Usage = D3D11_USAGE_IMMUTABLE,
+        .BindFlags = D3D11_BIND_VERTEX_BUFFER,
+        .CPUAccessFlags = 0,
+        .MiscFlags = 0,
+        .StructureByteStride = 0,
+    };
+    const D3D11_SUBRESOURCE_DATA resource_desc = {
+        .pSysMem = vertices.data(),
+        .SysMemPitch = 0,
+        .SysMemSlicePitch = 0,
+    };
+
+    ComPtr<ID3D11Buffer> vertex_buffer = nullptr;
+    DX11_CALL(this->device->CreateBuffer(&buffer_desc, &resource_desc, vertex_buffer.GetAddressOf()), *this, "Failed to create vertex buffer");
+    return vertex_buffer;
 }
 
 void GPUDevice::Clear(Swapchain& swapchain)

@@ -52,6 +52,8 @@ public:
     Swapchain CreateSwapchain(WindowHandle handle, dxgi::ResourceFormat format = dxgi::ResourceFormat::BGRA8Unorm);
     SwapchainResources CreateSwapchainResources(ComPtr<IDXGISwapChain4> swapchain, Resolution size);
 
+    ComPtr<ID3D11Buffer> CreateVertexBuffer(const std::vector<float>& vertices);
+
     void Clear(Swapchain& swapchain);
 
     void DumpErrorMessages() const;
