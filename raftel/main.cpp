@@ -25,13 +25,10 @@ int main()
 #endif
 
 #ifdef _WIN32
-    #if 0
+    #if 1
     auto device = dx11::GPUDevice::CreateDevice();
     auto swapchain = device.CreateSwapchain(first_window);
     windowing_system.register_window_resize_callback(first_window, [&swapchain](std::uint32_t width, std::uint32_t height) { swapchain.RegisterResize(width, height); });
-    #else
-    dx12::DX12Renderer renderer(first_window);
-    #endif
 
     while (windowing_system.has_open_windows()) {
         windowing_system.update();
@@ -40,12 +37,13 @@ int main()
             if (!windowing_system.is_window_open(window))
                 continue;
 
-    #if defined(_WIN32)
             swapchain.Present();
             device.Clear(swapchain);
-    #endif
         }
     }
+    #else
+    dx12::DX12Renderer renderer(first_window);
+    #endif
 #endif
 
     return 0;
