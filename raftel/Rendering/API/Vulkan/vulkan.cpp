@@ -17,6 +17,7 @@ namespace raftel {
 
 void init_vulkan()
 {
+    // ============== Instance Creation ======================
     VkInstance instance = nullptr;
     const VkApplicationInfo app_desc = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -58,6 +59,7 @@ void init_vulkan()
     VK_CALL(vkEnumeratePhysicalDevices(instance, &device_count, physical_devices.data()), "Failed to get physical devices");
     assert(device_count > 0);
 
+    // ================= Device Selection ==================
     VkPhysicalDevice selected_device = nullptr;
     if (device_count == 1) {
         selected_device = physical_devices[0];
@@ -84,6 +86,38 @@ void init_vulkan()
     VkPhysicalDeviceProperties selected_device_properties;
     vkGetPhysicalDeviceProperties(selected_device, &selected_device_properties);
     LOG_INFO("Selected Device: {}", selected_device_properties.deviceName);
+
+    // ================ Gather Queue Info =======================
+    std::uint32_t queue_family_count = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(selected_device, &queue_family_count, nullptr);
+    std::vector<VkQueueFamilyProperties> queue_properties(queue_family_count);
+    vkGetPhysicalDeviceQueueFamilyProperties(selected_device, &queue_family_count, queue_properties.data());
+
+    for (auto& queue_info : queue_properties) {
+        if (queue_info.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            LOG_INFO("Have {} Graphics Queues", queue_info.queueCount);
+        } else if (queue_info.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+            LOG_INFO("Have {} Compute Queues", queue_info.queueCount);
+        } else if (queue_info.queueFlags & VK_QUEUE_VIDEO_DECODE_BIT_KHR) {
+            LOG_INFO("Have {}, Video Decode Queues", queue_info.queueCount);
+        } else if (queue_info.queueFlags & VK_QUEUE_VIDEO_ENCODE_BIT_KHR) {
+            LOG_INFO("Have {}, Video Encode Queues", queue_info.queueCount);
+        } else if (queue_info.queueFlags & VK_QUEUE_OPTICAL_FLOW_BIT_NV) {
+            LOG_INFO("Have {}, Optical Flow Queues", queue_info.queueCount);
+        } else if (queue_info.queueFlags & VK_QUEUE_OPTICAL_FLOW_BIT_NV) {
+            LOG_INFO("Have {}, Data Graph Queues", queue_info.queueCount);
+        } else if (queue_info.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+            LOG_INFO("Have {}, Transfer Queues", queue_info.queueCount);
+        }
+    }
+
+    // ================= Device Creation =========================
+    /**
+    VkDeviceCreateInfo device_desc = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+    };*/
 }
 
 }
