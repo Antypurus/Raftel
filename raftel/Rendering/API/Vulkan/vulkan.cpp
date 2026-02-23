@@ -151,6 +151,7 @@ void init_vulkan()
     VK_CALL(vkCreateDevice(selected_device, &device_desc, nullptr, &logical_device), "Failed to create logical device");
     LOG_SUCCESS("Vulkan Logical Device Created");
 
+    // =============== Teardown ================================
     vkDestroyDevice(logical_device, nullptr);
     vkDestroyInstance(instance, nullptr);
 }

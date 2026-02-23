@@ -18,13 +18,13 @@ int main()
     WindowingSystem& windowing_system = WindowingSystem::get_instance();
     WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
 
-    init_vulkan();
+    // init_vulkan();
 
 #ifdef __APPLE__
     init_metal(first_window);
 #endif
 
-#if defined(_WIN32) && 0
+#if defined(_WIN32) && 1
     #if 1
     auto device = dx11::GPUDevice::CreateDevice();
     auto swapchain = device.CreateSwapchain(first_window);

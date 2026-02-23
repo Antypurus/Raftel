@@ -3,15 +3,28 @@
 #include <Rendering/API/Windows/DirectX/DX12/DX12Renderer.h>
 #include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
-#include <d3d11.h>
-#include <dxgi.h>
 #include <logger.h>
 
 #include <assert.h>
 #include <cstdint>
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <dxgi.h>
 #include <iostream>
 
 namespace raftel::dx11 {
+
+void Swapchain::Present()
+{
+    DXGI_CALL(this->swapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING), "Swapchain present failed");
+}
+
+void Swapchain::RegisterResize(std::uint32_t width, std::uint32_t height)
+{
+    this->new_width = width;
+    this->new_height = height;
+    this->needs_resize = true;
+}
 
 GPUDevice GPUDevice::CreateDevice()
 {
@@ -204,16 +217,21 @@ void GPUDevice::Clear(Swapchain& swapchain)
     }
 }
 
-void Swapchain::Present()
+void GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type)
 {
-    DXGI_CALL(this->swapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING), "Swapchain present failed");
-}
+    ComPtr<ID3DBlob> shader_blob = nullptr;
+    ComPtr<ID3DBlob> error_blob = nullptr;
+    HRESULT result = D3DCompileFromFile(
+        path.data(),
+        nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+        entrypoint.data(), "ps_5_0",
+        D3DCOMPILE_ENABLE_STRICTNESS, 0,
+        &shader_blob, &error_blob);
+    if (FAILED(result)) {
+        return;
+    }
 
-void Swapchain::RegisterResize(std::uint32_t width, std::uint32_t height)
-{
-    this->new_width = width;
-    this->new_height = height;
-    this->needs_resize = true;
+    return;
 }
 
 void init_d3d11(WindowHandle window)

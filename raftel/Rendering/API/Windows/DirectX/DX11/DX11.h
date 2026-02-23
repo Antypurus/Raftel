@@ -16,6 +16,12 @@ namespace raftel::dx11 {
 
 using namespace Microsoft::WRL;
 
+enum class ShaderType {
+    Pixel,
+    Vertex,
+    Computer,
+};
+
 struct SwapchainResources {
     ComPtr<ID3D11Texture2D> depth_buffer = nullptr;
     ComPtr<ID3D11DepthStencilView> depth_buffer_dsv = nullptr;
@@ -52,6 +58,7 @@ public:
     Swapchain CreateSwapchain(WindowHandle handle, dxgi::ResourceFormat format = dxgi::ResourceFormat::BGRA8Unorm);
     SwapchainResources CreateSwapchainResources(ComPtr<IDXGISwapChain4> swapchain, Resolution size);
 
+    void CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
     ComPtr<ID3D11Buffer> CreateVertexBuffer(const std::vector<float>& vertices);
 
     void Clear(Swapchain& swapchain);
