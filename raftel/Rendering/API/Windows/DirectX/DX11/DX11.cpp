@@ -224,11 +224,30 @@ void GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoin
     HRESULT result = D3DCompileFromFile(
         path.data(),
         nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-        entrypoint.data(), "ps_5_0",
+        entrypoint.data(), "vs_5_0",
         D3DCOMPILE_ENABLE_STRICTNESS, 0,
         &shader_blob, &error_blob);
     if (FAILED(result)) {
+        LOG_ERROR("Shader Blob Compilation Failed");
         return;
+    }
+    LOG_SUCCESS("Shader blob compilation finished for: {}", entrypoint);
+
+    // create shader object
+    switch (type) {
+    case (ShaderType::Vertex): {
+        ComPtr<ID3D11VertexShader> vertex_shader = nullptr;
+        DX11_CALL(device->CreateVertexShader(
+                      shader_blob->GetBufferPointer(),
+                      shader_blob->GetBufferSize(),
+                      nullptr, vertex_shader.GetAddressOf()),
+            *this, "Failed to create vertex shader object");
+        LOG_SUCCESS("Vertex Shader Object Created");
+        break;
+    }
+    default: {
+        break;
+    }
     }
 
     return;
