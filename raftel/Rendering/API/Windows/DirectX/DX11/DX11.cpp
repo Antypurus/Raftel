@@ -219,12 +219,18 @@ void GPUDevice::Clear(Swapchain& swapchain)
 
 void GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type)
 {
+    const std::unordered_map<ShaderType, const char*> compilation_profiles = {
+        { ShaderType::Vertex, "vs_5_0" },
+        { ShaderType::Pixel, "ps_5_0" },
+        { ShaderType::Compute, "cs_5_0" },
+    };
+
     ComPtr<ID3DBlob> shader_blob = nullptr;
     ComPtr<ID3DBlob> error_blob = nullptr;
     HRESULT result = D3DCompileFromFile(
         path.data(),
         nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-        entrypoint.data(), "vs_5_0",
+        entrypoint.data(), compilation_profiles.at(type),
         D3DCOMPILE_ENABLE_STRICTNESS, 0,
         &shader_blob, &error_blob);
     if (FAILED(result)) {
@@ -237,12 +243,32 @@ void GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoin
     switch (type) {
     case (ShaderType::Vertex): {
         ComPtr<ID3D11VertexShader> vertex_shader = nullptr;
-        DX11_CALL(device->CreateVertexShader(
+        DX11_CALL(this->device->CreateVertexShader(
                       shader_blob->GetBufferPointer(),
                       shader_blob->GetBufferSize(),
                       nullptr, vertex_shader.GetAddressOf()),
             *this, "Failed to create vertex shader object");
         LOG_SUCCESS("Vertex Shader Object Created");
+        break;
+    }
+    case (ShaderType::Pixel): {
+        ComPtr<ID3D11PixelShader> pixel_shader = nullptr;
+        DX11_CALL(this->device->CreatePixelShader(
+                      shader_blob->GetBufferPointer(),
+                      shader_blob->GetBufferSize(),
+                      nullptr, pixel_shader.GetAddressOf()),
+            *this, "Failed to create pixel shader object");
+        LOG_SUCCESS("Pixel Shader Object Created");
+        break;
+    }
+    case (ShaderType::Compute): {
+        ComPtr<ID3D11ComputeShader> compute_shader = nullptr;
+        DX11_CALL(this->device->CreateComputeShader(
+                      shader_blob->GetBufferPointer(),
+                      shader_blob->GetBufferSize(),
+                      nullptr, compute_shader.GetAddressOf()),
+            *this, "Failed to create compute shader object");
+        LOG_SUCCESS("Compute Shader Object Created");
         break;
     }
     default: {
@@ -260,5 +286,4 @@ void init_d3d11(WindowHandle window)
     device.Clear(swapchain);
     device.DumpErrorMessages();
 }
-
 }

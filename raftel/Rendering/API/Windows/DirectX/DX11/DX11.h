@@ -19,7 +19,7 @@ using namespace Microsoft::WRL;
 enum class ShaderType {
     Pixel,
     Vertex,
-    Computer,
+    Compute,
 };
 
 struct SwapchainResources {
