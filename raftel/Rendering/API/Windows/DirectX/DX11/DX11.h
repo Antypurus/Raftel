@@ -7,7 +7,9 @@
 #include <cstdint>
 #include <d3d11.h>
 #include <d3d11_4.h>
+#include <d3dcommon.h>
 #include <dxgi1_5.h>
+#include <expected>
 #include <string>
 #include <vector>
 #include <wrl.h>
@@ -58,7 +60,11 @@ public:
     Swapchain CreateSwapchain(WindowHandle handle, dxgi::ResourceFormat format = dxgi::ResourceFormat::BGRA8Unorm);
     SwapchainResources CreateSwapchainResources(ComPtr<IDXGISwapChain4> swapchain, Resolution size);
 
-    void CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
+    std::expected<ComPtr<ID3DBlob>, ComPtr<ID3DBlob>> CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
+    void CompileVertexShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
+    void CompilePixelShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
+    void CompileComputeShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
+
     ComPtr<ID3D11Buffer> CreateVertexBuffer(const std::vector<float>& vertices);
 
     void Clear(Swapchain& swapchain);

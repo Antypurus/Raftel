@@ -217,7 +217,7 @@ void GPUDevice::Clear(Swapchain& swapchain)
     }
 }
 
-void GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type)
+std::expected<ComPtr<ID3DBlob>, ComPtr<ID3DBlob>> GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type)
 {
     const std::unordered_map<ShaderType, const char*> compilation_profiles = {
         { ShaderType::Vertex, "vs_5_0" },
@@ -235,11 +235,14 @@ void GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoin
         &shader_blob, &error_blob);
     if (FAILED(result)) {
         LOG_ERROR("Shader Blob Compilation Failed");
-        return;
+        return std::unexpected(error_blob);
     }
     LOG_SUCCESS("Shader blob compilation finished for: {}", entrypoint);
 
+    return shader_blob;
+
     // create shader object
+    /*
     switch (type) {
     case (ShaderType::Vertex): {
         ComPtr<ID3D11VertexShader> vertex_shader = nullptr;
@@ -276,7 +279,7 @@ void GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoin
     }
     }
 
-    return;
+    return;*/
 }
 
 void init_d3d11(WindowHandle window)

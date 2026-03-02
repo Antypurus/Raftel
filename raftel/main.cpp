@@ -30,8 +30,7 @@ int main()
     auto swapchain = device.CreateSwapchain(first_window);
     windowing_system.register_window_resize_callback(first_window, [&swapchain](std::uint32_t width, std::uint32_t height) { swapchain.RegisterResize(width, height); });
 
-    device.CompileShader(L"shaders/basic/hlsl/basic.hlsl", "VSMain", dx11::ShaderType::Vertex);
-    device.CompileShader(L"shaders/basic/hlsl/basic.hlsl", "PSMain", dx11::ShaderType::Pixel);
+    auto shader = device.CompileShader(L"shaders/basic/hlsl/basic.hlsl", "VSMain", dx11::ShaderType::Vertex);
 
     // device.CreateVertexBuffer({ 1.0f, 1.0f, 1.0f });
 
