@@ -235,10 +235,10 @@ std::optional<ComPtr<ID3DBlob>> GPUDevice::CompileShader(std::wstring_view path,
         D3DCOMPILE_ENABLE_STRICTNESS, 0,
         &shader_blob, &error_blob);
     if (FAILED(result)) {
-        LOG_ERROR("Shader Blob Compilation Failed");
+        const char* err_message = (const char*)error_blob->GetBufferPointer();
+        LOG_ERROR("Shader Blob Compilation Failed: {}", err_message);
         return {};
     }
-    LOG_SUCCESS("Shader blob compilation finished for: {}", entrypoint);
 
     return std::make_optional(shader_blob);
 }
