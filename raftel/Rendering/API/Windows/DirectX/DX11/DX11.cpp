@@ -11,6 +11,7 @@
 #include <d3dcompiler.h>
 #include <dxgi.h>
 #include <iostream>
+#include <optional>
 
 namespace raftel::dx11 {
 
@@ -217,7 +218,7 @@ void GPUDevice::Clear(Swapchain& swapchain)
     }
 }
 
-std::expected<ComPtr<ID3DBlob>, ComPtr<ID3DBlob>> GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type)
+std::optional<ComPtr<ID3DBlob>> GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type)
 {
     const std::unordered_map<ShaderType, const char*> compilation_profiles = {
         { ShaderType::Vertex, "vs_5_0" },
@@ -235,51 +236,74 @@ std::expected<ComPtr<ID3DBlob>, ComPtr<ID3DBlob>> GPUDevice::CompileShader(std::
         &shader_blob, &error_blob);
     if (FAILED(result)) {
         LOG_ERROR("Shader Blob Compilation Failed");
-        return std::unexpected(error_blob);
+        return {};
     }
     LOG_SUCCESS("Shader blob compilation finished for: {}", entrypoint);
 
-    return shader_blob;
+    return std::make_optional(shader_blob);
+}
 
-    // create shader object
-    /*
-    switch (type) {
-    case (ShaderType::Vertex): {
-        ComPtr<ID3D11VertexShader> vertex_shader = nullptr;
-        DX11_CALL(this->device->CreateVertexShader(
-                      shader_blob->GetBufferPointer(),
-                      shader_blob->GetBufferSize(),
-                      nullptr, vertex_shader.GetAddressOf()),
-            *this, "Failed to create vertex shader object");
-        LOG_SUCCESS("Vertex Shader Object Created");
-        break;
+std::optional<ComPtr<ID3D11VertexShader>> GPUDevice::CompileVertexShader(std::wstring_view path, std::string_view entrypoint)
+{
+    std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Vertex);
+    if (!compilation_result.has_value()) {
+        return {};
     }
-    case (ShaderType::Pixel): {
-        ComPtr<ID3D11PixelShader> pixel_shader = nullptr;
-        DX11_CALL(this->device->CreatePixelShader(
-                      shader_blob->GetBufferPointer(),
-                      shader_blob->GetBufferSize(),
-                      nullptr, pixel_shader.GetAddressOf()),
-            *this, "Failed to create pixel shader object");
-        LOG_SUCCESS("Pixel Shader Object Created");
-        break;
-    }
-    case (ShaderType::Compute): {
-        ComPtr<ID3D11ComputeShader> compute_shader = nullptr;
-        DX11_CALL(this->device->CreateComputeShader(
-                      shader_blob->GetBufferPointer(),
-                      shader_blob->GetBufferSize(),
-                      nullptr, compute_shader.GetAddressOf()),
-            *this, "Failed to create compute shader object");
-        LOG_SUCCESS("Compute Shader Object Created");
-        break;
-    }
-    default: {
-        break;
-    }
-    }
+    ComPtr<ID3DBlob> shader_blob = std::move(compilation_result.value());
 
-    return;*/
+    ComPtr<ID3D11VertexShader> vertex_shader = nullptr;
+    DX11_CALL_WITH_POST(this->device->CreateVertexShader(
+                            shader_blob->GetBufferPointer(),
+                            shader_blob->GetBufferSize(),
+                            nullptr, vertex_shader.GetAddressOf()),
+        *this,
+        return {};
+        , "Failed to create vertex shader object");
+
+    LOG_SUCCESS("Vertex Shader Object Created");
+    return std::make_optional(vertex_shader);
+}
+
+std::optional<ComPtr<ID3D11PixelShader>> GPUDevice::CompilePixelShader(std::wstring_view path, std::string_view entrypoint)
+{
+    std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Pixel);
+    if (!compilation_result.has_value()) {
+        return {};
+    }
+    ComPtr<ID3DBlob> shader_blob = std::move(compilation_result.value());
+
+    ComPtr<ID3D11PixelShader> pixel_shader = nullptr;
+    DX11_CALL_WITH_POST(this->device->CreatePixelShader(
+                            shader_blob->GetBufferPointer(),
+                            shader_blob->GetBufferSize(),
+                            nullptr, pixel_shader.GetAddressOf()),
+        *this,
+        return {};
+        , "Failed to create pixel shader object");
+
+    LOG_SUCCESS("Pixel Shader Object Created");
+    return std::make_optional(pixel_shader);
+}
+
+std::optional<ComPtr<ID3D11ComputeShader>> GPUDevice::CompileComputeShader(std::wstring_view path, std::string_view entrypoint)
+{
+    std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Compute);
+    if (!compilation_result.has_value()) {
+        return {};
+    }
+    ComPtr<ID3DBlob> shader_blob = std::move(compilation_result.value());
+
+    ComPtr<ID3D11ComputeShader> compute_shader = nullptr;
+    DX11_CALL_WITH_POST(this->device->CreateComputeShader(
+                            shader_blob->GetBufferPointer(),
+                            shader_blob->GetBufferSize(),
+                            nullptr, compute_shader.GetAddressOf()),
+        *this,
+        return {};
+        , "Failed to create compute shader object");
+
+    LOG_SUCCESS("Compute Shader Object Created");
+    return std::make_optional(compute_shader);
 }
 
 void init_d3d11(WindowHandle window)
