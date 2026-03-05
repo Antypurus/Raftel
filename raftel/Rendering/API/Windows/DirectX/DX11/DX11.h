@@ -46,6 +46,13 @@ public:
     void RegisterResize(std::uint32_t new_width, std::uint32_t new_height);
 };
 
+template <typename ShaderT>
+struct Shader {
+public:
+    ComPtr<ShaderT> shader_program = nullptr;
+    ComPtr<ID3DBlob> bytecode = nullptr;
+};
+
 struct GPUDevice {
 public:
     ComPtr<ID3D11DeviceContext> context = nullptr;
@@ -62,11 +69,11 @@ public:
     SwapchainResources CreateSwapchainResources(ComPtr<IDXGISwapChain4> swapchain, Resolution size);
 
     std::optional<ComPtr<ID3DBlob>> CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
-    std::optional<ComPtr<ID3D11VertexShader>> CompileVertexShader(std::wstring_view path, std::string_view entrypoint = "VSMain");
-    std::optional<ComPtr<ID3D11PixelShader>> CompilePixelShader(std::wstring_view path, std::string_view entrypoint = "PSMain");
-    std::optional<ComPtr<ID3D11ComputeShader>> CompileComputeShader(std::wstring_view path, std::string_view entrypoint = "CSMain");
+    std::optional<Shader<ID3D11VertexShader>> CompileVertexShader(std::wstring_view path, std::string_view entrypoint = "VSMain");
+    std::optional<Shader<ID3D11PixelShader>> CompilePixelShader(std::wstring_view path, std::string_view entrypoint = "PSMain");
+    std::optional<Shader<ID3D11ComputeShader>> CompileComputeShader(std::wstring_view path, std::string_view entrypoint = "CSMain");
 
-    ComPtr<ID3D11Buffer> CreateVertexBuffer(const std::vector<float>& vertices);
+    ComPtr<ID3D11Buffer> CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader);
 
     void Clear(Swapchain& swapchain);
 

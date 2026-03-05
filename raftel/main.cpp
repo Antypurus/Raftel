@@ -32,7 +32,7 @@ int main()
 
     auto shader = device.CompileVertexShader(L"shaders/basic/hlsl/basic.hlsl");
 
-    // device.CreateVertexBuffer({ 1.0f, 1.0f, 1.0f });
+    device.CreateVertexBuffer({ 1.0f, 1.0f, 1.0f }, shader.value());
 
     while (windowing_system.has_open_windows()) {
         windowing_system.update();

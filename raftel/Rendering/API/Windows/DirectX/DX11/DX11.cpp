@@ -157,7 +157,7 @@ Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat f
     };
 }
 
-ComPtr<ID3D11Buffer> GPUDevice::CreateVertexBuffer(const std::vector<float>& vertices)
+ComPtr<ID3D11Buffer> GPUDevice::CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader)
 {
     const D3D11_INPUT_ELEMENT_DESC vertex_desc[] = {
         D3D11_INPUT_ELEMENT_DESC {
@@ -171,7 +171,11 @@ ComPtr<ID3D11Buffer> GPUDevice::CreateVertexBuffer(const std::vector<float>& ver
         },
     };
     ComPtr<ID3D11InputLayout> vertex_layout = nullptr;
-    DX11_CALL(this->device->CreateInputLayout(vertex_desc, _countof(vertex_desc), nullptr, 0, vertex_layout.GetAddressOf()), *this, "Failed to create vertex buffer");
+    DX11_CALL(this->device->CreateInputLayout(
+                  vertex_desc, _countof(vertex_desc),
+                  vertex_shader.bytecode->GetBufferPointer(), vertex_shader.bytecode->GetBufferSize(),
+                  vertex_layout.GetAddressOf()),
+        *this, "Failed to create vertex buffer");
 
     const D3D11_BUFFER_DESC buffer_desc = {
         .ByteWidth = (std::uint32_t)(vertices.size() * sizeof(float)),
@@ -243,7 +247,7 @@ std::optional<ComPtr<ID3DBlob>> GPUDevice::CompileShader(std::wstring_view path,
     return std::make_optional(shader_blob);
 }
 
-std::optional<ComPtr<ID3D11VertexShader>> GPUDevice::CompileVertexShader(std::wstring_view path, std::string_view entrypoint)
+std::optional<Shader<ID3D11VertexShader>> GPUDevice::CompileVertexShader(std::wstring_view path, std::string_view entrypoint)
 {
     std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Vertex);
     if (!compilation_result.has_value()) {
@@ -261,10 +265,13 @@ std::optional<ComPtr<ID3D11VertexShader>> GPUDevice::CompileVertexShader(std::ws
         , "Failed to create vertex shader object");
 
     LOG_SUCCESS("Vertex Shader Object Created");
-    return std::make_optional(vertex_shader);
+    return std::make_optional(Shader {
+        .shader_program = vertex_shader,
+        .bytecode = shader_blob,
+    });
 }
 
-std::optional<ComPtr<ID3D11PixelShader>> GPUDevice::CompilePixelShader(std::wstring_view path, std::string_view entrypoint)
+std::optional<Shader<ID3D11PixelShader>> GPUDevice::CompilePixelShader(std::wstring_view path, std::string_view entrypoint)
 {
     std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Pixel);
     if (!compilation_result.has_value()) {
@@ -282,10 +289,13 @@ std::optional<ComPtr<ID3D11PixelShader>> GPUDevice::CompilePixelShader(std::wstr
         , "Failed to create pixel shader object");
 
     LOG_SUCCESS("Pixel Shader Object Created");
-    return std::make_optional(pixel_shader);
+    return std::make_optional(Shader {
+        .shader_program = pixel_shader,
+        .bytecode = shader_blob,
+    });
 }
 
-std::optional<ComPtr<ID3D11ComputeShader>> GPUDevice::CompileComputeShader(std::wstring_view path, std::string_view entrypoint)
+std::optional<Shader<ID3D11ComputeShader>> GPUDevice::CompileComputeShader(std::wstring_view path, std::string_view entrypoint)
 {
     std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Compute);
     if (!compilation_result.has_value()) {
@@ -303,7 +313,10 @@ std::optional<ComPtr<ID3D11ComputeShader>> GPUDevice::CompileComputeShader(std::
         , "Failed to create compute shader object");
 
     LOG_SUCCESS("Compute Shader Object Created");
-    return std::make_optional(compute_shader);
+    return std::make_optional(Shader {
+        .shader_program = compute_shader,
+        .bytecode = shader_blob,
+    });
 }
 
 void init_d3d11(WindowHandle window)
