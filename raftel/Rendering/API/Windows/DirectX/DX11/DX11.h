@@ -57,6 +57,12 @@ using VertexShader = Shader<ID3D11VertexShader>;
 using PixelShader = Shader<ID3D11PixelShader>;
 using ComputeShader = Shader<ID3D11ComputeShader>;
 
+struct VertexBuffer {
+public:
+    ComPtr<ID3D11Buffer> buffer = nullptr;
+    ComPtr<ID3D11InputLayout> vertex_layout = nullptr;
+};
+
 struct GPUDevice {
 public:
     ComPtr<ID3D11DeviceContext> context = nullptr;
@@ -71,6 +77,7 @@ public:
 
     Swapchain CreateSwapchain(WindowHandle handle, dxgi::ResourceFormat format = dxgi::ResourceFormat::BGRA8Unorm);
     SwapchainResources CreateSwapchainResources(ComPtr<IDXGISwapChain4> swapchain, Resolution size);
+    void BindSwapchain(const Swapchain& swapchain);
 
     std::optional<ComPtr<ID3DBlob>> CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
     std::optional<VertexShader> CompileVertexShader(std::wstring_view path, std::string_view entrypoint = "VSMain");
@@ -80,8 +87,10 @@ public:
     template <typename T>
     void BindShader(const Shader<T>& shader);
 
-    ComPtr<ID3D11Buffer> CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader);
+    VertexBuffer CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader);
+    void BindVertexBuffer(const VertexBuffer& vertex_buffer);
 
+    void DrawTriangles(std::uint32_t count);
     void Clear(Swapchain& swapchain);
 
     void DumpErrorMessages() const;

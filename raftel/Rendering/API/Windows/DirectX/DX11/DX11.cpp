@@ -3,6 +3,7 @@
 #include <Rendering/API/Windows/DirectX/DX12/DX12Renderer.h>
 #include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
+#include <d3dcommon.h>
 #include <logger.h>
 
 #include <assert.h>
@@ -154,10 +155,12 @@ Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat f
         .window = window,
         .swapchain = swapchain,
         .resources = this->CreateSwapchainResources(swapchain, window_resolution),
+        .new_width = window_resolution.width,
+        .new_height = window_resolution.height,
     };
 }
 
-ComPtr<ID3D11Buffer> GPUDevice::CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader)
+VertexBuffer GPUDevice::CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader)
 {
     const D3D11_INPUT_ELEMENT_DESC vertex_desc[] = {
         D3D11_INPUT_ELEMENT_DESC {
@@ -190,16 +193,47 @@ ComPtr<ID3D11Buffer> GPUDevice::CreateVertexBuffer(const std::vector<float>& ver
         .SysMemPitch = 0,
         .SysMemSlicePitch = 0,
     };
-
     ComPtr<ID3D11Buffer> vertex_buffer = nullptr;
     DX11_CALL(this->device->CreateBuffer(&buffer_desc, &resource_desc, vertex_buffer.GetAddressOf()), *this, "Failed to create vertex buffer");
-    return vertex_buffer;
+
+    return VertexBuffer {
+        .buffer = vertex_buffer,
+        .vertex_layout = vertex_layout,
+    };
+}
+
+void GPUDevice::BindVertexBuffer(const VertexBuffer& vertex_buffer)
+{
+    std::uint32_t stride = 3 * sizeof(float);
+    std::uint32_t offsett = 0;
+    this->context->IASetVertexBuffers(0, 1, vertex_buffer.buffer.GetAddressOf(), &stride, &offsett);
+    this->context->IASetInputLayout(vertex_buffer.vertex_layout.Get());
+}
+
+void GPUDevice::BindSwapchain(const Swapchain& swapchain)
+{
+    const D3D11_VIEWPORT viewport = {
+        .TopLeftX = 0.0f,
+        .TopLeftY = 0.0f,
+        .Width = static_cast<float>(swapchain.new_width),
+        .Height = static_cast<float>(swapchain.new_height),
+        .MinDepth = 0.0f,
+        .MaxDepth = 1.0f,
+    };
+    this->context->RSSetViewports(1, &viewport);
+    this->context->OMSetRenderTargets(1, swapchain.resources.backbuffer_rtv.GetAddressOf(), swapchain.resources.depth_buffer_dsv.Get());
+}
+
+void GPUDevice::DrawTriangles(std::uint32_t count)
+{
+    this->context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    this->context->Draw(count, 0);
 }
 
 void GPUDevice::Clear(Swapchain& swapchain)
 {
-    const float clear_value[4] = { 1.0, 0.0, 0.0, 1.0 };
-    this->context->ClearDepthStencilView(swapchain.resources.depth_buffer_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 0, 0);
+    const float clear_value[4] = { 0.0, 0.0, 0.0, 0.0 };
+    this->context->ClearDepthStencilView(swapchain.resources.depth_buffer_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
     this->context->ClearRenderTargetView(swapchain.resources.backbuffer_rtv.Get(), clear_value);
 
     if (swapchain.needs_resize) {

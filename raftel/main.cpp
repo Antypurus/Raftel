@@ -32,9 +32,12 @@ int main()
 
     auto vertex_shader = device.CompileVertexShader(L"shaders/basic/hlsl/basic.hlsl");
     auto pixel_shader = device.CompilePixelShader(L"shaders/basic/hlsl/basic.hlsl");
-    device.CreateVertexBuffer({ 1.0f, 1.0f, 1.0f }, vertex_shader.value());
-
-    device.BindShader(pixel_shader.value());
+    auto vertex_buffer = device.CreateVertexBuffer({
+                                                       0.0f, 0.5f, 0.0f, // top left
+                                                       0.5f, -0.5f, 0.0f, // top right
+                                                       -0.5f, -0.5f, 0.0f // tip
+                                                   },
+        vertex_shader.value());
 
     while (windowing_system.has_open_windows()) {
         windowing_system.update();
@@ -43,8 +46,14 @@ int main()
             if (!windowing_system.is_window_open(window))
                 continue;
 
-            swapchain.Present();
             device.Clear(swapchain);
+
+            device.BindShader(vertex_shader.value());
+            device.BindShader(pixel_shader.value());
+            device.BindVertexBuffer(vertex_buffer);
+            device.BindSwapchain(swapchain);
+            device.DrawTriangles(3);
+            swapchain.Present();
         }
     }
     #else

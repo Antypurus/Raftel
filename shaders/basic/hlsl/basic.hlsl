@@ -20,5 +20,5 @@ VSOut VSMain(VSIn v)
 
 float4 PSMain(VSOut i) : SV_Target
 {
-    return i.pos;
+    return float4(1.0f, 1.0f, 0.0f, 1.0f);
 }
