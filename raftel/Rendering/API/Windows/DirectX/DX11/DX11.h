@@ -10,6 +10,7 @@
 #include <d3dcommon.h>
 #include <dxgi1_5.h>
 #include <expected>
+#include <iostream>
 #include <optional>
 #include <string>
 #include <vector>
@@ -52,6 +53,9 @@ public:
     ComPtr<ShaderT> shader_program = nullptr;
     ComPtr<ID3DBlob> bytecode = nullptr;
 };
+using VertexShader = Shader<ID3D11VertexShader>;
+using PixelShader = Shader<ID3D11PixelShader>;
+using ComputeShader = Shader<ID3D11ComputeShader>;
 
 struct GPUDevice {
 public:
@@ -69,9 +73,12 @@ public:
     SwapchainResources CreateSwapchainResources(ComPtr<IDXGISwapChain4> swapchain, Resolution size);
 
     std::optional<ComPtr<ID3DBlob>> CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
-    std::optional<Shader<ID3D11VertexShader>> CompileVertexShader(std::wstring_view path, std::string_view entrypoint = "VSMain");
-    std::optional<Shader<ID3D11PixelShader>> CompilePixelShader(std::wstring_view path, std::string_view entrypoint = "PSMain");
-    std::optional<Shader<ID3D11ComputeShader>> CompileComputeShader(std::wstring_view path, std::string_view entrypoint = "CSMain");
+    std::optional<VertexShader> CompileVertexShader(std::wstring_view path, std::string_view entrypoint = "VSMain");
+    std::optional<PixelShader> CompilePixelShader(std::wstring_view path, std::string_view entrypoint = "PSMain");
+    std::optional<ComputeShader> CompileComputeShader(std::wstring_view path, std::string_view entrypoint = "CSMain");
+
+    template <typename T>
+    void BindShader(const Shader<T>& shader);
 
     ComPtr<ID3D11Buffer> CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader);
 
@@ -80,6 +87,20 @@ public:
     void DumpErrorMessages() const;
     std::vector<std::string> GetErrorMessages() const;
 };
+
+template <typename T>
+void GPUDevice::BindShader(const Shader<T>& shader)
+{
+    if constexpr (std::is_same_v<T, ID3D11VertexShader>) {
+        this->context->VSSetShader(shader.shader_program.Get(), nullptr, 0);
+    } else if constexpr (std::is_same_v<T, ID3D11PixelShader>) {
+        this->context->PSSetShader(shader.shader_program.Get(), nullptr, 0);
+    } else if constexpr (std::is_same_v<T, ID3D11ComputeShader>) {
+        this->context->CSSetShader(shader.shader_program.Get(), nullptr, 0);
+    } else {
+        static_assert(false, "Non-Valid Shader Type");
+    }
+}
 
 void init_d3d11(WindowHandle window);
 
