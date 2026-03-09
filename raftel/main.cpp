@@ -54,6 +54,8 @@ int main()
             device.BindSwapchain(swapchain);
             device.DrawTriangles(3);
             swapchain.Present();
+
+            device.DumpErrorMessages();
         }
     }
     #else
