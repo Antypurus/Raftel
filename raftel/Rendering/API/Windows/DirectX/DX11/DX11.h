@@ -77,7 +77,7 @@ public:
 
     Swapchain CreateSwapchain(WindowHandle handle, dxgi::ResourceFormat format = dxgi::ResourceFormat::BGRA8Unorm);
     SwapchainResources CreateSwapchainResources(ComPtr<IDXGISwapChain4> swapchain, Resolution size);
-    void BindSwapchain(const Swapchain& swapchain);
+    void Bind(const Swapchain& swapchain);
 
     std::optional<ComPtr<ID3DBlob>> CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type);
     std::optional<VertexShader> CompileVertexShader(std::wstring_view path, std::string_view entrypoint = "VSMain");
@@ -85,10 +85,10 @@ public:
     std::optional<ComputeShader> CompileComputeShader(std::wstring_view path, std::string_view entrypoint = "CSMain");
 
     template <typename T>
-    void BindShader(const Shader<T>& shader);
+    void Bind(const Shader<T>& shader);
 
     VertexBuffer CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader);
-    void BindVertexBuffer(const VertexBuffer& vertex_buffer);
+    void Bind(const VertexBuffer& vertex_buffer);
 
     void DrawTriangles(std::uint32_t count);
     void Clear(Swapchain& swapchain);
@@ -98,7 +98,7 @@ public:
 };
 
 template <typename T>
-void GPUDevice::BindShader(const Shader<T>& shader)
+void GPUDevice::Bind(const Shader<T>& shader)
 {
     if constexpr (std::is_same_v<T, ID3D11VertexShader>) {
         this->context->VSSetShader(shader.shader_program.Get(), nullptr, 0);

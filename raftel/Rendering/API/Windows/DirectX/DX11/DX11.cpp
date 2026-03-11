@@ -202,7 +202,7 @@ VertexBuffer GPUDevice::CreateVertexBuffer(const std::vector<float>& vertices, S
     };
 }
 
-void GPUDevice::BindVertexBuffer(const VertexBuffer& vertex_buffer)
+void GPUDevice::Bind(const VertexBuffer& vertex_buffer)
 {
     std::uint32_t stride = 3 * sizeof(float);
     std::uint32_t offsett = 0;
@@ -210,7 +210,7 @@ void GPUDevice::BindVertexBuffer(const VertexBuffer& vertex_buffer)
     this->context->IASetInputLayout(vertex_buffer.vertex_layout.Get());
 }
 
-void GPUDevice::BindSwapchain(const Swapchain& swapchain)
+void GPUDevice::Bind(const Swapchain& swapchain)
 {
     const D3D11_VIEWPORT viewport = {
         .TopLeftX = 0.0f,

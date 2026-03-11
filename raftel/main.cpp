@@ -39,6 +39,10 @@ int main()
                                                    },
         vertex_shader.value());
 
+    device.Bind(vertex_shader.value());
+    device.Bind(pixel_shader.value());
+    device.Bind(vertex_buffer);
+
     while (windowing_system.has_open_windows()) {
         windowing_system.update();
         auto handles = windowing_system.get_active_window_list();
@@ -48,10 +52,7 @@ int main()
 
             device.Clear(swapchain);
 
-            device.BindShader(vertex_shader.value());
-            device.BindShader(pixel_shader.value());
-            device.BindVertexBuffer(vertex_buffer);
-            device.BindSwapchain(swapchain);
+            device.Bind(swapchain);
             device.DrawTriangles(3);
             swapchain.Present();
 
