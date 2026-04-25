@@ -202,12 +202,41 @@ VertexBuffer GPUDevice::CreateVertexBuffer(const std::vector<float>& vertices, S
     };
 }
 
+IndexBuffer GPUDevice::CreateIndexBuffer(const std::vector<std::uint32_t>& indices)
+{
+    const D3D11_BUFFER_DESC buffer_desc = {
+        .ByteWidth = (std::uint32_t)(indices.size() * sizeof(std::uint32_t)),
+        .Usage = D3D11_USAGE_IMMUTABLE,
+        .BindFlags = D3D11_BIND_INDEX_BUFFER,
+        .CPUAccessFlags = 0,
+        .MiscFlags = 0,
+        .StructureByteStride = 0,
+    };
+    const D3D11_SUBRESOURCE_DATA resource_desc = {
+        .pSysMem = indices.data(),
+        .SysMemPitch = 0,
+        .SysMemSlicePitch = 0,
+    };
+
+    ComPtr<ID3D11Buffer> index_buffer = nullptr;
+    DX11_CALL(this->device->CreateBuffer(&buffer_desc, &resource_desc, index_buffer.GetAddressOf()), *this, "Failed to create index buffer");
+
+    return {
+        .buffer = index_buffer,
+    };
+}
+
 void GPUDevice::Bind(const VertexBuffer& vertex_buffer)
 {
     std::uint32_t stride = 3 * sizeof(float);
     std::uint32_t offsett = 0;
     this->context->IASetVertexBuffers(0, 1, vertex_buffer.buffer.GetAddressOf(), &stride, &offsett);
     this->context->IASetInputLayout(vertex_buffer.vertex_layout.Get());
+}
+
+void GPUDevice::Bind(const IndexBuffer& index_buffer)
+{
+    this->context->IASetIndexBuffer(index_buffer.buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 }
 
 void GPUDevice::Bind(const Swapchain& swapchain)
@@ -227,7 +256,7 @@ void GPUDevice::Bind(const Swapchain& swapchain)
 void GPUDevice::DrawTriangles(std::uint32_t count)
 {
     this->context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    this->context->Draw(count, 0);
+    this->context->DrawIndexed(count, 0, 0);
 }
 
 void GPUDevice::Clear(Swapchain& swapchain)
@@ -275,7 +304,7 @@ std::optional<ComPtr<ID3DBlob>> GPUDevice::CompileShader(std::wstring_view path,
     if (FAILED(result)) {
         const char* err_message = (const char*)error_blob->GetBufferPointer();
         LOG_ERROR("Shader Blob Compilation Failed: {}", err_message);
-        return {};
+        return { };
     }
 
     return std::make_optional(shader_blob);
@@ -285,7 +314,7 @@ std::optional<Shader<ID3D11VertexShader>> GPUDevice::CompileVertexShader(std::ws
 {
     std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Vertex);
     if (!compilation_result.has_value()) {
-        return {};
+        return { };
     }
     ComPtr<ID3DBlob> shader_blob = std::move(compilation_result.value());
 
@@ -295,7 +324,7 @@ std::optional<Shader<ID3D11VertexShader>> GPUDevice::CompileVertexShader(std::ws
                             shader_blob->GetBufferSize(),
                             nullptr, vertex_shader.GetAddressOf()),
         *this,
-        return {};
+        return { };
         , "Failed to create vertex shader object");
 
     LOG_SUCCESS("Vertex Shader Object Created");
@@ -309,7 +338,7 @@ std::optional<Shader<ID3D11PixelShader>> GPUDevice::CompilePixelShader(std::wstr
 {
     std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Pixel);
     if (!compilation_result.has_value()) {
-        return {};
+        return { };
     }
     ComPtr<ID3DBlob> shader_blob = std::move(compilation_result.value());
 
@@ -319,7 +348,7 @@ std::optional<Shader<ID3D11PixelShader>> GPUDevice::CompilePixelShader(std::wstr
                             shader_blob->GetBufferSize(),
                             nullptr, pixel_shader.GetAddressOf()),
         *this,
-        return {};
+        return { };
         , "Failed to create pixel shader object");
 
     LOG_SUCCESS("Pixel Shader Object Created");
@@ -333,7 +362,7 @@ std::optional<Shader<ID3D11ComputeShader>> GPUDevice::CompileComputeShader(std::
 {
     std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Compute);
     if (!compilation_result.has_value()) {
-        return {};
+        return { };
     }
     ComPtr<ID3DBlob> shader_blob = std::move(compilation_result.value());
 
@@ -343,7 +372,7 @@ std::optional<Shader<ID3D11ComputeShader>> GPUDevice::CompileComputeShader(std::
                             shader_blob->GetBufferSize(),
                             nullptr, compute_shader.GetAddressOf()),
         *this,
-        return {};
+        return { };
         , "Failed to create compute shader object");
 
     LOG_SUCCESS("Compute Shader Object Created");

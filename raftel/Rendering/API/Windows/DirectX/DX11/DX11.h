@@ -63,6 +63,10 @@ public:
     ComPtr<ID3D11InputLayout> vertex_layout = nullptr;
 };
 
+struct IndexBuffer {
+    ComPtr<ID3D11Buffer> buffer = nullptr;
+};
+
 struct GPUDevice {
 public:
     ComPtr<ID3D11DeviceContext> context = nullptr;
@@ -84,11 +88,13 @@ public:
     std::optional<PixelShader> CompilePixelShader(std::wstring_view path, std::string_view entrypoint = "PSMain");
     std::optional<ComputeShader> CompileComputeShader(std::wstring_view path, std::string_view entrypoint = "CSMain");
 
+    VertexBuffer CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader);
+    IndexBuffer CreateIndexBuffer(const std::vector<std::uint32_t>& indices);
+
     template <typename T>
     void Bind(const Shader<T>& shader);
-
-    VertexBuffer CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader);
     void Bind(const VertexBuffer& vertex_buffer);
+    void Bind(const IndexBuffer& index_buffer);
 
     void DrawTriangles(std::uint32_t count);
     void Clear(Swapchain& swapchain);
@@ -123,5 +129,5 @@ void init_d3d11(WindowHandle window);
             post_action;                                                                         \
         }                                                                                        \
     }
-#define DX11_CALL(function_call, device, error_message, ...) WIN_CALL_GUARD(function_call, error_message, DX11_ERROR_MESSAGE_PUMP(device, {}), __VA_ARGS__)
+#define DX11_CALL(function_call, device, error_message, ...) WIN_CALL_GUARD(function_call, error_message, DX11_ERROR_MESSAGE_PUMP(device, { }), __VA_ARGS__)
 #define DX11_CALL_WITH_POST(function_call, device, post_action, error_message, ...) WIN_CALL_GUARD(function_call, error_message, DX11_ERROR_MESSAGE_PUMP(device, post_action), __VA_ARGS__)

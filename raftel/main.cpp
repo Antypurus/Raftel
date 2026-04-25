@@ -38,10 +38,12 @@ int main()
                                                        -0.5f, -0.5f, 0.0f // tip
                                                    },
         vertex_shader.value());
+    auto index_buffer = device.CreateIndexBuffer({ 0, 1, 2 });
 
     device.Bind(vertex_shader.value());
     device.Bind(pixel_shader.value());
     device.Bind(vertex_buffer);
+    device.Bind(index_buffer);
 
     while (windowing_system.has_open_windows()) {
         windowing_system.update();
