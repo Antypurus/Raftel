@@ -70,9 +70,11 @@ std::string getTimeString();
     #define LOG_WARNING(Message, ...) LOG(logger::log_level::warning, Message, "WARNING", __VA_ARGS__)
     #define LOG_ERROR(Message, ...) LOG(logger::log_level::error, Message, "ERROR", __VA_ARGS__)
     #define LOG_INFO(Message, ...) LOG(logger::log_level::info, Message, "INFO", __VA_ARGS__)
+    #define LOG_DEBUG(Message, ...) LOG(logger::log_level::info, Message, "INFO", __VA_ARGS__)
 #else
     #define LOG_SUCCESS(Message, ...)
     #define LOG_WARNING(Message, ...)
     #define LOG_ERROR(Message, ...)
     #define LOG_INFO(Message, ...)
+    #define LOG_DEBUG(Message, ...)
 #endif
