@@ -4,6 +4,17 @@
 
 namespace raftel {
 
+enum class path_type {
+    file,
+    link,
+    directory,
+    FIFO,
+    socket,
+    block_device,
+    character_device,
+    unknown
+};
+
 class filesystem {
 public:
     /**
@@ -17,6 +28,8 @@ public:
      * it
      */
     static bool path_exists(std::string_view path);
+
+    static path_type get_path_type(std::string_view path);
 };
 
 }

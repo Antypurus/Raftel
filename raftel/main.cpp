@@ -18,9 +18,6 @@ int main()
 {
     logger::create_logger();
 
-    auto exists = filesystem::path_exists(".");
-    std::cout << exists << std::endl;
-
     parsers::parse_json("test.json");
     // return 0;
 
