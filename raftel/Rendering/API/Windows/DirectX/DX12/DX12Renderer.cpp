@@ -2,7 +2,7 @@
 
 #include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
-#include <logger.h>
+#include <core/logger.h>
 
 #include <cassert>
 #include <cstdint>

@@ -1,7 +1,7 @@
 #include "Metal.h"
 
 #include <Windowing/Window.h>
-#include <logger.h>
+#include <core/logger.h>
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>

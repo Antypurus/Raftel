@@ -1,7 +1,7 @@
 #pragma once
 
+#include <core/logger.h>
 #include <Windowing/Window.h>
-#include <logger.h>
 
 #include <cstdint>
 #include <dxgi1_6.h>
@@ -46,7 +46,7 @@ public:
     IDXGIFactory7* operator->() const;
     operator IDXGIFactory7*() const;
 
-    ComPtr<IDXGISwapChain4> CreateSwapchain(IUnknown* device, WindowHandle window, SwapchainParams params = {});
+    ComPtr<IDXGISwapChain4> CreateSwapchain(IUnknown* device, WindowHandle window, SwapchainParams params = { });
     std::vector<std::string> GetDXGIErrorMessages();
     void DumpDXGIErrorMessages();
 
@@ -75,7 +75,7 @@ std::pair<const char*, size_t> TranslateWindowsErrorCode(HRESULT code);
         }                                                                                                                 \
     }
 
-#define WIN_CALL(function_call, error_message, ...) WIN_CALL_GUARD(function_call, error_message, {}, __VA_ARGS__)
+#define WIN_CALL(function_call, error_message, ...) WIN_CALL_GUARD(function_call, error_message, { }, __VA_ARGS__)
 
 #define DXGI_ERROR_MESSAGE_DUMP                                                                                 \
     {                                                                                                           \

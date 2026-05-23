@@ -1,7 +1,8 @@
 #include "json.h"
 
+#include <core/logger.h>
+
 #include <fstream>
-#include <logger.h>
 
 namespace raftel::parsers {
 

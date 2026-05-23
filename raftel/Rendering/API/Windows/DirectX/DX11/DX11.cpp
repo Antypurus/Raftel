@@ -3,9 +3,8 @@
 #include <Rendering/API/Windows/DirectX/DX12/DX12Renderer.h>
 #include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
-#include <d3dcommon.h>
-#include <logger.h>
 
+#include <d3dcommon.h>
 #include <assert.h>
 #include <cstdint>
 #include <d3d11.h>

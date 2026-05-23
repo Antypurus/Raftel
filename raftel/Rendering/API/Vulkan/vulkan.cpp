@@ -1,6 +1,6 @@
 #include <Rendering/API/Vulkan/vulkan.h>
 
-#include <logger.h>
+#include <core/logger.h>
 
 #include <cassert>
 #include <vector>
@@ -69,7 +69,7 @@ void init_vulkan()
             VkPhysicalDeviceProperties2 device_properties {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
                 .pNext = nullptr,
-                .properties = {},
+                .properties = { },
             };
             vkGetPhysicalDeviceProperties2(physical_devices[i], &device_properties);
             if (device_properties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
