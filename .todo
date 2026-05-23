@@ -1,0 +1,21 @@
+[] Model Loading
+	[] GLTF Parsing Support
+		[] JSON Parser
+			[] File Reading Utils
+			[] Parser
+	[] Texture Loading
+		[] Image File Reading
+		[] Image Upload
+		[] Texture Object Creation
+			[] Metal
+			[] Vulkan
+			[] DX11
+			[] DX12
+
+[] Camera System
+[] ImGUI Integration
+[] Logger Interface Improvemnts
+	[] strings vs wide strings should be transparent to the user
+	[] Log Filtering
+
+
