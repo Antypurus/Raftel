@@ -24,6 +24,28 @@ bool filesystem::path_exists(std::string_view path)
     return result;
 }
 
+std::string_view filesystem::get_parent_dir(std::string_view path)
+{
+    std::size_t final_dir_delimiter = path.rfind('/');
+    if (final_dir_delimiter == std::string_view::npos) {
+        // character not found
+        return path;
+    }
+
+    return path.substr(0, final_dir_delimiter);
+}
+
+bool filesystem::create_directory(std::string_view path)
+{
+    std::error_code error;
+    std::filesystem::create_directory(path, error);
+    if (error) {
+        LOG_ERROR("{}", error.message());
+        return false;
+    }
+    return true;
+}
+
 path_type filesystem::get_path_type(std::string_view path)
 {
     ASSERT(path_exists(path));

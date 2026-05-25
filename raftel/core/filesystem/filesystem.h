@@ -30,6 +30,10 @@ public:
     static bool path_exists(std::string_view path);
 
     static path_type get_path_type(std::string_view path);
+
+    static std::string_view get_parent_dir(std::string_view path);
+
+    static bool create_directory(std::string_view path);
 };
 
 }
