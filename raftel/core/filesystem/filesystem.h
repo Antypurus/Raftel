@@ -1,6 +1,8 @@
 #pragma once
 
+#include <string>
 #include <string_view>
+#include <vector>
 
 namespace raftel {
 
@@ -34,6 +36,10 @@ public:
     static std::string_view get_parent_dir(std::string_view path);
 
     static bool create_path(std::string_view path, bool createMissing = true);
+
+    static std::vector<std::uint8_t> read_file(std::string_view filepath);
+
+    static std::string get_cwd();
 };
 
 }

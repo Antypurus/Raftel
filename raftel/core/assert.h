@@ -5,7 +5,7 @@
 #undef ENABLE_ASSERT
 #undef ENABLE_SOFT_ASSERT
 
-#define ENABLE_SOFT_ASSERT 1
+#define ENABLE_ASSERT 1
 
 #ifdef ENABLE_ASSERT
     #define ASSERT(X) assert(X)

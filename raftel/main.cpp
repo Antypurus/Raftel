@@ -18,8 +18,8 @@ int main()
 {
     logger::create_logger();
 
-    auto result = raftel::filesystem::get_parent_dir("./test/test.val");
-    LOG_DEBUG("{}", result);
+    auto fileContents = raftel::filesystem::read_file("README.md");
+    LOG_INFO("{}", std::string_view((char*)fileContents.data(), fileContents.size()));
     return 0;
 
     WindowingSystem& windowing_system = WindowingSystem::get_instance();
