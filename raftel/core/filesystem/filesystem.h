@@ -33,7 +33,7 @@ public:
 
     static std::string_view get_parent_dir(std::string_view path);
 
-    static bool create_directory(std::string_view path);
+    static bool create_path(std::string_view path, bool createMissing = true);
 };
 
 }

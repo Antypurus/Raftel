@@ -35,10 +35,14 @@ std::string_view filesystem::get_parent_dir(std::string_view path)
     return path.substr(0, final_dir_delimiter);
 }
 
-bool filesystem::create_directory(std::string_view path)
+bool filesystem::create_path(std::string_view path, bool createMissing)
 {
     std::error_code error;
-    std::filesystem::create_directory(path, error);
+    if (createMissing) {
+        std::filesystem::create_directories(path, error);
+    } else {
+        std::filesystem::create_directory(path, error);
+    }
     if (error) {
         LOG_ERROR("{}", error.message());
         return false;
