@@ -1,4 +1,6 @@
 #include "Window.h"
+
+#define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 #include "GLFW/glfw3native.h"
 
@@ -6,18 +8,20 @@
 #include <cstdint>
 #include <iostream>
 
+#undef CreateWindow
+
 namespace raftel {
 
 WindowingSystem WindowingSystem::s_instance = WindowingSystem();
 
-WindowingSystem& WindowingSystem::get_instance()
+WindowingSystem& WindowingSystem::GetInstance()
 {
     return s_instance;
 }
 
 WindowingSystem::WindowingSystem()
 {
-    this->init_glfw();
+    this->InitGLFW();
 }
 
 WindowingSystem::~WindowingSystem()
@@ -30,13 +34,13 @@ WindowingSystem::~WindowingSystem()
     glfwTerminate();
 }
 
-void WindowingSystem::init_glfw() const
+void WindowingSystem::InitGLFW() const
 {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 }
 
-void WindowingSystem::global_window_resize_callback(GLFWwindow* window_handle, int new_width, int new_height)
+void WindowingSystem::GlobalWindowResizeCallback(GLFWwindow* window_handle, int new_width, int new_height)
 {
     for (size_t i = 0; i < this->m_windows.size(); ++i) {
         if (this->m_windows[i] != window_handle)
@@ -53,7 +57,7 @@ void WindowingSystem::global_window_resize_callback(GLFWwindow* window_handle, i
     }
 }
 
-WindowHandle WindowingSystem::register_window(GLFWwindow* window_handle, Resolution initial_resolution)
+WindowHandle WindowingSystem::RegisterWindow(GLFWwindow* window_handle, Resolution initial_resolution)
 {
     size_t handle_index = this->m_windows.size();
     size_t generation = 0;
@@ -70,7 +74,7 @@ WindowHandle WindowingSystem::register_window(GLFWwindow* window_handle, Resolut
     };
 }
 
-void WindowingSystem::remove_window(size_t index)
+void WindowingSystem::RemoveWindow(size_t index)
 {
     if (this->m_window_is_open[index] == false)
         return;
@@ -82,7 +86,7 @@ void WindowingSystem::remove_window(size_t index)
     this->m_handle_generations[index]++;
 }
 
-void WindowingSystem::update()
+void WindowingSystem::Update()
 {
     glfwPollEvents();
     for (size_t i = 0; i < this->m_windows.size(); ++i) {
@@ -90,12 +94,12 @@ void WindowingSystem::update()
             continue;
 
         if (glfwWindowShouldClose(this->m_windows[i])) {
-            this->remove_window(i);
+            this->RemoveWindow(i);
         }
     }
 }
 
-WindowHandle WindowingSystem::create_window(std::string_view name, std::uint32_t width, std::uint32_t height)
+WindowHandle WindowingSystem::CreateWindow(std::string_view name, std::uint32_t width, std::uint32_t height)
 {
     GLFWwindow* window_handle = glfwCreateWindow((std::int32_t)width, (std::int32_t)height, name.data(), nullptr, nullptr);
     if (window_handle == nullptr) {
@@ -103,13 +107,13 @@ WindowHandle WindowingSystem::create_window(std::string_view name, std::uint32_t
     }
 
     glfwSetFramebufferSizeCallback(window_handle, [](GLFWwindow* window, int new_width, int new_height) {
-        get_instance().global_window_resize_callback(window, new_width, new_height);
+        GetInstance().GlobalWindowResizeCallback(window, new_width, new_height);
     });
 
-    return this->register_window(window_handle, Resolution { width, height });
+    return this->RegisterWindow(window_handle, Resolution { width, height });
 }
 
-bool WindowingSystem::has_open_windows() const
+bool WindowingSystem::HasOpenWindows() const
 {
     for (size_t i = 0; i < this->m_windows.size(); ++i) {
         if (this->m_window_is_open[i])
@@ -118,7 +122,7 @@ bool WindowingSystem::has_open_windows() const
     return false;
 }
 
-std::vector<WindowHandle> WindowingSystem::get_active_window_list()
+std::vector<WindowHandle> WindowingSystem::GetActiveWindowList()
 {
     std::vector<WindowHandle> result;
     result.reserve(this->m_windows.size());
@@ -134,33 +138,33 @@ std::vector<WindowHandle> WindowingSystem::get_active_window_list()
     return result;
 }
 
-Resolution WindowingSystem::get_window_resolution(WindowHandle handle) const
+Resolution WindowingSystem::GetWindowResolution(WindowHandle handle) const
 {
     assert(handle.handle < this->m_windows.size() && handle.generation == this->m_handle_generations[handle.handle]);
     return this->m_window_resolutions[handle.handle];
 }
 
-bool WindowingSystem::is_window_open(WindowHandle window_handle) const
+bool WindowingSystem::IsWindowOpen(WindowHandle window_handle) const
 {
     // assert(window_handle.generation == this->m_handle_generations[window_handle.handle]);
     return !glfwWindowShouldClose(this->m_windows[window_handle.handle]);
 }
 
-bool WindowingSystem::is_window_focused(WindowHandle window_handle) const
+bool WindowingSystem::IsWindowFocused(WindowHandle window_handle) const
 {
     return glfwGetWindowAttrib(this->m_windows[window_handle.handle], GLFW_FOCUSED) == GLFW_TRUE;
 }
 
-void WindowingSystem::register_window_resize_callback(WindowHandle handle, std::function<void(std::uint32_t, std::uint32_t)> callback)
+void WindowingSystem::RegisterWindowResizeCallback(WindowHandle handle, std::function<void(std::uint32_t, std::uint32_t)> callback)
 {
     this->m_resize_callbacks[handle.handle].emplace_back(std::move(callback));
 }
 
-WindowHandleNativeType WindowingSystem::get_native_window_handle(WindowHandle handle) const
+WindowHandleNativeType WindowingSystem::GetNativeWindowHandle(WindowHandle handle) const
 {
     GLFWwindow* window_handle = this->m_windows[handle.handle];
 #ifdef _WIN32
-    return glfwGetWin32Window(window_handle);
+    return (FWD_HWND)glfwGetWin32Window(window_handle);
 #elifdef __APPLE__
     return glfwGetCocoaWindow(window_handle);
 #elifdef __linux__

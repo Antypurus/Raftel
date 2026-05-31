@@ -18,12 +18,12 @@ int main()
 {
     logger::create_logger();
 
-    auto fileContents = raftel::filesystem::read_file("README.md");
+    auto fileContents = raftel::filesystem::ReadFile("README.md");
     LOG_INFO("{}", std::string_view((char*)fileContents.data(), fileContents.size()));
-    return 0;
+    //return 0;
 
-    WindowingSystem& windowing_system = WindowingSystem::get_instance();
-    WindowHandle first_window = windowing_system.create_window("test_window", 1920, 1080);
+    WindowingSystem& windowing_system = WindowingSystem::GetInstance();
+    WindowHandle first_window = windowing_system.CreateWindow("test_window", 1920, 1080);
 
     // init_vulkan();
 
@@ -35,7 +35,7 @@ int main()
     #if 1
     auto device = dx11::GPUDevice::CreateDevice();
     auto swapchain = device.CreateSwapchain(first_window);
-    windowing_system.register_window_resize_callback(first_window, [&swapchain](std::uint32_t width, std::uint32_t height) { swapchain.RegisterResize(width, height); });
+    windowing_system.RegisterWindowResizeCallback(first_window, [&swapchain](std::uint32_t width, std::uint32_t height) { swapchain.RegisterResize(width, height); });
 
     auto vertex_shader = device.CompileVertexShader(L"shaders/basic/hlsl/basic.hlsl");
     auto pixel_shader = device.CompilePixelShader(L"shaders/basic/hlsl/basic.hlsl");
@@ -52,11 +52,11 @@ int main()
     device.Bind(vertex_buffer);
     device.Bind(index_buffer);
 
-    while (windowing_system.has_open_windows()) {
-        windowing_system.update();
-        auto handles = windowing_system.get_active_window_list();
+    while (windowing_system.HasOpenWindows()) {
+        windowing_system.Update();
+        auto handles = windowing_system.GetActiveWindowList();
         for (auto& window : handles) {
-            if (!windowing_system.is_window_open(window))
+            if (!windowing_system.IsWindowOpen(window))
                 continue;
 
             device.Clear(swapchain);

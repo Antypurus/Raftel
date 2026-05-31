@@ -50,9 +50,9 @@ DXGIFactory::operator IDXGIFactory7*() const
 
 ComPtr<IDXGISwapChain4> DXGIFactory::CreateSwapchain(IUnknown* device, WindowHandle window, SwapchainParams params)
 {
-    WindowingSystem& window_system = WindowingSystem::get_instance();
-    HWND window_handle = window_system.get_native_window_handle(window);
-    Resolution window_resolution = window_system.get_window_resolution(window);
+    WindowingSystem& window_system = WindowingSystem::GetInstance();
+    HWND window_handle = (HWND)window_system.GetNativeWindowHandle(window);
+    Resolution window_resolution = window_system.GetWindowResolution(window);
 
     ComPtr<IDXGISwapChain4> swapchain = nullptr;
     ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;

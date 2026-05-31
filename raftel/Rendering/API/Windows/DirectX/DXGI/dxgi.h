@@ -1,7 +1,7 @@
 #pragma once
 
-#include <core/logger.h>
 #include <Windowing/Window.h>
+#include <core/logger.h>
 
 #include <cstdint>
 #include <dxgi1_6.h>

@@ -143,8 +143,8 @@ SwapchainResources GPUDevice::CreateSwapchainResources(ComPtr<IDXGISwapChain4> s
 
 Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
 {
-    WindowingSystem& window_system = WindowingSystem::get_instance();
-    Resolution window_resolution = window_system.get_window_resolution(window);
+    WindowingSystem& window_system = WindowingSystem::GetInstance();
+    Resolution window_resolution = window_system.GetWindowResolution(window);
 
     auto& factory = dxgi::DXGIFactory::GetFactory();
     auto swapchain = factory.CreateSwapchain(this->device.Get(), window, dxgi::SwapchainParams { .format = format });

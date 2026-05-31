@@ -8,7 +8,7 @@
 
 namespace raftel {
 
-bool filesystem::path_exists(std::string_view path)
+bool filesystem::PathExists(std::string_view path)
 {
     // asside from a file existing or not exists can
     // error due to lack of permissions. The default
@@ -25,7 +25,7 @@ bool filesystem::path_exists(std::string_view path)
     return result;
 }
 
-std::string_view filesystem::get_parent_dir(std::string_view path)
+std::string_view filesystem::GetParentDir(std::string_view path)
 {
     std::size_t final_dir_delimiter = path.rfind('/');
     if (final_dir_delimiter == std::string_view::npos) {
@@ -36,7 +36,7 @@ std::string_view filesystem::get_parent_dir(std::string_view path)
     return path.substr(0, final_dir_delimiter);
 }
 
-bool filesystem::create_path(std::string_view path, bool createMissing)
+bool filesystem::CreatePath(std::string_view path, bool createMissing)
 {
     std::error_code error;
     if (createMissing) {
@@ -51,9 +51,9 @@ bool filesystem::create_path(std::string_view path, bool createMissing)
     return true;
 }
 
-path_type filesystem::get_path_type(std::string_view path)
+path_type filesystem::GetPathType(std::string_view path)
 {
-    ASSERT(path_exists(path));
+    ASSERT(PathExists(path));
 
     const std::filesystem::file_status file_status = std::filesystem::status(path);
     switch (file_status.type()) {
@@ -76,9 +76,9 @@ path_type filesystem::get_path_type(std::string_view path)
     }
 }
 
-std::vector<std::uint8_t> filesystem::read_file(std::string_view filepath)
+std::vector<std::uint8_t> filesystem::ReadFile(std::string_view filepath)
 {
-    ASSERT(path_exists(filepath));
+    ASSERT(PathExists(filepath));
 
     std::error_code error;
     const size_t filesize = std::filesystem::file_size(filepath, error);
@@ -104,7 +104,7 @@ std::vector<std::uint8_t> filesystem::read_file(std::string_view filepath)
     return buffer;
 }
 
-std::string filesystem::get_cwd()
+std::string filesystem::GetCWD()
 {
     return std::filesystem::current_path().string();
 }

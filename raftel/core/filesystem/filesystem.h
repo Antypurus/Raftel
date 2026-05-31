@@ -29,17 +29,17 @@ public:
      * not exist of the user does not have permissions to access
      * it
      */
-    static bool path_exists(std::string_view path);
+    static bool PathExists(std::string_view path);
 
-    static path_type get_path_type(std::string_view path);
+    static path_type GetPathType(std::string_view path);
 
-    static std::string_view get_parent_dir(std::string_view path);
+    static std::string_view GetParentDir(std::string_view path);
 
-    static bool create_path(std::string_view path, bool createMissing = true);
+    static bool CreatePath(std::string_view path, bool createMissing = true);
 
-    static std::vector<std::uint8_t> read_file(std::string_view filepath);
+    static std::vector<std::uint8_t> ReadFile(std::string_view filepath);
 
-    static std::string get_cwd();
+    static std::string GetCWD();
 };
 
 }
