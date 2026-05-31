@@ -27,49 +27,49 @@ struct GLFWwindow;
 namespace raftel {
 
 struct Resolution {
-    std::uint32_t width;
-    std::uint32_t height;
+    std::uint32_t Width;
+    std::uint32_t Height;
 };
 
 struct WindowHandle {
-    size_t handle;
-    size_t generation;
+    size_t Handle;
+    size_t Generation;
 };
 
 class WindowingSystem {
 private:
-    static WindowingSystem s_instance;
+    static WindowingSystem s_Instance;
 
 private:
     // handle management
-    std::vector<GLFWwindow*> m_windows;
-    std::vector<size_t> m_handle_generations;
+    std::vector<GLFWwindow*> m_Windows;
+    std::vector<size_t> m_HandleGenerations;
 
     // window metadata
-    std::vector<Resolution> m_window_resolutions;
-    std::vector<bool> m_window_is_open;
-    std::vector<std::vector<std::function<void(std::uint32_t, std::uint32_t)>>> m_resize_callbacks;
+    std::vector<Resolution> m_WindowResolutions;
+    std::vector<bool> m_WindowIsOpen;
+    std::vector<std::vector<std::function<void(std::uint32_t, std::uint32_t)>>> m_ResizeCallbacks;
 
 public:
     static WindowingSystem& GetInstance();
     void Update();
-    WindowHandle CreateWindow(std::string_view name, std::uint32_t width, std::uint32_t height);
+    WindowHandle CreateWindow(std::string_view Name, std::uint32_t Width, std::uint32_t Height);
     std::vector<WindowHandle> GetActiveWindowList();
     bool HasOpenWindows() const;
-    bool IsWindowOpen(WindowHandle handle) const;
-    bool IsWindowFocused(WindowHandle handle) const;
-    void RegisterWindowResizeCallback(WindowHandle handle, std::function<void(std::uint32_t, std::uint32_t)> callback);
-    WindowHandleNativeType GetNativeWindowHandle(WindowHandle handle) const;
-    Resolution GetWindowResolution(WindowHandle handle) const;
+    bool IsWindowOpen(WindowHandle Handle) const;
+    bool IsWindowFocused(WindowHandle Handle) const;
+    void RegisterWindowResizeCallback(WindowHandle Handle, std::function<void(std::uint32_t, std::uint32_t)> Callback);
+    WindowHandleNativeType GetNativeWindowHandle(WindowHandle Handle) const;
+    Resolution GetWindowResolution(WindowHandle Handle) const;
 
 private:
     WindowingSystem();
     ~WindowingSystem();
 
     void InitGLFW() const;
-    void GlobalWindowResizeCallback(GLFWwindow* window_handle, int new_width, int new_height);
-    WindowHandle RegisterWindow(GLFWwindow* window_handle, Resolution initial_resolution);
-    void RemoveWindow(size_t index);
+    void GlobalWindowResizeCallback(GLFWwindow* WindowHandle, int NewWidth, int NewHeight);
+    WindowHandle RegisterWindow(GLFWwindow* WindowHandle, Resolution InitialResolution);
+    void RemoveWindow(size_t Index);
 };
 
 }

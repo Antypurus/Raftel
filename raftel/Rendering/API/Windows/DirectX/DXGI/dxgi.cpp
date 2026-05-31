@@ -57,8 +57,8 @@ ComPtr<IDXGISwapChain4> DXGIFactory::CreateSwapchain(IUnknown* device, WindowHan
     ComPtr<IDXGISwapChain4> swapchain = nullptr;
     ComPtr<IDXGISwapChain1> intermediate_swapchain = nullptr;
     const DXGI_SWAP_CHAIN_DESC1 swapchain_desc = {
-        .Width = window_resolution.width,
-        .Height = window_resolution.height,
+        .Width = window_resolution.Width,
+        .Height = window_resolution.Height,
         .Format = (DXGI_FORMAT)params.format,
         .Stereo = false,
         .SampleDesc = {

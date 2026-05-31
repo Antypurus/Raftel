@@ -116,8 +116,8 @@ SwapchainResources GPUDevice::CreateSwapchainResources(ComPtr<IDXGISwapChain4> s
     ComPtr<ID3D11Texture2D> depth_stentil_buffer = nullptr;
     ComPtr<ID3D11DepthStencilView> depth_stencil_view = nullptr;
     const D3D11_TEXTURE2D_DESC depth_stentil_buffer_desc = {
-        .Width = size.width,
-        .Height = size.height,
+        .Width = size.Width,
+        .Height = size.Height,
         .MipLevels = 1,
         .ArraySize = 1,
         .Format = (DXGI_FORMAT)dxgi::ResourceFormat::D24UnormS8Uint,
@@ -154,8 +154,8 @@ Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat f
         .window = window,
         .swapchain = swapchain,
         .resources = this->CreateSwapchainResources(swapchain, window_resolution),
-        .new_width = window_resolution.width,
-        .new_height = window_resolution.height,
+        .new_width = window_resolution.Width,
+        .new_height = window_resolution.Height,
     };
 }
 
@@ -276,8 +276,8 @@ void GPUDevice::Clear(Swapchain& swapchain)
 
         DXGI_CALL(swapchain.swapchain->ResizeBuffers(2, swapchain.new_width, swapchain.new_height, (DXGI_FORMAT)dxgi::ResourceFormat::BGRA8Unorm, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING), "Failed to resize swapchain");
         swapchain.resources = this->CreateSwapchainResources(swapchain.swapchain, {
-                                                                                      .width = swapchain.new_width,
-                                                                                      .height = swapchain.new_height,
+                                                                                      .Width = swapchain.new_width,
+                                                                                      .Height = swapchain.new_height,
                                                                                   });
 
         swapchain.needs_resize = false;
