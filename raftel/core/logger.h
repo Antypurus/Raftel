@@ -6,71 +6,71 @@
 
 namespace raftel {
 
-struct logger {
+struct Logger {
 public:
-    enum class log_level {
-        success,
-        error,
-        warning,
-        info
+    enum class LogLevel {
+        Success,
+        Error,
+        Warning,
+        Info
     };
 
 private:
-    static logger s_instance;
-    std::ofstream m_log_file;
+    static Logger s_Instance;
+    std::ofstream m_LogFile;
 
 public:
-    static logger& create_logger();
-    static logger& get_logger();
+    static Logger& CreateLogger();
+    static Logger& GetLogger();
 
-    void log(log_level level, std::string_view message);
+    void Log(LogLevel Level, std::string_view Message);
 
     template <typename... ArgT>
-    void log(log_level level, std::string_view message, ArgT&&... params);
+    void Log(LogLevel Level, std::string_view Message, ArgT&&... Params);
 
 private:
-    logger()
+    Logger()
         = default;
-    ~logger();
+    ~Logger();
 };
 
 template <typename... ArgT>
-void logger::log(log_level level, std::string_view message, ArgT&&... params)
+void Logger::Log(LogLevel p_Level, std::string_view p_Message, ArgT&&... p_Params)
 {
-    std::string log_message = std::vformat(message, std::make_format_args(params...));
-    this->log(level, log_message);
+    std::string logMessage = std::vformat(p_Message, std::make_format_args(p_Params...));
+    this->Log(p_Level, logMessage);
 }
 
-const char* extract_filename(const char* filepath);
-std::string getTimeString();
+const char* ExtractFilename(const char* filepath);
+std::string GetTimeString();
 
 }
 
 #ifdef _WIN32
-    #define LOG(level, Message, level_str, ...)                                                                \
-        {                                                                                                      \
-            auto& logger = logger::get_logger();                                                               \
-            auto time = getTimeString();                                                                       \
-            auto file = raftel::extract_filename(__FILE__);                                                    \
-            logger.log(level, "[{}][{}]{}@{} -> " Message "\n", time, level_str, file, __LINE__, __VA_ARGS__); \
+    #define LOG(p_Level, p_Message, p_LevelStr, ...)                                                                \
+        {                                                                                                           \
+            auto& logger = Logger::GetLogger();                                                                     \
+            auto time = GetTimeString();                                                                            \
+            auto file = raftel::ExtractFilename(__FILE__);                                                          \
+            logger.Log(p_Level, "[{}][{}]{}@{} -> " p_Message "\n", time, p_LevelStr, file, __LINE__, __VA_ARGS__); \
         }
 #else
-    #define LOG(level, Message, level_str, ...)                                                                              \
-        {                                                                                                                    \
-            auto& logger = logger::get_logger();                                                                             \
-            auto time = getTimeString();                                                                                     \
-            auto file = raftel::extract_filename(__FILE__);                                                                  \
-            logger.log(level, "[{}][{}]{}@{} -> " Message "\n", time, level_str, file, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
+    #define LOG(p_Level, p_Message, p_LevelStr, ...)                                                                             \
+        {                                                                                                                   \
+            auto& logger = Logger::GetLogger();                                                                             \
+            auto time = GetTimeString();                                                                                    \
+            auto file = raftel::ExtractFilename(__FILE__);                                                                  \
+            logger.Log(p_Level, "[{}][{}]{}@{} -> " p_Message "\n", time, p_LevelStr, file, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
         }
 #endif
 
 #define LOGGING_ENABLE 1
 #if LOGGING_ENABLE
-    #define LOG_SUCCESS(Message, ...) LOG(logger::log_level::success, Message, "SUCCESS", __VA_ARGS__)
-    #define LOG_WARNING(Message, ...) LOG(logger::log_level::warning, Message, "WARNING", __VA_ARGS__)
-    #define LOG_ERROR(Message, ...) LOG(logger::log_level::error, Message, "ERROR", __VA_ARGS__)
-    #define LOG_INFO(Message, ...) LOG(logger::log_level::info, Message, "INFO", __VA_ARGS__)
-    #define LOG_DEBUG(Message, ...) LOG(logger::log_level::info, Message, "INFO", __VA_ARGS__)
+    #define LOG_SUCCESS(Message, ...) LOG(Logger::LogLevel::Success, Message, "SUCCESS", __VA_ARGS__)
+    #define LOG_WARNING(Message, ...) LOG(Logger::LogLevel::Warning, Message, "WARNING", __VA_ARGS__)
+    #define LOG_ERROR(Message, ...) LOG(Logger::LogLevel::Error, Message, "ERROR", __VA_ARGS__)
+    #define LOG_INFO(Message, ...) LOG(Logger::LogLevel::Info, Message, "INFO", __VA_ARGS__)
+    #define LOG_DEBUG(Message, ...) LOG(Logger::LogLevel::Info, Message, "INFO", __VA_ARGS__)
 #else
     #define LOG_SUCCESS(Message, ...)
     #define LOG_WARNING(Message, ...)

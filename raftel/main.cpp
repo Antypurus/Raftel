@@ -16,7 +16,7 @@ using namespace raftel;
 
 int main()
 {
-    logger::create_logger();
+    Logger::CreateLogger();
 
     auto fileContents = raftel::filesystem::ReadFile("README.md");
     LOG_INFO("{}", std::string_view((char*)fileContents.data(), fileContents.size()));

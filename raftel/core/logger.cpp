@@ -13,37 +13,37 @@ namespace raftel {
 #define ANSI_ERROR_FG "\033[91m"
 #define ANSI_INFO_FG "\033[35m"
 
-logger logger::s_instance = {};
+Logger Logger::s_Instance = { };
 
-logger& logger::create_logger()
+Logger& Logger::CreateLogger()
 {
-    if (!s_instance.m_log_file.is_open()) {
-        s_instance.m_log_file = std::ofstream("raftel_engine_log.txt", std::ios::out | std::ios::trunc);
+    if (!s_Instance.m_LogFile.is_open()) {
+        s_Instance.m_LogFile = std::ofstream("raftel_engine_log.txt", std::ios::out | std::ios::trunc);
     }
-    return logger::s_instance;
+    return Logger::s_Instance;
 }
 
-logger& logger::get_logger()
+Logger& Logger::GetLogger()
 {
-    return logger::create_logger();
+    return Logger::CreateLogger();
 }
 
-void logger::log(log_level level, std::string_view message)
+void Logger::Log(LogLevel p_Level, std::string_view p_Message)
 {
-    switch (level) {
-    case (log_level::success): {
+    switch (p_Level) {
+    case (LogLevel::Success): {
         std::cout << ANSI_SUCCESS_FG;
         break;
     }
-    case (log_level::warning): {
+    case (LogLevel::Warning): {
         std::cout << ANSI_WARNING_FG;
         break;
     }
-    case (log_level::error): {
+    case (LogLevel::Error): {
         std::cout << ANSI_ERROR_FG;
         break;
     }
-    case (log_level::info): {
+    case (LogLevel::Info): {
         std::cout << ANSI_INFO_FG;
         break;
     }
@@ -51,32 +51,32 @@ void logger::log(log_level level, std::string_view message)
         break;
     }
 
-    std::cout << message;
+    std::cout << p_Message;
     std::cout << ANSI_RESET;
-    if (this->m_log_file.is_open()) {
-        this->m_log_file << message;
+    if (this->m_LogFile.is_open()) {
+        this->m_LogFile << p_Message;
     }
 }
 
-logger::~logger()
+Logger::~Logger()
 {
-    if (this->m_log_file.is_open()) {
-        this->m_log_file.close();
+    if (this->m_LogFile.is_open()) {
+        this->m_LogFile.close();
     }
 }
 
-const char* extract_filename(const char* filepath)
+const char* ExtractFilename(const char* p_Filepath)
 {
-    auto size = strlen(filepath);
+    auto size = strlen(p_Filepath);
     for (size_t i = size; i + 1 >= 0; --i) {
-        if (filepath[i] == '/') {
-            return filepath + i + 1;
+        if (p_Filepath[i] == '/') {
+            return p_Filepath + i + 1;
         }
     }
     return nullptr;
 }
 
-std::string getTimeString()
+std::string GetTimeString()
 {
     std::chrono::time_point now = std::chrono::system_clock::now();
     return std::format("{:%F %T}", now);
