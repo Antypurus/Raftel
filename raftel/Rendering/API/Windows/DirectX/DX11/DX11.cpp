@@ -4,12 +4,12 @@
 #include <Rendering/API/Windows/DirectX/DXGI/dxgi.h>
 #include <Windowing/Window.h>
 
-#include <d3dcommon.h>
-#include <assert.h>
-#include <cstdint>
 #include <d3d11.h>
+#include <d3dcommon.h>
 #include <d3dcompiler.h>
 #include <dxgi.h>
+
+#include <assert.h>
 #include <iostream>
 #include <optional>
 
@@ -17,14 +17,14 @@ namespace raftel::dx11 {
 
 void Swapchain::Present()
 {
-    DXGI_CALL(this->swapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING), "Swapchain present failed");
+    DXGI_CALL(this->Swapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING), "Swapchain present failed");
 }
 
-void Swapchain::RegisterResize(std::uint32_t width, std::uint32_t height)
+void Swapchain::RegisterResize(std::uint32_t p_Width, std::uint32_t p_Height)
 {
-    this->new_width = width;
-    this->new_height = height;
-    this->needs_resize = true;
+    this->NewWidth = p_Width;
+    this->NewHeight = p_Height;
+    this->NeedsResize = true;
 }
 
 GPUDevice GPUDevice::CreateDevice()
@@ -32,92 +32,92 @@ GPUDevice GPUDevice::CreateDevice()
     std::vector<dx12::AdapterInfo> adaptors = dx12::GetDeviceList();
     assert(adaptors.size() > 0);
 
-    IDXGIAdapter* p_adapter = adaptors[0].adapter.Get();
+    IDXGIAdapter* adapter = adaptors[0].adapter.Get();
     std::wcout << "Selected Adapter: " << adaptors[0].name << std::endl;
 
-    D3D_FEATURE_LEVEL features_levels[] = {
+    D3D_FEATURE_LEVEL featuresLevels[] = {
         D3D_FEATURE_LEVEL_11_0,
         D3D_FEATURE_LEVEL_11_1
     };
-    D3D_FEATURE_LEVEL selected_feature_level;
+    D3D_FEATURE_LEVEL selectedFeatureLevel;
 
     ComPtr<ID3D11Device> device = nullptr;
     ComPtr<ID3D11DeviceContext> context = nullptr;
     WIN_CALL(D3D11CreateDevice(
-                 p_adapter,
+                 adapter,
                  D3D_DRIVER_TYPE_UNKNOWN,
                  nullptr,
                  D3D11_CREATE_DEVICE_DEBUG,
-                 features_levels,
-                 _countof(features_levels),
+                 featuresLevels,
+                 _countof(featuresLevels),
                  D3D11_SDK_VERSION,
                  device.GetAddressOf(),
-                 &selected_feature_level,
+                 &selectedFeatureLevel,
                  context.GetAddressOf()),
         "Failed to create D3D11 Device");
 
-    ComPtr<ID3D11Device5> final_dev = nullptr;
-    WIN_CALL(device->QueryInterface(IID_PPV_ARGS(&final_dev)), "Failed to upcast D3D11 device to version 5");
+    ComPtr<ID3D11Device5> finalDevice = nullptr;
+    WIN_CALL(device->QueryInterface(IID_PPV_ARGS(&finalDevice)), "Failed to upcast D3D11 device to version 5");
     return GPUDevice {
-        .context = context,
-        .device = final_dev,
+        .Context = context,
+        .Device = finalDevice,
     };
 }
 
 ID3D11Device5* GPUDevice::operator->()
 {
-    return this->device.Get();
+    return this->Device.Get();
 }
 
-ID3D11Device5* GPUDevice::get()
+ID3D11Device5* GPUDevice::Get()
 {
-    return this->device.Get();
+    return this->Device.Get();
 }
 
 std::vector<std::string> GPUDevice::GetErrorMessages() const
 {
-    std::vector<std::string> error_messages;
+    std::vector<std::string> errorMessages;
 
-    ComPtr<ID3D11InfoQueue> info_queue = nullptr;
-    WIN_CALL(this->device->QueryInterface(IID_PPV_ARGS(&info_queue)), "Failed to obtain D3D11 Info-Queue");
-    const std::uint64_t message_count = info_queue->GetNumStoredMessages();
-    for (size_t i = 0; i < message_count; ++i) {
-        size_t message_length = 0;
-        WIN_CALL(info_queue->GetMessage(i, nullptr, &message_length), "Failed to get error message length");
+    ComPtr<ID3D11InfoQueue> infoQueue = nullptr;
+    WIN_CALL(this->Device->QueryInterface(IID_PPV_ARGS(&infoQueue)), "Failed to obtain D3D11 Info-Queue");
+    const std::uint64_t messageCount = infoQueue->GetNumStoredMessages();
+    for (size_t i = 0; i < messageCount; ++i) {
+        size_t messageLength = 0;
+        WIN_CALL(infoQueue->GetMessage(i, nullptr, &messageLength), "Failed to get error message length");
 
-        D3D11_MESSAGE* message = (D3D11_MESSAGE*)malloc(message_length);
-        WIN_CALL(info_queue->GetMessage(i, message, &message_length), "Failed to get error message");
+        D3D11_MESSAGE* message = (D3D11_MESSAGE*)malloc(messageLength);
+        WIN_CALL(infoQueue->GetMessage(i, message, &messageLength), "Failed to get error message");
 
-        error_messages.emplace_back(message->pDescription, message->DescriptionByteLength);
+        errorMessages.emplace_back(message->pDescription, message->DescriptionByteLength);
         free(message);
     }
-    info_queue->ClearStoredMessages();
-    return error_messages;
+    infoQueue->ClearStoredMessages();
+    return errorMessages;
 }
 
 void GPUDevice::DumpErrorMessages() const
 {
-    std::vector<std::string> error_messages = this->GetErrorMessages();
-    for (const auto& message : error_messages) {
+    std::vector<std::string> errorMessages = this->GetErrorMessages();
+    for (const auto& message : errorMessages) {
         LOG_ERROR("{}", message);
     }
 }
 
-SwapchainResources GPUDevice::CreateSwapchainResources(ComPtr<IDXGISwapChain4> swapchain, Resolution size)
+SwapchainResources GPUDevice::CreateSwapchainResources(ComPtr<IDXGISwapChain4> p_Swapchain, Resolution p_Size)
 {
     // create the render target views for the swapchain
-    ComPtr<ID3D11Texture2D> backbuffer_resouce = nullptr;
-    ComPtr<ID3D11RenderTargetView> backbuffer_rtv = nullptr;
-    DXGI_CALL(swapchain->GetBuffer(0, IID_PPV_ARGS(&backbuffer_resouce)), "Failed to get swapchain backbuffer");
-    DX11_CALL(this->device->CreateRenderTargetView(backbuffer_resouce.Get(), nullptr, backbuffer_rtv.GetAddressOf()), *this, "Failed to create RTV for Backbuffer");
+    ComPtr<ID3D11Texture2D> backbufferResource = nullptr;
+    ComPtr<ID3D11RenderTargetView> backbufferRTV = nullptr;
+    DXGI_CALL(p_Swapchain->GetBuffer(0, IID_PPV_ARGS(&backbufferResource)), "Failed to get swapchain backbuffer");
+    DX11_CALL(this->Device->CreateRenderTargetView(backbufferResource.Get(), nullptr, backbufferRTV.GetAddressOf()), *this, "Failed to create RTV for Backbuffer");
     LOG_SUCCESS("Swapchain backbuffer and render target view created");
 
     // create the depth stenvil view for the swapchain
-    ComPtr<ID3D11Texture2D> depth_stentil_buffer = nullptr;
-    ComPtr<ID3D11DepthStencilView> depth_stencil_view = nullptr;
-    const D3D11_TEXTURE2D_DESC depth_stentil_buffer_desc = {
-        .Width = size.Width,
-        .Height = size.Height,
+    ComPtr<ID3D11Texture2D> depthStencilBuffer = nullptr;
+    ComPtr<ID3D11DepthStencilView> depthStencilView = nullptr;
+    const D3D11_TEXTURE2D_DESC depthStencilBufferDesc = {
+        .Width = p_Size.Width,
+        .Height = p_Size.Height,
         .MipLevels = 1,
         .ArraySize = 1,
         .Format = (DXGI_FORMAT)dxgi::ResourceFormat::D24UnormS8Uint,
@@ -130,38 +130,38 @@ SwapchainResources GPUDevice::CreateSwapchainResources(ComPtr<IDXGISwapChain4> s
         .CPUAccessFlags = 0,
         .MiscFlags = 0,
     };
-    DX11_CALL(this->device->CreateTexture2D(&depth_stentil_buffer_desc, nullptr, depth_stentil_buffer.GetAddressOf()), *this, "Failed to create depth stencil buffer for swapchain");
-    DX11_CALL(this->device->CreateDepthStencilView(depth_stentil_buffer.Get(), nullptr, depth_stencil_view.GetAddressOf()), *this, "Failed to create depth stencil view for swapchain");
+    DX11_CALL(this->Device->CreateTexture2D(&depthStencilBufferDesc, nullptr, depthStencilBuffer.GetAddressOf()), *this, "Failed to create depth stencil buffer for swapchain");
+    DX11_CALL(this->Device->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, depthStencilView.GetAddressOf()), *this, "Failed to create depth stencil view for swapchain");
     LOG_SUCCESS("Swapchain depth stencil buffer & view created");
 
     return SwapchainResources {
-        .depth_buffer = depth_stentil_buffer,
-        .depth_buffer_dsv = depth_stencil_view,
-        .backbuffer_rtv = backbuffer_rtv,
+        .DepthBuffer = depthStencilBuffer,
+        .DepthBufferDSV = depthStencilView,
+        .BackbufferRTV = backbufferRTV,
     };
 }
 
-Swapchain GPUDevice::CreateSwapchain(WindowHandle window, dxgi::ResourceFormat format)
+Swapchain GPUDevice::CreateSwapchain(WindowHandle p_Window, dxgi::ResourceFormat p_Format)
 {
-    WindowingSystem& window_system = WindowingSystem::GetInstance();
-    Resolution window_resolution = window_system.GetWindowResolution(window);
+    WindowingSystem& windowSystem = WindowingSystem::GetInstance();
+    Resolution windowResolution = windowSystem.GetWindowResolution(p_Window);
 
     auto& factory = dxgi::DXGIFactory::GetFactory();
-    auto swapchain = factory.CreateSwapchain(this->device.Get(), window, dxgi::SwapchainParams { .format = format });
+    auto swapchain = factory.CreateSwapchain(this->Device.Get(), p_Window, dxgi::SwapchainParams { .format = p_Format });
     LOG_SUCCESS("Swapchain Created");
 
     return Swapchain {
-        .window = window,
-        .swapchain = swapchain,
-        .resources = this->CreateSwapchainResources(swapchain, window_resolution),
-        .new_width = window_resolution.Width,
-        .new_height = window_resolution.Height,
+        .Window = p_Window,
+        .Swapchain = swapchain,
+        .Resources = this->CreateSwapchainResources(swapchain, windowResolution),
+        .NewWidth = windowResolution.Width,
+        .NewHeight = windowResolution.Height,
     };
 }
 
-VertexBuffer GPUDevice::CreateVertexBuffer(const std::vector<float>& vertices, Shader<ID3D11VertexShader> vertex_shader)
+VertexBuffer GPUDevice::CreateVertexBuffer(const std::vector<float>& p_Vertices, Shader<ID3D11VertexShader> p_VertexShader)
 {
-    const D3D11_INPUT_ELEMENT_DESC vertex_desc[] = {
+    const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = {
         D3D11_INPUT_ELEMENT_DESC {
             .SemanticName = "POSITION",
             .SemanticIndex = 0,
@@ -172,220 +172,213 @@ VertexBuffer GPUDevice::CreateVertexBuffer(const std::vector<float>& vertices, S
             .InstanceDataStepRate = 0,
         },
     };
-    ComPtr<ID3D11InputLayout> vertex_layout = nullptr;
-    DX11_CALL(this->device->CreateInputLayout(
-                  vertex_desc, _countof(vertex_desc),
-                  vertex_shader.bytecode->GetBufferPointer(), vertex_shader.bytecode->GetBufferSize(),
-                  vertex_layout.GetAddressOf()),
+    ComPtr<ID3D11InputLayout> vertexLayout = nullptr;
+    DX11_CALL(this->Device->CreateInputLayout(
+                  vertexDesc, _countof(vertexDesc),
+                  p_VertexShader.Bytecode->GetBufferPointer(), p_VertexShader.Bytecode->GetBufferSize(),
+                  vertexLayout.GetAddressOf()),
         *this, "Failed to create vertex buffer");
 
-    const D3D11_BUFFER_DESC buffer_desc = {
-        .ByteWidth = (std::uint32_t)(vertices.size() * sizeof(float)),
+    const D3D11_BUFFER_DESC bufferDesc = {
+        .ByteWidth = (std::uint32_t)(p_Vertices.size() * sizeof(float)),
         .Usage = D3D11_USAGE_IMMUTABLE,
         .BindFlags = D3D11_BIND_VERTEX_BUFFER,
         .CPUAccessFlags = 0,
         .MiscFlags = 0,
         .StructureByteStride = 0,
     };
-    const D3D11_SUBRESOURCE_DATA resource_desc = {
-        .pSysMem = vertices.data(),
+    const D3D11_SUBRESOURCE_DATA resourceDesc = {
+        .pSysMem = p_Vertices.data(),
         .SysMemPitch = 0,
         .SysMemSlicePitch = 0,
     };
-    ComPtr<ID3D11Buffer> vertex_buffer = nullptr;
-    DX11_CALL(this->device->CreateBuffer(&buffer_desc, &resource_desc, vertex_buffer.GetAddressOf()), *this, "Failed to create vertex buffer");
+    ComPtr<ID3D11Buffer> vertexBuffer = nullptr;
+    DX11_CALL(this->Device->CreateBuffer(&bufferDesc, &resourceDesc, vertexBuffer.GetAddressOf()), *this, "Failed to create vertex buffer");
 
     return VertexBuffer {
-        .buffer = vertex_buffer,
-        .vertex_layout = vertex_layout,
+        .Buffer = vertexBuffer,
+        .VertexLayout = vertexLayout,
     };
 }
 
-IndexBuffer GPUDevice::CreateIndexBuffer(const std::vector<std::uint32_t>& indices)
+IndexBuffer GPUDevice::CreateIndexBuffer(const std::vector<std::uint32_t>& p_Indices)
 {
-    const D3D11_BUFFER_DESC buffer_desc = {
-        .ByteWidth = (std::uint32_t)(indices.size() * sizeof(std::uint32_t)),
+    const D3D11_BUFFER_DESC bufferDesc = {
+        .ByteWidth = (std::uint32_t)(p_Indices.size() * sizeof(std::uint32_t)),
         .Usage = D3D11_USAGE_IMMUTABLE,
         .BindFlags = D3D11_BIND_INDEX_BUFFER,
         .CPUAccessFlags = 0,
         .MiscFlags = 0,
         .StructureByteStride = 0,
     };
-    const D3D11_SUBRESOURCE_DATA resource_desc = {
-        .pSysMem = indices.data(),
+    const D3D11_SUBRESOURCE_DATA resourceDesc = {
+        .pSysMem = p_Indices.data(),
         .SysMemPitch = 0,
         .SysMemSlicePitch = 0,
     };
 
-    ComPtr<ID3D11Buffer> index_buffer = nullptr;
-    DX11_CALL(this->device->CreateBuffer(&buffer_desc, &resource_desc, index_buffer.GetAddressOf()), *this, "Failed to create index buffer");
+    ComPtr<ID3D11Buffer> indexBuffer = nullptr;
+    DX11_CALL(this->Device->CreateBuffer(&bufferDesc, &resourceDesc, indexBuffer.GetAddressOf()), *this, "Failed to create index buffer");
 
     return {
-        .buffer = index_buffer,
+        .Buffer = indexBuffer,
     };
 }
 
-void GPUDevice::Bind(const VertexBuffer& vertex_buffer)
+void GPUDevice::Bind(const VertexBuffer& p_VertexBuffer)
 {
     std::uint32_t stride = 3 * sizeof(float);
     std::uint32_t offsett = 0;
-    this->context->IASetVertexBuffers(0, 1, vertex_buffer.buffer.GetAddressOf(), &stride, &offsett);
-    this->context->IASetInputLayout(vertex_buffer.vertex_layout.Get());
+    this->Context->IASetVertexBuffers(0, 1, p_VertexBuffer.Buffer.GetAddressOf(), &stride, &offsett);
+    this->Context->IASetInputLayout(p_VertexBuffer.VertexLayout.Get());
 }
 
-void GPUDevice::Bind(const IndexBuffer& index_buffer)
+void GPUDevice::Bind(const IndexBuffer& p_IndexBuffer)
 {
-    this->context->IASetIndexBuffer(index_buffer.buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+    this->Context->IASetIndexBuffer(p_IndexBuffer.Buffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 }
 
-void GPUDevice::Bind(const Swapchain& swapchain)
+void GPUDevice::Bind(const Swapchain& p_Swapchain)
 {
     const D3D11_VIEWPORT viewport = {
         .TopLeftX = 0.0f,
         .TopLeftY = 0.0f,
-        .Width = static_cast<float>(swapchain.new_width),
-        .Height = static_cast<float>(swapchain.new_height),
+        .Width = static_cast<float>(p_Swapchain.NewWidth),
+        .Height = static_cast<float>(p_Swapchain.NewHeight),
         .MinDepth = 0.0f,
         .MaxDepth = 1.0f,
     };
-    this->context->RSSetViewports(1, &viewport);
-    this->context->OMSetRenderTargets(1, swapchain.resources.backbuffer_rtv.GetAddressOf(), swapchain.resources.depth_buffer_dsv.Get());
+    this->Context->RSSetViewports(1, &viewport);
+    this->Context->OMSetRenderTargets(1, p_Swapchain.Resources.BackbufferRTV.GetAddressOf(), p_Swapchain.Resources.DepthBufferDSV.Get());
 }
 
-void GPUDevice::DrawTriangles(std::uint32_t count)
+void GPUDevice::DrawTriangles(std::uint32_t p_Count)
 {
-    this->context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    this->context->DrawIndexed(count, 0, 0);
+    this->Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    this->Context->DrawIndexed(p_Count, 0, 0);
 }
 
-void GPUDevice::Clear(Swapchain& swapchain)
+void GPUDevice::Clear(Swapchain& p_Swapchain)
 {
-    const float clear_value[4] = { 0.0, 0.0, 0.0, 0.0 };
-    this->context->ClearDepthStencilView(swapchain.resources.depth_buffer_dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
-    this->context->ClearRenderTargetView(swapchain.resources.backbuffer_rtv.Get(), clear_value);
+    const float clearValue[4] = { 0.0, 0.0, 0.0, 0.0 };
+    this->Context->ClearDepthStencilView(p_Swapchain.Resources.DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+    this->Context->ClearRenderTargetView(p_Swapchain.Resources.BackbufferRTV.Get(), clearValue);
 
-    if (swapchain.needs_resize) {
+    if (p_Swapchain.NeedsResize) {
         // unbind swapchain references
-        this->context->OMSetRenderTargets(0, nullptr, nullptr);
-        this->context->OMSetDepthStencilState(nullptr, 0);
-        this->context->Flush();
+        this->Context->OMSetRenderTargets(0, nullptr, nullptr);
+        this->Context->OMSetDepthStencilState(nullptr, 0);
+        this->Context->Flush();
 
-        swapchain.resources.depth_buffer_dsv.Reset();
-        swapchain.resources.depth_buffer.Reset();
-        swapchain.resources.backbuffer_rtv.Reset();
+        p_Swapchain.Resources.DepthBufferDSV.Reset();
+        p_Swapchain.Resources.DepthBuffer.Reset();
+        p_Swapchain.Resources.BackbufferRTV.Reset();
 
-        DXGI_CALL(swapchain.swapchain->ResizeBuffers(2, swapchain.new_width, swapchain.new_height, (DXGI_FORMAT)dxgi::ResourceFormat::BGRA8Unorm, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING), "Failed to resize swapchain");
-        swapchain.resources = this->CreateSwapchainResources(swapchain.swapchain, {
-                                                                                      .Width = swapchain.new_width,
-                                                                                      .Height = swapchain.new_height,
-                                                                                  });
+        DXGI_CALL(p_Swapchain.Swapchain->ResizeBuffers(2, p_Swapchain.NewWidth, p_Swapchain.NewHeight, (DXGI_FORMAT)dxgi::ResourceFormat::BGRA8Unorm, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING), "Failed to resize swapchain");
+        p_Swapchain.Resources = this->CreateSwapchainResources(p_Swapchain.Swapchain, {
+                                                                                          .Width = p_Swapchain.NewWidth,
+                                                                                          .Height = p_Swapchain.NewHeight,
+                                                                                      });
 
-        swapchain.needs_resize = false;
+        p_Swapchain.NeedsResize = false;
     }
 }
 
-std::optional<ComPtr<ID3DBlob>> GPUDevice::CompileShader(std::wstring_view path, std::string_view entrypoint, ShaderType type)
+std::optional<ComPtr<ID3DBlob>> GPUDevice::CompileShader(std::wstring_view p_Path, std::string_view p_Entrypoint, ShaderType p_Type)
 {
-    const std::unordered_map<ShaderType, const char*> compilation_profiles = {
+    const std::unordered_map<ShaderType, const char*> compilationProfiles = {
         { ShaderType::Vertex, "vs_5_0" },
         { ShaderType::Pixel, "ps_5_0" },
         { ShaderType::Compute, "cs_5_0" },
     };
 
-    ComPtr<ID3DBlob> shader_blob = nullptr;
-    ComPtr<ID3DBlob> error_blob = nullptr;
+    ComPtr<ID3DBlob> shaderBlob = nullptr;
+    ComPtr<ID3DBlob> errorBlob = nullptr;
     HRESULT result = D3DCompileFromFile(
-        path.data(),
+        p_Path.data(),
         nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-        entrypoint.data(), compilation_profiles.at(type),
+        p_Entrypoint.data(), compilationProfiles.at(p_Type),
         D3DCOMPILE_ENABLE_STRICTNESS, 0,
-        &shader_blob, &error_blob);
+        &shaderBlob, &errorBlob);
     if (FAILED(result)) {
-        const char* err_message = (const char*)error_blob->GetBufferPointer();
-        LOG_ERROR("Shader Blob Compilation Failed: {}", err_message);
+        const char* errorMessage = (const char*)errorBlob->GetBufferPointer();
+        LOG_ERROR("Shader Blob Compilation Failed: {}", errorMessage);
         return { };
     }
 
-    return std::make_optional(shader_blob);
+    return std::make_optional(shaderBlob);
 }
 
-std::optional<Shader<ID3D11VertexShader>> GPUDevice::CompileVertexShader(std::wstring_view path, std::string_view entrypoint)
+std::optional<VertexShader> GPUDevice::CompileVertexShader(std::wstring_view p_Path, std::string_view p_Entrypoint)
 {
-    std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Vertex);
-    if (!compilation_result.has_value()) {
+    std::optional<ComPtr<ID3DBlob>> compilationResult = this->CompileShader(p_Path, p_Entrypoint, ShaderType::Vertex);
+    if (!compilationResult.has_value()) {
         return { };
     }
-    ComPtr<ID3DBlob> shader_blob = std::move(compilation_result.value());
+    ComPtr<ID3DBlob> shaderBlob = std::move(compilationResult.value());
 
-    ComPtr<ID3D11VertexShader> vertex_shader = nullptr;
-    DX11_CALL_WITH_POST(this->device->CreateVertexShader(
-                            shader_blob->GetBufferPointer(),
-                            shader_blob->GetBufferSize(),
-                            nullptr, vertex_shader.GetAddressOf()),
+    ComPtr<ID3D11VertexShader> vertexShader = nullptr;
+    DX11_CALL_WITH_POST(this->Device->CreateVertexShader(
+                            shaderBlob->GetBufferPointer(),
+                            shaderBlob->GetBufferSize(),
+                            nullptr, vertexShader.GetAddressOf()),
         *this,
         return { };
         , "Failed to create vertex shader object");
 
     LOG_SUCCESS("Vertex Shader Object Created");
-    return std::make_optional(Shader {
-        .shader_program = vertex_shader,
-        .bytecode = shader_blob,
-    });
+    return VertexShader {
+        .ShaderProgram = vertexShader,
+        .Bytecode = shaderBlob,
+    };
 }
 
-std::optional<Shader<ID3D11PixelShader>> GPUDevice::CompilePixelShader(std::wstring_view path, std::string_view entrypoint)
+std::optional<PixelShader> GPUDevice::CompilePixelShader(std::wstring_view p_Path, std::string_view p_Entrypoint)
 {
-    std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Pixel);
-    if (!compilation_result.has_value()) {
+    std::optional<ComPtr<ID3DBlob>> compilationResult = this->CompileShader(p_Path, p_Entrypoint, ShaderType::Pixel);
+    if (!compilationResult.has_value()) {
         return { };
     }
-    ComPtr<ID3DBlob> shader_blob = std::move(compilation_result.value());
+    ComPtr<ID3DBlob> shaderBlob = std::move(compilationResult.value());
 
-    ComPtr<ID3D11PixelShader> pixel_shader = nullptr;
-    DX11_CALL_WITH_POST(this->device->CreatePixelShader(
-                            shader_blob->GetBufferPointer(),
-                            shader_blob->GetBufferSize(),
-                            nullptr, pixel_shader.GetAddressOf()),
+    ComPtr<ID3D11PixelShader> pixelShader = nullptr;
+    DX11_CALL_WITH_POST(this->Device->CreatePixelShader(
+                            shaderBlob->GetBufferPointer(),
+                            shaderBlob->GetBufferSize(),
+                            nullptr, pixelShader.GetAddressOf()),
         *this,
         return { };
         , "Failed to create pixel shader object");
 
     LOG_SUCCESS("Pixel Shader Object Created");
-    return std::make_optional(Shader {
-        .shader_program = pixel_shader,
-        .bytecode = shader_blob,
-    });
+    return PixelShader {
+        .ShaderProgram = pixelShader,
+        .Bytecode = shaderBlob,
+    };
 }
 
-std::optional<Shader<ID3D11ComputeShader>> GPUDevice::CompileComputeShader(std::wstring_view path, std::string_view entrypoint)
+std::optional<ComputeShader> GPUDevice::CompileComputeShader(std::wstring_view p_Path, std::string_view p_Entrypoint)
 {
-    std::optional<ComPtr<ID3DBlob>> compilation_result = this->CompileShader(path, entrypoint, ShaderType::Compute);
-    if (!compilation_result.has_value()) {
+    std::optional<ComPtr<ID3DBlob>> compilationResult = this->CompileShader(p_Path, p_Entrypoint, ShaderType::Compute);
+    if (!compilationResult.has_value()) {
         return { };
     }
-    ComPtr<ID3DBlob> shader_blob = std::move(compilation_result.value());
+    ComPtr<ID3DBlob> shaderBlob = std::move(compilationResult.value());
 
-    ComPtr<ID3D11ComputeShader> compute_shader = nullptr;
-    DX11_CALL_WITH_POST(this->device->CreateComputeShader(
-                            shader_blob->GetBufferPointer(),
-                            shader_blob->GetBufferSize(),
-                            nullptr, compute_shader.GetAddressOf()),
+    ComPtr<ID3D11ComputeShader> computeShader = nullptr;
+    DX11_CALL_WITH_POST(this->Device->CreateComputeShader(
+                            shaderBlob->GetBufferPointer(),
+                            shaderBlob->GetBufferSize(),
+                            nullptr, computeShader.GetAddressOf()),
         *this,
         return { };
         , "Failed to create compute shader object");
 
     LOG_SUCCESS("Compute Shader Object Created");
-    return std::make_optional(Shader {
-        .shader_program = compute_shader,
-        .bytecode = shader_blob,
-    });
+    return ComputeShader {
+        .ShaderProgram = computeShader,
+        .Bytecode = shaderBlob,
+    };
 }
 
-void init_d3d11(WindowHandle window)
-{
-    auto device = GPUDevice::CreateDevice();
-    auto swapchain = device.CreateSwapchain(window);
-    device.Clear(swapchain);
-    device.DumpErrorMessages();
-}
 }

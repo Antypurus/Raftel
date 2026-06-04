@@ -20,10 +20,10 @@ int main()
 
     auto fileContents = raftel::filesystem::ReadFile("README.md");
     LOG_INFO("{}", std::string_view((char*)fileContents.data(), fileContents.size()));
-    //return 0;
+    return 0;
 
-    WindowingSystem& windowing_system = WindowingSystem::GetInstance();
-    WindowHandle first_window = windowing_system.CreateWindow("test_window", 1920, 1080);
+    WindowingSystem& windowingSystem = WindowingSystem::GetInstance();
+    WindowHandle firstWindow = windowingSystem.CreateWindow("test_window", 1920, 1080);
 
     // init_vulkan();
 
@@ -34,29 +34,29 @@ int main()
 #if defined(_WIN32) && 1
     #if 1
     auto device = dx11::GPUDevice::CreateDevice();
-    auto swapchain = device.CreateSwapchain(first_window);
-    windowing_system.RegisterWindowResizeCallback(first_window, [&swapchain](std::uint32_t width, std::uint32_t height) { swapchain.RegisterResize(width, height); });
+    auto swapchain = device.CreateSwapchain(firstWindow);
+    windowingSystem.RegisterWindowResizeCallback(firstWindow, [&swapchain](std::uint32_t width, std::uint32_t height) { swapchain.RegisterResize(width, height); });
 
-    auto vertex_shader = device.CompileVertexShader(L"shaders/basic/hlsl/basic.hlsl");
-    auto pixel_shader = device.CompilePixelShader(L"shaders/basic/hlsl/basic.hlsl");
-    auto vertex_buffer = device.CreateVertexBuffer({
-                                                       0.0f, 0.5f, 0.0f, // top left
-                                                       0.5f, -0.5f, 0.0f, // top right
-                                                       -0.5f, -0.5f, 0.0f // tip
-                                                   },
-        vertex_shader.value());
-    auto index_buffer = device.CreateIndexBuffer({ 0, 1, 2 });
+    auto vertexShader = device.CompileVertexShader(L"shaders/basic/hlsl/basic.hlsl");
+    auto pixelShader = device.CompilePixelShader(L"shaders/basic/hlsl/basic.hlsl");
+    auto vertexBuffer = device.CreateVertexBuffer({
+                                                      0.0f, 0.5f, 0.0f, // top left
+                                                      0.5f, -0.5f, 0.0f, // top right
+                                                      -0.5f, -0.5f, 0.0f // tip
+                                                  },
+        vertexShader.value());
+    auto indexBuffer = device.CreateIndexBuffer({ 0, 1, 2 });
 
-    device.Bind(vertex_shader.value());
-    device.Bind(pixel_shader.value());
-    device.Bind(vertex_buffer);
-    device.Bind(index_buffer);
+    device.Bind(vertexShader.value());
+    device.Bind(pixelShader.value());
+    device.Bind(vertexBuffer);
+    device.Bind(indexBuffer);
 
-    while (windowing_system.HasOpenWindows()) {
-        windowing_system.Update();
-        auto handles = windowing_system.GetActiveWindowList();
+    while (windowingSystem.HasOpenWindows()) {
+        windowingSystem.Update();
+        auto handles = windowingSystem.GetActiveWindowList();
         for (auto& window : handles) {
-            if (!windowing_system.IsWindowOpen(window))
+            if (!windowingSystem.IsWindowOpen(window))
                 continue;
 
             device.Clear(swapchain);
