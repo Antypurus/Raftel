@@ -16,22 +16,22 @@ enum class AdapterVendor {
 };
 
 struct AdapterInfo {
-    ComPtr<IDXGIAdapter4> adapter = nullptr;
-    AdapterVendor vendor;
-    std::wstring name;
-    std::uint64_t dedicated_memory_bytes = 0;
+    ComPtr<IDXGIAdapter4> Adapter = nullptr;
+    AdapterVendor Vendor;
+    std::wstring Name;
+    std::uint64_t DedicatedMemoryBytes = 0;
 };
 std::vector<AdapterInfo> GetDeviceList();
 
 struct DX12Renderer {
 private:
-    ComPtr<ID3D12Debug6> m_debug_controller;
-    ComPtr<ID3D12Device14> m_device;
-    ComPtr<IDXGISwapChain4> m_swapchain;
-    ComPtr<ID3D12CommandQueue> m_graphics_command_queue;
+    ComPtr<ID3D12Debug6> m_DebugController;
+    ComPtr<ID3D12Device14> m_Device;
+    ComPtr<IDXGISwapChain4> m_Swapchain;
+    ComPtr<ID3D12CommandQueue> m_GraphicsCommandQueue;
 
 public:
-    DX12Renderer(WindowHandle window, IDXGIAdapter4* gpuAdapter = nullptr);
+    DX12Renderer(WindowHandle Window, IDXGIAdapter4* GPUAdapter = nullptr);
 };
 
 }

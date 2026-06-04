@@ -32,8 +32,8 @@ GPUDevice GPUDevice::CreateDevice()
     std::vector<dx12::AdapterInfo> adaptors = dx12::GetDeviceList();
     assert(adaptors.size() > 0);
 
-    IDXGIAdapter* adapter = adaptors[0].adapter.Get();
-    std::wcout << "Selected Adapter: " << adaptors[0].name << std::endl;
+    IDXGIAdapter* adapter = adaptors[0].Adapter.Get();
+    std::wcout << "Selected Adapter: " << adaptors[0].Name << std::endl;
 
     D3D_FEATURE_LEVEL featuresLevels[] = {
         D3D_FEATURE_LEVEL_11_0,
