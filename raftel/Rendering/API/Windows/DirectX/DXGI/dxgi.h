@@ -31,14 +31,14 @@ enum class ResourceFormat {
 };
 
 struct SwapchainParams {
-    std::uint8_t backbuffer_count = 2;
-    ResourceFormat format = ResourceFormat::BGRA8Unorm;
+    std::uint8_t BackbufferCount = 2;
+    ResourceFormat Format = ResourceFormat::BGRA8Unorm;
 };
 
 class DXGIFactory {
 private:
-    static DXGIFactory s_instance;
-    ComPtr<IDXGIFactory7> m_factory = nullptr;
+    static DXGIFactory s_Instance;
+    ComPtr<IDXGIFactory7> m_Factory = nullptr;
 
 public:
     static DXGIFactory& GetFactory();
@@ -46,7 +46,7 @@ public:
     IDXGIFactory7* operator->() const;
     operator IDXGIFactory7*() const;
 
-    ComPtr<IDXGISwapChain4> CreateSwapchain(IUnknown* device, WindowHandle window, SwapchainParams params = { });
+    ComPtr<IDXGISwapChain4> CreateSwapchain(IUnknown* Device, WindowHandle Window, SwapchainParams Params = { });
     std::vector<std::string> GetDXGIErrorMessages();
     void DumpDXGIErrorMessages();
 
@@ -58,32 +58,32 @@ private:
 #define CAT_EXPAND(A, B) A##B
 #define CAT(A, B) CAT_EXPAND(A, B)
 
-std::pair<const char*, size_t> TranslateWindowsErrorCode(HRESULT code);
-#define WIN_CALL_GUARD(function_call, error_message, error_code, ...)                                                     \
-    {                                                                                                                     \
-        HRESULT CAT(result, __LINE__) = (function_call);                                                                  \
-        if (CAT(result, __LINE__) != S_OK && CAT(result, __LINE__) != S_FALSE) {                                          \
-            auto CAT(error_message_, __LINE__) = raftel::dxgi::TranslateWindowsErrorCode(CAT(result, __LINE__));          \
-            LOG_ERROR("{}", std::string_view(CAT(error_message_, __LINE__).first, CAT(error_message_, __LINE__).second)); \
-            LocalFree((LPSTR)CAT(error_message_, __LINE__).first);                                                        \
-            LOG_ERROR(error_message, __VA_ARGS__);                                                                        \
-            {                                                                                                             \
-                error_code                                                                                                \
-            };                                                                                                            \
-            __debugbreak();                                                                                               \
-            exit(-1);                                                                                                     \
-        }                                                                                                                 \
+std::pair<const char*, size_t> TranslateWindowsErrorCode(HRESULT Code);
+#define WIN_CALL_GUARD(p_FunctionCall, p_ErrorMessage, p_ErrorCode, ...)                                                \
+    {                                                                                                                   \
+        HRESULT CAT(result, __LINE__) = (p_FunctionCall);                                                               \
+        if (CAT(result, __LINE__) != S_OK && CAT(result, __LINE__) != S_FALSE) {                                        \
+            auto CAT(errorMessage_, __LINE__) = raftel::dxgi::TranslateWindowsErrorCode(CAT(result, __LINE__));         \
+            LOG_ERROR("{}", std::string_view(CAT(errorMessage_, __LINE__).first, CAT(errorMessage_, __LINE__).second)); \
+            LocalFree((LPSTR)CAT(errorMessage_, __LINE__).first);                                                       \
+            LOG_ERROR(p_ErrorMessage, __VA_ARGS__);                                                                     \
+            {                                                                                                           \
+                p_ErrorCode                                                                                             \
+            };                                                                                                          \
+            __debugbreak();                                                                                             \
+            exit(-1);                                                                                                   \
+        }                                                                                                               \
     }
 
-#define WIN_CALL(function_call, error_message, ...) WIN_CALL_GUARD(function_call, error_message, { }, __VA_ARGS__)
+#define WIN_CALL(p_FunctionCall, p_ErrorMessage, ...) WIN_CALL_GUARD(p_FunctionCall, p_ErrorMessage, { }, __VA_ARGS__)
 
-#define DXGI_ERROR_MESSAGE_DUMP                                                                                 \
-    {                                                                                                           \
-        const auto CAT(dxgi_error_messages, __LINE__) = dxgi::DXGIFactory::GetFactory().GetDXGIErrorMessages(); \
-        for (const auto& CAT(dxgi_message, __LINE__) : CAT(dxgi_error_messages, __LINE__)) {                    \
-            LOG_ERROR("{}", CAT(dxgi_message, __LINE__));                                                       \
-        }                                                                                                       \
+#define DXGI_ERROR_MESSAGE_DUMP                                                                               \
+    {                                                                                                         \
+        const auto CAT(dxgiErrorMessages, __LINE__) = dxgi::DXGIFactory::GetFactory().GetDXGIErrorMessages(); \
+        for (const auto& CAT(dxgiMessage, __LINE__) : CAT(dxgiErrorMessages, __LINE__)) {                     \
+            LOG_ERROR("{}", CAT(dxgiMessage, __LINE__));                                                      \
+        }                                                                                                     \
     }
-#define DXGI_CALL(function_call, error_message, ...) WIN_CALL_GUARD(function_call, error_message, DXGI_ERROR_MESSAGE_DUMP, __VA_ARGS__)
+#define DXGI_CALL(p_FunctionCall, p_ErrorMessage, ...) WIN_CALL_GUARD(p_FunctionCall, p_ErrorMessage, DXGI_ERROR_MESSAGE_DUMP, __VA_ARGS__)
 
 }

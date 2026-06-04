@@ -147,7 +147,7 @@ Swapchain GPUDevice::CreateSwapchain(WindowHandle p_Window, dxgi::ResourceFormat
     Resolution windowResolution = windowSystem.GetWindowResolution(p_Window);
 
     auto& factory = dxgi::DXGIFactory::GetFactory();
-    auto swapchain = factory.CreateSwapchain(this->Device.Get(), p_Window, dxgi::SwapchainParams { .format = p_Format });
+    auto swapchain = factory.CreateSwapchain(this->Device.Get(), p_Window, dxgi::SwapchainParams { .Format = p_Format });
     LOG_SUCCESS("Swapchain Created");
 
     return Swapchain {
