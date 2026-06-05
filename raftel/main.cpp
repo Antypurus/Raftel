@@ -24,7 +24,7 @@ int main()
     WindowingSystem& windowingSystem = WindowingSystem::GetInstance();
     WindowHandle firstWindow = windowingSystem.CreateWindow("test_window", 1920, 1080);
 
-    // init_vulkan();
+    InitVulkan();
 
 #ifdef __APPLE__
     InitMetal(firstWindow);

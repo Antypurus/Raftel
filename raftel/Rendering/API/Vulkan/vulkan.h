@@ -4,14 +4,14 @@
 
 namespace raftel {
 
-void init_vulkan();
+void InitVulkan();
 
-#define VK_CALL(X, error_message, ...)                                             \
+#define VK_CALL(X, p_ErrorMessage, ...)                                            \
     {                                                                              \
         VkResult result##__LINE__ = X;                                             \
         if (result##__LINE__ != VK_SUCCESS) {                                      \
             LOG_ERROR("[Vulkan Error Code = {}]", (unsigned int)result##__LINE__); \
-            LOG_ERROR(error_message, __VA_ARGS__);                                 \
+            LOG_ERROR(p_ErrorMessage, __VA_ARGS__);                                \
             exit(-1);                                                              \
         }                                                                          \
     }
