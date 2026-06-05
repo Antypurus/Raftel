@@ -20,7 +20,6 @@ int main()
 
     auto fileContents = raftel::filesystem::ReadFile("README.md");
     LOG_INFO("{}", std::string_view((char*)fileContents.data(), fileContents.size()));
-    return 0;
 
     WindowingSystem& windowingSystem = WindowingSystem::GetInstance();
     WindowHandle firstWindow = windowingSystem.CreateWindow("test_window", 1920, 1080);
@@ -28,7 +27,7 @@ int main()
     // init_vulkan();
 
 #ifdef __APPLE__
-    init_metal(first_window);
+    InitMetal(firstWindow);
 #endif
 
 #if defined(_WIN32) && 1

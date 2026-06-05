@@ -3,6 +3,7 @@
 #include <Windowing/Window.h>
 #include <core/logger.h>
 
+#import <Cocoa/Cocoa.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
@@ -29,9 +30,9 @@ fragment float4 fs_main(VSOut in [[stage_in]]) {
 }
 )metal";
 
-void init_metal(WindowHandle window)
+void InitMetal(WindowHandle p_Window)
 {
-    NSWindow* handle = (__bridge NSWindow*)WindowingSystem::get_instance().get_native_window_handle(window);
+    NSWindow* handle = (__bridge NSWindow*)WindowingSystem::GetInstance().GetNativeWindowHandle(p_Window);
     NSView* view = [handle contentView];
 
     id<MTLDevice> device = MTLCreateSystemDefaultDevice();
@@ -48,48 +49,48 @@ void init_metal(WindowHandle window)
 
     NSError* err = nil;
     NSString* shaderSource = [NSString stringWithUTF8String:kShaderSrc];
-    id<MTLLibrary> shader_library = [device newLibraryWithSource:shaderSource options:nil error:&err];
-    id<MTLFunction> vertex_shader = [shader_library newFunctionWithName:@"vs_main"];
-    id<MTLFunction> pixel_shader = [shader_library newFunctionWithName:@"fs_main"];
+    id<MTLLibrary> shaderLibrary = [device newLibraryWithSource:shaderSource options:nil error:&err];
+    id<MTLFunction> vertexShader = [shaderLibrary newFunctionWithName:@"vs_main"];
+    id<MTLFunction> pixelShader = [shaderLibrary newFunctionWithName:@"fs_main"];
 
-    MTLRenderPipelineDescriptor* pipeline_desc = [MTLRenderPipelineDescriptor new];
-    pipeline_desc.vertexFunction = vertex_shader;
-    pipeline_desc.fragmentFunction = pixel_shader;
-    pipeline_desc.colorAttachments[0].pixelFormat = layer.pixelFormat;
+    MTLRenderPipelineDescriptor* pipelineDesc = [MTLRenderPipelineDescriptor new];
+    pipelineDesc.vertexFunction = vertexShader;
+    pipelineDesc.fragmentFunction = pixelShader;
+    pipelineDesc.colorAttachments[0].pixelFormat = layer.pixelFormat;
 
-    id<MTLRenderPipelineState> pso = [device newRenderPipelineStateWithDescriptor:pipeline_desc error:&err];
+    id<MTLRenderPipelineState> pso = [device newRenderPipelineStateWithDescriptor:pipelineDesc error:&err];
     if (err != nil) {
         LOG_ERROR("Failed to create PSO");
     }
     LOG_SUCCESS("Metal PSO Created");
 
-    auto& windowing_system = WindowingSystem::get_instance();
-    windowing_system.update();
-    while (windowing_system.has_open_windows()) {
-        Resolution framebuffer_res = windowing_system.get_window_resolution(window);
-        layer.drawableSize = CGSizeMake(framebuffer_res.width, framebuffer_res.height);
+    auto& windowingSystem = WindowingSystem::GetInstance();
+    windowingSystem.Update();
+    while (windowingSystem.HasOpenWindows()) {
+        Resolution framebufferRes = windowingSystem.GetWindowResolution(p_Window);
+        layer.drawableSize = CGSizeMake(framebufferRes.Width, framebufferRes.Height);
 
         id<CAMetalDrawable> drawable = [layer nextDrawable];
         if (!drawable)
             continue;
 
-        MTLRenderPassDescriptor* renderpass_desc = [MTLRenderPassDescriptor renderPassDescriptor];
-        renderpass_desc.colorAttachments[0].texture = drawable.texture;
-        renderpass_desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-        renderpass_desc.colorAttachments[0].storeAction = MTLStoreActionStore;
-        renderpass_desc.colorAttachments[0].clearColor = MTLClearColorMake(0.1, 0.1, 0.12, 1.0);
+        MTLRenderPassDescriptor* renderpassDesc = [MTLRenderPassDescriptor renderPassDescriptor];
+        renderpassDesc.colorAttachments[0].texture = drawable.texture;
+        renderpassDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
+        renderpassDesc.colorAttachments[0].storeAction = MTLStoreActionStore;
+        renderpassDesc.colorAttachments[0].clearColor = MTLClearColorMake(0.1, 0.1, 0.12, 1.0);
 
-        id<MTLCommandBuffer> command_buffer = [queue commandBuffer];
-        id<MTLRenderCommandEncoder> command_encoder = [command_buffer renderCommandEncoderWithDescriptor:renderpass_desc];
+        id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
+        id<MTLRenderCommandEncoder> commandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderpassDesc];
 
-        [command_encoder setRenderPipelineState:pso];
-        [command_encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
-        [command_encoder endEncoding];
+        [commandEncoder setRenderPipelineState:pso];
+        [commandEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
+        [commandEncoder endEncoding];
 
-        [command_buffer presentDrawable:drawable];
-        [command_buffer commit];
+        [commandBuffer presentDrawable:drawable];
+        [commandBuffer commit];
 
-        windowing_system.update();
+        windowingSystem.Update();
     }
 
     return;
