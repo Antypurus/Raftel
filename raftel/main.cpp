@@ -9,19 +9,19 @@
 #include <Rendering/API/Vulkan/vulkan.h>
 #include <Windowing/Window.h>
 #include <core/filesystem/filesystem.h>
-#include <core/filesystem/parsers/json/json.h>
+#include <core/filesystem/parsers/json/ModelFormats/gltf.h>
 #include <core/logger.h>
 
-#include <simdjson.h>
+#include <iostream>
 
 using namespace raftel;
 
 int main()
 {
-    Logger::CreateLogger();
+    // Logger::CreateLogger();
 
-    auto fileContents = raftel::filesystem::ReadFile("README.md");
-    LOG_INFO("{}", std::string_view((char*)fileContents.data(), fileContents.size()));
+    parsers::model::GLTFParser::parse("C:\\Users\\craky\\Desktop\\Models\\Sponza\\sponza\\NewSponza_Main_glTF_003.gltf");
+    return 0;
 
     WindowingSystem& windowingSystem = WindowingSystem::GetInstance();
     WindowHandle firstWindow = windowingSystem.CreateWindow("test_window", 1920, 1080);
