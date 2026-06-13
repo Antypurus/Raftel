@@ -16,5 +16,5 @@
             LOG_WARNING("Condition Failed: {}", #X); \
         }
 #else
-    #define ASSERT(X)
+    #define ASSERT(X) X
 #endif
