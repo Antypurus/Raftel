@@ -12,6 +12,8 @@
 #include <core/filesystem/parsers/json/json.h>
 #include <core/logger.h>
 
+#include <simdjson.h>
+
 using namespace raftel;
 
 int main()

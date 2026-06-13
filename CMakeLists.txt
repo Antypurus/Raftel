@@ -24,12 +24,18 @@ set(GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
 include_directories("${GLFW_SOURCE_DIR}/deps")
 add_subdirectory(ThirdParty/GLFW)
 add_subdirectory(ThirdParty/GLM)
+add_subdirectory(ThirdParty/simdjson)
+get_target_property(SIMDJSON_REAL simdjson::simdjson ALIASED_TARGET)
+get_target_property(SIMDJSON_INCLUDES ${SIMDJSON_REAL} INTERFACE_INCLUDE_DIRECTORIES)
+set_target_properties(${SIMDJSON_REAL} PROPERTIES
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${SIMDJSON_INCLUDES}"
+)
 
 find_package(Vulkan REQUIRED)
 if(APPLE)
-    find_library(COCOA_FRAMEWORK Cocoa)
-    find_library(METAL_FRAMEWORK Metal)
-    find_library(QUARTZCORE_FRAMEWORK QuartzCore)
+  find_library(COCOA_FRAMEWORK Cocoa)
+  find_library(METAL_FRAMEWORK Metal)
+  find_library(QUARTZCORE_FRAMEWORK QuartzCore)
 endif()
 
 #obj-c sources
@@ -50,14 +56,14 @@ extract_platform_dependent_sources("${SOURCES}"
 set(${CMAKE_PROJECT_NAME}_SOURCES)
 list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${GENERIC_SOURCES})
 if(WIN32)
-    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${WINDOWS_SOURCES})
+  list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${WINDOWS_SOURCES})
 elseif(APPLE)
-    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${MACOS_SOURCES})
-    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${POSIX_SOURCES})
-    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${OBJC_SOURCES})
+  list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${MACOS_SOURCES})
+  list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${POSIX_SOURCES})
+  list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${OBJC_SOURCES})
 elseif(UNIX)
-    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${LINUX_SOURCES})
-    list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${POSIX_SOURCES})
+  list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${LINUX_SOURCES})
+  list(APPEND ${CMAKE_PROJECT_NAME}_SOURCES ${POSIX_SOURCES})
 endif()
 
 add_executable(${CMAKE_PROJECT_NAME} ${${CMAKE_PROJECT_NAME}_SOURCES})
@@ -66,18 +72,24 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         raftel
         ${Vulkan_INCLUDE_DIRS}
 )
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw glm Vulkan::Vulkan)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+        glfw
+        glm
+        Vulkan::Vulkan
+        simdjson::simdjson
+)
+
 if(WIN32)
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE dxgi dxguid d3d12 d3d11 d3dcompiler)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE dxgi dxguid d3d12 d3d11 d3dcompiler)
 endif()
 if(APPLE)
-    set_source_files_properties(${OBJC_SOURCES} PROPERTIES COMPILE_FLAGS "-x objective-c++")
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+  set_source_files_properties(${OBJC_SOURCES} PROPERTIES COMPILE_FLAGS "-x objective-c++")
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
         ${COCOA_FRAMEWORK}
         ${METAL_FRAMEWORK}
         ${QUARTZCORE_FRAMEWORK}
     )
-    set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+  set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE FALSE
         XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC NO
     )
