@@ -14,14 +14,8 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 
     simdjson::ondemand::document gltf = gltfParser.iterate(rawJSON);
 
-    auto sceneNodes = gltf["scenes"]->get_array().at(0)["nodes"].get_array();
-    for (auto nodeID : sceneNodes) {
-        result.sceneNodeIDs.push_back(uint64_t(nodeID.value()));
-    }
-
-    for (const auto& val : result.sceneNodeIDs) {
-        std::cout << val << std::endl;
-    }
+    const auto defaultScene = gltf["scene"].get_uint64().value();
+    auto sceneNodes = gltf["scenes"]->get_array().at(defaultScene)["nodes"].get_array();
 
     return result;
 }

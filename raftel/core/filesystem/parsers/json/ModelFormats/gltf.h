@@ -10,6 +10,7 @@
 namespace raftel::parsers::model {
 
 // NOTE: GLTF model matrices are calculated as M = translation * rotation * scale;
+// NOTE: should these classes for transforms just be generic instead of GLTF specific things?
 struct GLTFTransformComponents {
     glm::vec3 translation;
     glm::vec3 rotation;
@@ -20,21 +21,63 @@ struct GLTFTransformMatrix {
     glm::mat4x4 modelMatrix;
 };
 
+struct GLTFTransform {
+    union {
+        GLTFTransformComponents componentTransform;
+        GLTFTransformMatrix matrixTransform;
+    };
+    bool isMatrixTransform = false;
+};
+
+// NOTE: what types of nodes can exist?
+//  - An Empty/"Proxy" node. These are just transform containers are can be used to "random" things such as denoting a marker/target (leaf node)
+//  - Mesh nodes. These are nodes with transforms but that also point to an associated mesh (leaf node)
+//  - Child Lists. These are nodes that act intermediary nodes in the tree and just have a list of nodes that are under it in the tree
+//  - Camera nodes. Nodes that contain a transform + a camera ID/Index (camera nodes then contain specific camera "templates")
+//      - so we can easily create cameras that have the same properties but in different places looking at different things
+enum class GLTFNodeType {
+    Proxy,
+    Mesh,
+    Camera,
+    ChildList,
+};
+
+struct GLTFProxyNode {
+    GLTFTransform transform;
+};
+
+struct GLTFMeshNode {
+    GLTFTransform transform;
+    std::uint64_t meshID;
+};
+
+struct GLTFCameraNode {
+    GLTFTransform transform;
+    std::uint64_t cameraID;
+};
+
+struct GLTFChildListNode {
+    std::vector<std::uint64_t> children;
+};
+
 struct GLTFNode {
 public:
     std::uint64_t id;
     std::string name;
-    std::vector<uint64_t> childrenNodeIDs;
     union {
-        GLTFTransformComponents transformComponents;
-        GLTFTransformMatrix transformMatrix;
+        GLTFProxyNode proxyNode;
+        GLTFMeshNode meshNode;
+        GLTFCameraNode cameraNode;
+        GLTFChildListNode childListNode;
     };
-    bool isTransformMatrix;
+    GLTFNodeType nodeType;
+
+    ~GLTFNode() { };
 };
 
 struct GLTFModel {
 public:
-    std::vector<std::uint64_t> sceneNodeIDs;
+    std::vector<GLTFNode> sceneNodes;
 };
 
 struct GLTFParser {
