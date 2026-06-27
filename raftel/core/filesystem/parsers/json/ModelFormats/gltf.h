@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <GLM/glm.hpp>
+#include <simdjson.h>
 
 namespace raftel::parsers::model {
 
@@ -72,6 +73,8 @@ public:
     };
     GLTFNodeType nodeType;
 
+    GLTFNode() { };
+    GLTFNode(GLTFNode&&) { };
     ~GLTFNode() { };
 };
 
@@ -81,6 +84,10 @@ public:
 };
 
 struct GLTFParser {
+public:
     static std::optional<GLTFModel> parse(std::string_view path);
+
+private:
+    static std::vector<GLTFNode> parseNodeList(simdjson::ondemand::array& nodeList);
 };
 }
