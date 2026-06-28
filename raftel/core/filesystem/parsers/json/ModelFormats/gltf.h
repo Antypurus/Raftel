@@ -13,8 +13,8 @@ namespace raftel::parsers::model {
 // NOTE: GLTF model matrices are calculated as M = translation * rotation * scale;
 // NOTE: should these classes for transforms just be generic instead of GLTF specific things?
 struct GLTFTransformComponents {
+    glm::vec4 rotation;
     glm::vec3 translation;
-    glm::vec3 rotation;
     glm::vec3 scale;
 };
 
@@ -28,6 +28,10 @@ struct GLTFTransform {
         GLTFTransformMatrix matrixTransform;
     };
     bool isMatrixTransform = false;
+
+    GLTFTransform() = default;
+    GLTFTransform(GLTFTransformComponents components);
+    GLTFTransform(GLTFTransformMatrix matrix);
 };
 
 // NOTE: what types of nodes can exist?
@@ -74,6 +78,10 @@ public:
     GLTFNodeType nodeType;
 
     GLTFNode() { };
+
+    GLTFNode(GLTFMeshNode mesh)
+        : meshNode(mesh) { };
+
     GLTFNode(GLTFNode&&) { };
     ~GLTFNode() { };
 };
@@ -89,5 +97,6 @@ public:
 
 private:
     static std::vector<GLTFNode> parseNodeList(simdjson::ondemand::array& nodeList);
+    static GLTFTransform parseTransform(simdjson::ondemand::object node);
 };
 }
