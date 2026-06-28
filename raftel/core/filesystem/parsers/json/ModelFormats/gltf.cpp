@@ -19,6 +19,38 @@ GLTFTransform::GLTFTransform(GLTFTransformMatrix matrix)
 {
 }
 
+GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFProxyNode proxy)
+    : id(id)
+    , name(name)
+    , proxyNode(proxy)
+    , nodeType(GLTFNodeType::Proxy)
+{
+}
+
+GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFMeshNode mesh)
+    : id(id)
+    , name(name)
+    , meshNode(mesh)
+    , nodeType(GLTFNodeType::Mesh)
+{
+}
+
+GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFCameraNode camera)
+    : id(id)
+    , name(name)
+    , cameraNode(camera)
+    , nodeType(GLTFNodeType::Camera)
+{
+}
+
+GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFChildListNode childList)
+    : id(id)
+    , name(name)
+    , childListNode(childList)
+    , nodeType(GLTFNodeType::ChildList)
+{
+}
+
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 {
     GLTFModel result;
@@ -29,7 +61,7 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     simdjson::ondemand::document gltf = gltfParser.iterate(rawJSON);
 
     const auto defaultScene = gltf["scene"].get_uint64().value();
-    auto sceneNodes = gltf["scenes"]->get_array().at(defaultScene)["nodes"].get_array();
+    // auto sceneNodes = gltf["scenes"]->get_array().at(defaultScene)["nodes"].get_array();
     auto nodeList = std::move(gltf["nodes"]->get_array().take_value());
 
     result.sceneNodes = parseNodeList(nodeList);
@@ -112,33 +144,48 @@ GLTFTransform GLTFParser::parseTransform(simdjson::ondemand::object node)
 
 std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array& nodeList)
 {
-    const size_t nodeCount = nodeList.count_elements().take_value();
+    // const size_t nodeCount = nodeList.count_elements().take_value();
     std::vector<GLTFNode> result;
-    result.reserve(nodeCount);
+    // result.reserve(nodeCount);
 
     // NOTE: strings are owned by the parser, here we only take a string view into those.
     // As such for any important strings we will need to make copies. I assume that this
     // will generally speaking apply to any other dynamic data that comes from the parser
-    for (auto node : nodeList) {
+    for (size_t i = 0; i < nodeList.count_elements(); ++i) {
+        auto node = nodeList.at(i);
+
         std::string_view nodeName = node["name"]->get_string().take_value();
         std::cout << nodeName << std::endl;
 
-        const auto meshField = node->find_field("mesh");
-        const auto cameraField = node->find_field("camera");
-        const auto childListField = node->find_field("children");
+        auto meshField = node->find_field("mesh");
+        auto cameraField = node->find_field("camera");
+        auto childListField = node->find_field("children");
 
         if (meshField.has_value()) {
-            result.push_back(GLTFMeshNode {
-                .transform = parseTransform(node),
-                .meshID = 0,
-            });
-            // mesh node
+            result.emplace_back(i, std::string(nodeName), GLTFMeshNode {
+                                                              .transform = parseTransform(node),
+                                                              .meshID = meshField->get_uint64(),
+                                                          });
         } else if (cameraField.has_value()) {
-            // camera node
+            result.emplace_back(i, std::string(nodeName), GLTFCameraNode {
+                                                              .transform = parseTransform(node),
+                                                              .cameraID = cameraField->get_uint64(),
+                                                          });
         } else if (childListField.has_value()) {
-            // child list intermediary node
+            auto childListArray = childListField->get_array();
+
+            std::vector<std::uint64_t> childList(childListArray.count_elements());
+            for (size_t i = 0; i < childListArray.count_elements(); ++i) {
+                childList.push_back(childListArray.at(i).get_uint64());
+            }
+
+            result.emplace_back(i, std::string(nodeName), GLTFChildListNode {
+                                                              .children = childList,
+                                                          });
         } else {
-            // proxy node
+            result.emplace_back(i, std::string(nodeName), GLTFProxyNode {
+                                                              .transform = parseTransform(node),
+                                                          });
         }
     }
 

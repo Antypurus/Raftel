@@ -32,6 +32,14 @@ struct GLTFTransform {
     GLTFTransform() = default;
     GLTFTransform(GLTFTransformComponents components);
     GLTFTransform(GLTFTransformMatrix matrix);
+
+#if 0
+    ~GLTFTransform() { };
+    GLTFTransform(const GLTFTransform& other) { };
+    GLTFTransform(GLTFTransform&& other) { };
+    GLTFTransform& operator=(const GLTFTransform& other) { return *this; }
+    GLTFTransform& operator=(GLTFTransform&& other) { return *this; }
+#endif
 };
 
 // NOTE: what types of nodes can exist?
@@ -77,13 +85,18 @@ public:
     };
     GLTFNodeType nodeType;
 
+    GLTFNode(std::uint64_t id, std::string name, GLTFProxyNode proxy);
+    GLTFNode(std::uint64_t id, std::string name, GLTFMeshNode mesh);
+    GLTFNode(std::uint64_t id, std::string name, GLTFCameraNode camera);
+    GLTFNode(std::uint64_t id, std::string name, GLTFChildListNode childList);
+
     GLTFNode() { };
+    GLTFNode(const GLTFNode& other) { }
+    GLTFNode(GLTFNode&& other) { }
+    ~GLTFNode() { }
 
-    GLTFNode(GLTFMeshNode mesh)
-        : meshNode(mesh) { };
-
-    GLTFNode(GLTFNode&&) { };
-    ~GLTFNode() { };
+    GLTFNode& operator=(const GLTFNode& other) { return *this; };
+    GLTFNode& operator=(GLTFNode&& other) { return *this; };
 };
 
 struct GLTFModel {
