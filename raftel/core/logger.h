@@ -47,20 +47,20 @@ std::string GetTimeString();
 }
 
 #ifdef _WIN32
-    #define LOG(p_Level, p_Message, p_LevelStr, ...)                                                                \
-        {                                                                                                           \
-            auto& logger = Logger::GetLogger();                                                                     \
-            auto time = GetTimeString();                                                                            \
-            auto file = raftel::ExtractFilename(__FILE__);                                                          \
-            logger.Log(p_Level, "[{}][{}]{}@{} -> " p_Message "\n", time, p_LevelStr, file, __LINE__, __VA_ARGS__); \
+    #define LOG(p_Level, p_Message, p_LevelStr, ...)                                                                   \
+        {                                                                                                              \
+            auto& logger_ = Logger::GetLogger();                                                                       \
+            auto time_ = GetTimeString();                                                                              \
+            auto file_ = raftel::ExtractFilename(__FILE__);                                                            \
+            logger_.Log(p_Level, "[{}][{}]{}@{} -> " p_Message "\n", time_, p_LevelStr, file_, __LINE__, __VA_ARGS__); \
         }
 #else
-    #define LOG(p_Level, p_Message, p_LevelStr, ...)                                                                             \
-        {                                                                                                                   \
-            auto& logger = Logger::GetLogger();                                                                             \
-            auto time = GetTimeString();                                                                                    \
-            auto file = raftel::ExtractFilename(__FILE__);                                                                  \
-            logger.Log(p_Level, "[{}][{}]{}@{} -> " p_Message "\n", time, p_LevelStr, file, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
+    #define LOG(p_Level, p_Message, p_LevelStr, ...)                                                                                 \
+        {                                                                                                                            \
+            auto& logger_ = Logger::GetLogger();                                                                                     \
+            auto time_ = GetTimeString();                                                                                            \
+            auto file_ = raftel::ExtractFilename(__FILE__);                                                                          \
+            logger_.Log(p_Level, "[{}][{}]{}@{} -> " p_Message "\n", time_, p_LevelStr, file_, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
         }
 #endif
 

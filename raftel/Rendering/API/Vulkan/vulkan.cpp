@@ -95,6 +95,7 @@ void InitVulkan()
     std::vector<VkQueueFamilyProperties> queueProperties(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(selectedDevice, &queueFamilyCount, queueProperties.data());
 
+    #if 0
     std::int32_t graphicsQueueIndex = -1;
     std::int32_t computeQueueIndex = -1;
     std::int32_t transferQueueIndex = -1;
@@ -133,6 +134,9 @@ void InitVulkan()
             // transfer_queue_index = (std::int32_t)i;
         }
     }
+    #else
+    std::vector<VkDeviceQueueCreateInfo> deviceQueueInfo;
+    #endif
 
     // ================= Device Creation =========================
     const VkDeviceCreateInfo deviceDesc = {

@@ -17,7 +17,7 @@ namespace raftel::dx11 {
 
 void Swapchain::Present()
 {
-    DXGI_CALL(this->Swapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING), "Swapchain present failed");
+    DXGI_CALL(this->SwapchainHandle->Present(0, DXGI_PRESENT_ALLOW_TEARING), "Swapchain present failed");
 }
 
 void Swapchain::RegisterResize(std::uint32_t p_Width, std::uint32_t p_Height)
@@ -152,7 +152,7 @@ Swapchain GPUDevice::CreateSwapchain(WindowHandle p_Window, dxgi::ResourceFormat
 
     return Swapchain {
         .Window = p_Window,
-        .Swapchain = swapchain,
+        .SwapchainHandle = swapchain,
         .Resources = this->CreateSwapchainResources(swapchain, windowResolution),
         .NewWidth = windowResolution.Width,
         .NewHeight = windowResolution.Height,
@@ -274,8 +274,8 @@ void GPUDevice::Clear(Swapchain& p_Swapchain)
         p_Swapchain.Resources.DepthBuffer.Reset();
         p_Swapchain.Resources.BackbufferRTV.Reset();
 
-        DXGI_CALL(p_Swapchain.Swapchain->ResizeBuffers(2, p_Swapchain.NewWidth, p_Swapchain.NewHeight, (DXGI_FORMAT)dxgi::ResourceFormat::BGRA8Unorm, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING), "Failed to resize swapchain");
-        p_Swapchain.Resources = this->CreateSwapchainResources(p_Swapchain.Swapchain, {
+        DXGI_CALL(p_Swapchain.SwapchainHandle->ResizeBuffers(2, p_Swapchain.NewWidth, p_Swapchain.NewHeight, (DXGI_FORMAT)dxgi::ResourceFormat::BGRA8Unorm, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING), "Failed to resize swapchain");
+        p_Swapchain.Resources = this->CreateSwapchainResources(p_Swapchain.SwapchainHandle, {
                                                                                           .Width = p_Swapchain.NewWidth,
                                                                                           .Height = p_Swapchain.NewHeight,
                                                                                       });

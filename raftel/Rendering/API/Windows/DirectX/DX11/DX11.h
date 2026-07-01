@@ -33,7 +33,7 @@ struct SwapchainResources {
 struct Swapchain {
 public:
     WindowHandle Window;
-    ComPtr<IDXGISwapChain4> Swapchain = nullptr;
+    ComPtr<IDXGISwapChain4> SwapchainHandle = nullptr;
     SwapchainResources Resources;
 
     bool NeedsResize = false;

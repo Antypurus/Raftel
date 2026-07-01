@@ -107,7 +107,7 @@ public:
     static std::optional<GLTFModel> parse(std::string_view path);
 
 private:
-    static std::vector<GLTFNode> parseNodeList(simdjson::ondemand::array& nodeList);
+    static std::vector<GLTFNode> parseNodeList(simdjson::ondemand::array nodeList);
     static GLTFTransform parseTransform(simdjson::ondemand::object node);
 };
 }

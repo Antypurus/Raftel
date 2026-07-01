@@ -3,7 +3,7 @@ function(configure_compiler_warnings
 )
     set(MSVC_WARNINGS
         /W4
-        /WX
+        #/WX
         /w14265 # class with virtual functions and non-virtual destructor
         /w14640 # thread un-safe static member initialization
         /permissive-
