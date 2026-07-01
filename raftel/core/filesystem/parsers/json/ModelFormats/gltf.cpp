@@ -27,6 +27,59 @@ GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFProxyNode proxy)
 {
 }
 
+GLTFTransform::~GLTFTransform()
+{
+    if (this->isMatrixTransform) {
+        this->matrixTransform.~GLTFTransformMatrix();
+    } else {
+        this->componentTransform.~GLTFTransformComponents();
+    }
+}
+
+GLTFTransform::GLTFTransform(const GLTFTransform& other)
+{
+    *this = other;
+}
+
+GLTFTransform::GLTFTransform(GLTFTransform&& other)
+{
+    *this = other;
+}
+
+GLTFTransform& GLTFTransform::operator=(const GLTFTransform& other)
+{
+    if (this == &other)
+        return *this;
+
+    this->~GLTFTransform();
+
+    this->isMatrixTransform = other.isMatrixTransform;
+    if (this->isMatrixTransform) {
+        new (&this->matrixTransform) GLTFTransformMatrix(other.matrixTransform);
+    } else {
+        new (&this->componentTransform) GLTFTransformComponents(other.componentTransform);
+    }
+
+    return *this;
+}
+
+GLTFTransform& GLTFTransform::operator=(GLTFTransform&& other)
+{
+    if (this == &other)
+        return *this;
+
+    this->~GLTFTransform();
+
+    this->isMatrixTransform = other.isMatrixTransform;
+    if (this->isMatrixTransform) {
+        new (&this->matrixTransform) GLTFTransformMatrix(std::move(other.matrixTransform));
+    } else {
+        new (&this->componentTransform) GLTFTransformComponents(std::move(other.componentTransform));
+    }
+
+    return *this;
+}
+
 GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFMeshNode mesh)
     : id(id)
     , name(name)

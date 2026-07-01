@@ -33,13 +33,11 @@ struct GLTFTransform {
     GLTFTransform(GLTFTransformComponents components);
     GLTFTransform(GLTFTransformMatrix matrix);
 
-#if 0
-    ~GLTFTransform() { };
-    GLTFTransform(const GLTFTransform& other) { };
-    GLTFTransform(GLTFTransform&& other) { };
-    GLTFTransform& operator=(const GLTFTransform& other) { return *this; }
-    GLTFTransform& operator=(GLTFTransform&& other) { return *this; }
-#endif
+    ~GLTFTransform();
+    GLTFTransform(const GLTFTransform& other);
+    GLTFTransform(GLTFTransform&& other);
+    GLTFTransform& operator=(const GLTFTransform& other);
+    GLTFTransform& operator=(GLTFTransform&& other);
 };
 
 // NOTE: what types of nodes can exist?
