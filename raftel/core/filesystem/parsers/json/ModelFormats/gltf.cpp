@@ -104,6 +104,169 @@ GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFChildListNode childLi
 {
 }
 
+GLTFNode::GLTFNode()
+    : id(0xFFFFFFFFFFFFFFFF)
+    , name("")
+    , proxyNode({})
+    , nodeType(GLTFNodeType::Proxy)
+{
+}
+
+GLTFNode::~GLTFNode()
+{
+    switch (this->nodeType) {
+    case (GLTFNodeType::Proxy): {
+        this->proxyNode.~GLTFProxyNode();
+        break;
+    }
+    case (GLTFNodeType::Mesh): {
+        this->meshNode.~GLTFMeshNode();
+        break;
+    }
+    case (GLTFNodeType::Camera): {
+        this->cameraNode.~GLTFCameraNode();
+        break;
+    }
+    case (GLTFNodeType::ChildList): {
+        this->childListNode.~GLTFChildListNode();
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+GLTFNode::GLTFNode(const GLTFNode& other)
+    : id(other.id)
+    , name(other.name)
+    , nodeType(other.nodeType)
+{
+    switch (this->nodeType) {
+    case (GLTFNodeType::Proxy): {
+        new (&this->proxyNode) GLTFProxyNode(other.proxyNode);
+        break;
+    }
+    case (GLTFNodeType::Mesh): {
+        new (&this->meshNode) GLTFMeshNode(other.meshNode);
+        break;
+    }
+    case (GLTFNodeType::Camera): {
+        new (&this->cameraNode) GLTFCameraNode(other.cameraNode);
+        break;
+    }
+    case (GLTFNodeType::ChildList): {
+        new (&this->childListNode) GLTFChildListNode(other.childListNode);
+        break;
+    }
+    default: {
+        std::unreachable();
+        break;
+    }
+    }
+}
+
+GLTFNode::GLTFNode(GLTFNode&& other)
+    : id(other.id)
+    , name(std::move(other.name))
+    , nodeType(other.nodeType)
+{
+    switch (this->nodeType) {
+    case (GLTFNodeType::Proxy): {
+        new (&this->proxyNode) GLTFProxyNode(std::move(other.proxyNode));
+        break;
+    }
+    case (GLTFNodeType::Mesh): {
+        new (&this->meshNode) GLTFMeshNode(std::move(other.meshNode));
+        break;
+    }
+    case (GLTFNodeType::Camera): {
+        new (&this->cameraNode) GLTFCameraNode(std::move(other.cameraNode));
+        break;
+    }
+    case (GLTFNodeType::ChildList): {
+        new (&this->childListNode) GLTFChildListNode(std::move(other.childListNode));
+        break;
+    }
+    default: {
+        std::unreachable();
+        break;
+    }
+    }
+}
+
+GLTFNode& GLTFNode::operator=(const GLTFNode& other)
+{
+    if (this == &other) {
+        return *this;
+    }
+    this->~GLTFNode();
+
+    this->id = other.id;
+    this->name = other.name;
+    this->nodeType = other.nodeType;
+    switch (this->nodeType) {
+    case (GLTFNodeType::Proxy): {
+        new (&this->proxyNode) GLTFProxyNode(other.proxyNode);
+        break;
+    }
+    case (GLTFNodeType::Mesh): {
+        new (&this->meshNode) GLTFMeshNode(other.meshNode);
+        break;
+    }
+    case (GLTFNodeType::Camera): {
+        new (&this->cameraNode) GLTFCameraNode(other.cameraNode);
+        break;
+    }
+    case (GLTFNodeType::ChildList): {
+        new (&this->childListNode) GLTFChildListNode(other.childListNode);
+        break;
+    }
+    default: {
+        std::unreachable();
+        break;
+    }
+    }
+
+    return *this;
+}
+
+GLTFNode& GLTFNode::operator=(GLTFNode&& other)
+{
+    if (this == &other) {
+        return *this;
+    }
+    this->~GLTFNode();
+
+    this->id = other.id;
+    this->name = std::move(other.name);
+    this->nodeType = other.nodeType;
+
+    switch (this->nodeType) {
+    case (GLTFNodeType::Proxy): {
+        new (&this->proxyNode) GLTFProxyNode(std::move(other.proxyNode));
+        break;
+    }
+    case (GLTFNodeType::Mesh): {
+        new (&this->meshNode) GLTFMeshNode(std::move(other.meshNode));
+        break;
+    }
+    case (GLTFNodeType::Camera): {
+        new (&this->cameraNode) GLTFCameraNode(std::move(other.cameraNode));
+        break;
+    }
+    case (GLTFNodeType::ChildList): {
+        new (&this->childListNode) GLTFChildListNode(std::move(other.childListNode));
+        break;
+    }
+    default: {
+        std::unreachable();
+        break;
+    }
+    }
+
+    return *this;
+}
+
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 {
     GLTFModel result;

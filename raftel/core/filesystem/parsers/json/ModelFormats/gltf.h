@@ -88,13 +88,13 @@ public:
     GLTFNode(std::uint64_t id, std::string name, GLTFCameraNode camera);
     GLTFNode(std::uint64_t id, std::string name, GLTFChildListNode childList);
 
-    GLTFNode() { };
-    GLTFNode(const GLTFNode& other) { }
-    GLTFNode(GLTFNode&& other) { }
-    ~GLTFNode() { }
+    GLTFNode();
+    GLTFNode(const GLTFNode& other);
+    GLTFNode(GLTFNode&& other);
+    ~GLTFNode();
 
-    GLTFNode& operator=(const GLTFNode& other) { return *this; };
-    GLTFNode& operator=(GLTFNode&& other) { return *this; };
+    GLTFNode& operator=(const GLTFNode& other);
+    GLTFNode& operator=(GLTFNode&& other);
 };
 
 struct GLTFModel {
