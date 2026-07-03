@@ -1,15 +1,19 @@
 function(configure_compiler_warnings
         target_name #input
 )
-    set(MSVC_WARNINGS
+  set(MSVC_WARNINGS
         /W4
-        #/WX
+        /WX
         /w14265 # class with virtual functions and non-virtual destructor
         /w14640 # thread un-safe static member initialization
         /permissive-
     )
 
-    set(WARNINGS
+  set(MSVC_DISABLED_WARNINGS
+      /wd4702
+    )
+
+  set(WARNINGS
         -Wall
         -Wextra
         -Wnon-virtual-dtor
@@ -22,7 +26,7 @@ function(configure_compiler_warnings
         -Werror
     )
 
-    set(DISABLED_WARNINGS
+  set(DISABLED_WARNINGS
         -Wno-error=unused-parameter
         -Wno-error=unused-private-field
         -Wno-error=unused-variable
@@ -31,20 +35,20 @@ function(configure_compiler_warnings
         -Wno-language-extension-token
     )
 
-    set(GCC_EXTRA_WARNINGS
+  set(GCC_EXTRA_WARNINGS
         -Wmisleading-indentation
         -Wduplicated-cond
         -Wduplicated-branches
         -Wlogical-op
     )
 
-    if(MSVC)
-        target_compile_options(${target_name} PRIVATE ${MSVC_WARNINGS})
+  if(MSVC)
+    target_compile_options(${target_name} PRIVATE ${MSVC_WARNINGS} ${MSVC_DISABLED_WARNINGS})
+  else()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # GCC Specific Warnings are added
+      target_compile_options(${target_name} PRIVATE ${WARNINGS} ${DISABLED_WARNINGS} ${GCC_EXTRA_WARNINGS})
     else()
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # GCC Specific Warnings are added
-            target_compile_options(${target_name} PRIVATE ${WARNINGS} ${DISABLED_WARNINGS} ${GCC_EXTRA_WARNINGS})
-        else()
-            target_compile_options(${target_name} PRIVATE ${WARNINGS} ${DISABLED_WARNINGS})
-        endif()
+      target_compile_options(${target_name} PRIVATE ${WARNINGS} ${DISABLED_WARNINGS})
     endif()
+  endif()
 endfunction()

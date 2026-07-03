@@ -4,8 +4,10 @@
 
 #include <combaseapi.h>
 #include <dxgidebug.h>
-#include <mutex>
 #include <unknwnbase.h>
+
+#include <mutex>
+#include <string_view>
 
 namespace raftel::dxgi {
 

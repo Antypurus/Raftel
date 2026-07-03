@@ -4,10 +4,12 @@
 #include <core/logger.h>
 
 #include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+
 #include <dxgi1_6.h>
 #include <dxgiformat.h>
-#include <string>
-#include <vector>
 #include <wrl.h>
 
 namespace raftel::dxgi {
@@ -46,7 +48,7 @@ public:
     IDXGIFactory7* operator->() const;
     operator IDXGIFactory7*() const;
 
-    ComPtr<IDXGISwapChain4> CreateSwapchain(IUnknown* Device, WindowHandle Window, SwapchainParams Params = { });
+    ComPtr<IDXGISwapChain4> CreateSwapchain(IUnknown* Device, WindowHandle Window, SwapchainParams Params = {});
     std::vector<std::string> GetDXGIErrorMessages();
     void DumpDXGIErrorMessages();
 
@@ -75,7 +77,7 @@ std::pair<const char*, size_t> TranslateWindowsErrorCode(HRESULT Code);
         }                                                                                                               \
     }
 
-#define WIN_CALL(p_FunctionCall, p_ErrorMessage, ...) WIN_CALL_GUARD(p_FunctionCall, p_ErrorMessage, { }, __VA_ARGS__)
+#define WIN_CALL(p_FunctionCall, p_ErrorMessage, ...) WIN_CALL_GUARD(p_FunctionCall, p_ErrorMessage, {}, __VA_ARGS__)
 
 #define DXGI_ERROR_MESSAGE_DUMP                                                                               \
     {                                                                                                         \
