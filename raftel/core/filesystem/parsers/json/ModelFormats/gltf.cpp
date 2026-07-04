@@ -2,6 +2,7 @@
 
 #include <core/assert.h>
 #include <core/logger.h>
+#include <core/measure.h>
 
 #include <simdjson.h>
 
@@ -271,64 +272,72 @@ GLTFNode& GLTFNode::operator=(GLTFNode&& other)
 
 GLTFTransform GLTFParser::parseTransform(simdjson::ondemand::object node)
 {
-    auto translationField = node.find_field("translation");
-    auto rotationField = node.find_field("rotation");
-    auto scaleField = node.find_field("scale");
-    auto matrixField = node.find_field("matrix");
 
+    auto matrixField = node.find_field_unordered("matrix");
     if (matrixField.has_value()) {
         auto matrixArray = matrixField.get_array();
         ASSERT(matrixArray.count_elements() == (4 * 4));
 
+        float m[16] = { 0 };
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(0).get_double();
+
+        matrixArray->reset();
         return GLTFTransformMatrix {
             .modelMatrix = glm::mat4x4(
-                // first row
-                (float)matrixArray.at(0).get_double(),
-                (float)matrixArray.at(1).get_double(),
-                (float)matrixArray.at(2).get_double(),
-                (float)matrixArray.at(3).get_double(),
-                // second row
-                (float)matrixArray.at(4).get_double(),
-                (float)matrixArray.at(5).get_double(),
-                (float)matrixArray.at(6).get_double(),
-                (float)matrixArray.at(7).get_double(),
-                // third row
-                (float)matrixArray.at(8).get_double(),
-                (float)matrixArray.at(9).get_double(),
-                (float)matrixArray.at(10).get_double(),
-                (float)matrixArray.at(11).get_double(),
-                // fourth row
-                (float)matrixArray.at(12).get_double(),
-                (float)matrixArray.at(13).get_double(),
-                (float)matrixArray.at(14).get_double(),
-                (float)matrixArray.at(15).get_double()),
+                m[0], m[1], m[2], m[3],
+                m[4], m[5], m[6], m[7],
+                m[8], m[9], m[10], m[11],
+                m[12], m[13], m[14], m[15]),
         };
     } else {
         glm::vec3 translation = glm::vec3(0.0f);
         glm::vec4 rotation = glm::vec4(0.0f);
         glm::vec3 scale = glm::vec3(1.0f);
 
+        auto translationField = node.find_field_unordered("translation");
         if (translationField.has_value()) {
             auto translationArray = translationField.get_array();
             ASSERT(translationArray.count_elements() == 3);
 
+            translationArray->reset();
             translation.x = (float)translationArray.at(0).get_double();
             translation.y = (float)translationArray.at(1).get_double();
             translation.z = (float)translationArray.at(2).get_double();
         }
+
+        auto rotationField = node.find_field_unordered("rotation");
         if (rotationField.has_value()) {
             auto rotationArray = rotationField.get_array();
             ASSERT(rotationArray.count_elements() == 4);
 
+            rotationArray->reset();
             rotation[0] = (float)rotationArray.at(0).get_double();
             rotation[1] = (float)rotationArray.at(1).get_double();
             rotation[2] = (float)rotationArray.at(2).get_double();
             rotation[3] = (float)rotationArray.at(3).get_double();
         }
+
+        auto scaleField = node.find_field_unordered("scale");
         if (scaleField.has_value()) {
             auto scaleArray = scaleField.get_array();
             ASSERT(scaleArray.count_elements() == 3);
 
+            scaleArray->reset();
             scale.x = (float)scaleArray.at(0).get_double();
             scale.y = (float)scaleArray.at(1).get_double();
             scale.z = (float)scaleArray.at(2).get_double();
@@ -355,28 +364,27 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
     for (auto nodeEntry : nodeList) {
 
         auto node = nodeEntry.get_object();
-        auto meshField = node->find_field("mesh");
-        auto cameraField = node->find_field("camera");
-        auto childListField = node->find_field("children");
+        auto meshField = node->find_field_unordered("mesh");
+        auto cameraField = node->find_field_unordered("camera");
+        auto childListField = node->find_field_unordered("children");
+
+        std::string_view nodeName = node["name"]->get_string().take_value();
+        std::cout << nodeName << std::endl;
 
         if (meshField.has_value()) {
             auto meshID = meshField->get_uint64().value();
             auto transform = parseTransform(node.value());
-            std::string_view nodeName = node["name"]->get_string().take_value();
             result.emplace_back(i, std::string(nodeName), GLTFMeshNode {
                                                               .transform = transform,
                                                               .meshID = meshID,
                                                           });
-            LOG_DEBUG("{}", nodeName);
         } else if (cameraField.has_value()) {
             auto cameraID = cameraField->get_uint64().value();
             auto transform = parseTransform(node.value());
-            std::string_view nodeName = node["name"]->get_string().take_value();
             result.emplace_back(i, std::string(nodeName), GLTFCameraNode {
                                                               .transform = transform,
                                                               .cameraID = cameraID,
                                                           });
-            LOG_DEBUG("{}", nodeName);
         } else if (childListField.has_value()) {
             auto childListArray = childListField->get_array();
 
@@ -385,19 +393,14 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
                 childList.push_back(childListArray.at(i).get_uint64());
             }
 
-            std::string_view nodeName = node["name"]->get_string().take_value();
             result.emplace_back(i, std::string(nodeName), GLTFChildListNode {
                                                               .children = childList,
                                                           });
-            LOG_DEBUG("{}", nodeName);
-
         } else {
             auto transform = parseTransform(node.value());
-            std::string_view nodeName = node["name"]->get_string().take_value();
             result.emplace_back(i, std::string(nodeName), GLTFProxyNode {
                                                               .transform = transform,
                                                           });
-            LOG_DEBUG("{}", nodeName);
         }
 
         ++i;
