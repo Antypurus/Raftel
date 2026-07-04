@@ -8,9 +8,11 @@
 
 #include <Rendering/API/Vulkan/vulkan.h>
 #include <Windowing/Window.h>
+
 #include <core/filesystem/filesystem.h>
 #include <core/filesystem/parsers/json/ModelFormats/gltf.h>
 #include <core/logger.h>
+#include <core/measure.h>
 
 #include <iostream>
 
@@ -18,9 +20,9 @@ using namespace raftel;
 
 int main()
 {
-    // Logger::CreateLogger();
+    Logger::CreateLogger();
 
-    parsers::model::GLTFParser::parse("C:\\Users\\craky\\Desktop\\Models\\Sponza\\sponza\\NewSponza_Main_glTF_003.gltf");
+    SIMPLE_MEASURE(parsers::model::GLTFParser::parse("C:\\Users\\craky\\Desktop\\Models\\Sponza\\sponza\\NewSponza_Main_glTF_003.gltf"));
     return 0;
 
     WindowingSystem& windowingSystem = WindowingSystem::GetInstance();

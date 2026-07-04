@@ -3,8 +3,9 @@
 #include <core/assert.h>
 #include <core/logger.h>
 
-#include <iostream>
 #include <simdjson.h>
+
+#include <iostream>
 
 namespace raftel::parsers::model {
 
@@ -268,24 +269,6 @@ GLTFNode& GLTFNode::operator=(GLTFNode&& other)
     return *this;
 }
 
-std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
-{
-    GLTFModel result;
-
-    simdjson::ondemand::parser gltfParser;
-    auto rawJSON = simdjson::padded_string::load(path);
-
-    simdjson::ondemand::document gltf = gltfParser.iterate(rawJSON);
-
-    //const auto defaultScene = gltf["scene"].get_uint64().value();
-    // auto sceneNodes = gltf["scenes"]->get_array().at(defaultScene)["nodes"].get_array();
-    auto nodeList = std::move(gltf["nodes"]->get_array().take_value());
-
-    result.sceneNodes = parseNodeList(nodeList);
-
-    return result;
-}
-
 GLTFTransform GLTFParser::parseTransform(simdjson::ondemand::object node)
 {
     auto translationField = node.find_field("translation");
@@ -369,7 +352,7 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
     // As such for any important strings we will need to make copies. I assume that this
     // will generally speaking apply to any other dynamic data that comes from the parser
     size_t i = 0;
-    for (auto nodeEntry: nodeList) {
+    for (auto nodeEntry : nodeList) {
 
         auto node = nodeEntry.get_object();
         auto meshField = node->find_field("mesh");
@@ -384,7 +367,7 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
                                                               .transform = transform,
                                                               .meshID = meshID,
                                                           });
-            std::cout << nodeName << std::endl;
+            LOG_DEBUG("{}", nodeName);
         } else if (cameraField.has_value()) {
             auto cameraID = cameraField->get_uint64().value();
             auto transform = parseTransform(node.value());
@@ -393,7 +376,7 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
                                                               .transform = transform,
                                                               .cameraID = cameraID,
                                                           });
-            std::cout << nodeName << std::endl;
+            LOG_DEBUG("{}", nodeName);
         } else if (childListField.has_value()) {
             auto childListArray = childListField->get_array();
 
@@ -406,18 +389,40 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
             result.emplace_back(i, std::string(nodeName), GLTFChildListNode {
                                                               .children = childList,
                                                           });
-            std::cout << nodeName << std::endl;
+            LOG_DEBUG("{}", nodeName);
+
         } else {
             auto transform = parseTransform(node.value());
             std::string_view nodeName = node["name"]->get_string().take_value();
             result.emplace_back(i, std::string(nodeName), GLTFProxyNode {
                                                               .transform = transform,
                                                           });
-            std::cout << nodeName << std::endl;
+            LOG_DEBUG("{}", nodeName);
         }
 
         ++i;
     }
+
+    return result;
+}
+
+std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
+{
+    GLTFModel result;
+
+    simdjson::ondemand::parser gltfParser;
+    auto rawJSON = simdjson::padded_string::load(path);
+
+    simdjson::ondemand::document gltf = gltfParser.iterate(rawJSON);
+
+    // const auto defaultScene = gltf["scene"].get_uint64().value();
+    //  auto sceneNodes = gltf["scenes"]->get_array().at(defaultScene)["nodes"].get_array();
+
+    auto nodeListField = gltf.find_field_unordered("nodes");
+    if (!nodeListField.has_value())
+        return {};
+
+    result.sceneNodes = parseNodeList(nodeListField->get_array());
 
     return result;
 }
