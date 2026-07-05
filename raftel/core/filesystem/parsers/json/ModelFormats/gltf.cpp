@@ -352,6 +352,7 @@ GLTFTransform GLTFParser::parseTransform(simdjson::ondemand::object node)
     }
 }
 
+#if 0
 std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeList)
 {
     // const size_t nodeCount = nodeList.count_elements().take_value();
@@ -369,9 +370,6 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
         std::cout << nodeName << std::endl;
 
         auto meshField = node->find_field_unordered("mesh");
-        auto cameraField = node->find_field_unordered("camera");
-        auto childListField = node->find_field_unordered("children");
-
         if (meshField.has_value()) {
             auto meshID = meshField->get_uint64().value();
             auto transform = parseTransform(*node);
@@ -379,14 +377,24 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
                                                               .transform = transform,
                                                               .meshID = meshID,
                                                           });
-        } else if (cameraField.has_value()) {
+            ++i;
+            continue;
+        }
+
+        auto cameraField = node->find_field_unordered("camera");
+        if (cameraField.has_value()) {
             auto cameraID = cameraField->get_uint64().value();
             auto transform = parseTransform(*node);
             result.emplace_back(i, std::string(nodeName), GLTFCameraNode {
                                                               .transform = transform,
                                                               .cameraID = cameraID,
                                                           });
-        } else if (childListField.has_value()) {
+            ++i;
+            continue;
+        }
+
+        auto childListField = node->find_field_unordered("children");
+        if (childListField.has_value()) {
             auto childListArray = childListField->get_array();
             const auto childCount = childListArray.count_elements().value();
             childListArray->reset();
@@ -399,18 +407,45 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
             result.emplace_back(i, std::string(nodeName), GLTFChildListNode {
                                                               .children = childList,
                                                           });
-        } else {
-            auto transform = parseTransform(*node);
-            result.emplace_back(i, std::string(nodeName), GLTFProxyNode {
-                                                              .transform = transform,
-                                                          });
+            ++i;
+            continue;
         }
 
+        auto transform = parseTransform(*node);
+        result.emplace_back(i, std::string(nodeName), GLTFProxyNode {
+                                                          .transform = transform,
+                                                      });
         ++i;
     }
 
     return result;
 }
+#else
+std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeList)
+{
+    size_t nodeID = 0;
+    for (auto node : nodeList) {
+        auto nodeObject = node.get_object().take_value();
+        for (auto field : nodeObject) {
+            // by default nodes are proxy nodes until something changes that
+            GLTFNodeType nodetype = GLTFNodeType::Proxy;
+
+            auto fieldName = field.key().take_value();
+            if (fieldName == "mesh") {
+                // mesh type node
+                nodetype = GLTFNodeType::Mesh;
+            } else if (fieldName == "camera") {
+                // camera type node
+                nodetype = GLTFNodeType::Camera;
+            } else if (fieldName == "children") {
+                // child list type node
+                nodetype = GLTFNodeType::ChildList;
+            }
+        }
+    }
+    return { };
+}
+#endif
 
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 {
