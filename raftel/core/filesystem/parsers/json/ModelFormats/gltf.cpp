@@ -110,7 +110,7 @@ GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFChildListNode childLi
 GLTFNode::GLTFNode()
     : id(0xFFFFFFFFFFFFFFFF)
     , name("")
-    , proxyNode({})
+    , proxyNode({ })
     , nodeType(GLTFNodeType::Proxy)
 {
 }
@@ -276,27 +276,26 @@ GLTFTransform GLTFParser::parseTransform(simdjson::ondemand::object node)
     auto matrixField = node.find_field_unordered("matrix");
     if (matrixField.has_value()) {
         auto matrixArray = matrixField.get_array();
-        ASSERT(matrixArray.count_elements() == (4 * 4));
+        // ASSERT(matrixArray.count_elements() == (4 * 4));
 
         float m[16] = { 0 };
         m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
-        m[0] = (float)matrixArray.at(0).get_double();
+        m[0] = (float)matrixArray.at(1).get_double();
+        m[0] = (float)matrixArray.at(2).get_double();
+        m[0] = (float)matrixArray.at(3).get_double();
+        m[0] = (float)matrixArray.at(4).get_double();
+        m[0] = (float)matrixArray.at(5).get_double();
+        m[0] = (float)matrixArray.at(6).get_double();
+        m[0] = (float)matrixArray.at(7).get_double();
+        m[0] = (float)matrixArray.at(8).get_double();
+        m[0] = (float)matrixArray.at(9).get_double();
+        m[0] = (float)matrixArray.at(10).get_double();
+        m[0] = (float)matrixArray.at(11).get_double();
+        m[0] = (float)matrixArray.at(12).get_double();
+        m[0] = (float)matrixArray.at(13).get_double();
+        m[0] = (float)matrixArray.at(14).get_double();
+        m[0] = (float)matrixArray.at(15).get_double();
 
-        matrixArray->reset();
         return GLTFTransformMatrix {
             .modelMatrix = glm::mat4x4(
                 m[0], m[1], m[2], m[3],
@@ -311,36 +310,38 @@ GLTFTransform GLTFParser::parseTransform(simdjson::ondemand::object node)
 
         auto translationField = node.find_field_unordered("translation");
         if (translationField.has_value()) {
-            auto translationArray = translationField.get_array();
-            ASSERT(translationArray.count_elements() == 3);
+            auto translationArray = translationField.get_array().take_value();
+            // ASSERT(translationArray.count_elements() == 3);
 
-            translationArray->reset();
-            translation.x = (float)translationArray.at(0).get_double();
-            translation.y = (float)translationArray.at(1).get_double();
-            translation.z = (float)translationArray.at(2).get_double();
+            int i = 0;
+            for (auto value : translationArray) {
+                translation[i] = (float)value->get_double();
+                i++;
+            }
         }
 
         auto rotationField = node.find_field_unordered("rotation");
         if (rotationField.has_value()) {
-            auto rotationArray = rotationField.get_array();
-            ASSERT(rotationArray.count_elements() == 4);
+            auto rotationArray = rotationField.get_array().take_value();
+            // ASSERT(rotationArray.count_elements() == 4);
 
-            rotationArray->reset();
-            rotation[0] = (float)rotationArray.at(0).get_double();
-            rotation[1] = (float)rotationArray.at(1).get_double();
-            rotation[2] = (float)rotationArray.at(2).get_double();
-            rotation[3] = (float)rotationArray.at(3).get_double();
+            int i = 0;
+            for (auto value : rotationArray) {
+                rotation[i] = (float)value.get_double();
+                i++;
+            }
         }
 
         auto scaleField = node.find_field_unordered("scale");
         if (scaleField.has_value()) {
-            auto scaleArray = scaleField.get_array();
-            ASSERT(scaleArray.count_elements() == 3);
+            auto scaleArray = scaleField.get_array().take_value();
+            // ASSERT(scaleArray.count_elements() == 3);
 
-            scaleArray->reset();
-            scale.x = (float)scaleArray.at(0).get_double();
-            scale.y = (float)scaleArray.at(1).get_double();
-            scale.z = (float)scaleArray.at(2).get_double();
+            int i = 0;
+            for (auto value : scaleArray) {
+                scale[i] = (float)value.get_double();
+                i++;
+            }
         }
 
         return GLTFTransformComponents {
@@ -364,40 +365,42 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
     for (auto nodeEntry : nodeList) {
 
         auto node = nodeEntry.get_object();
+        std::string_view nodeName = node["name"]->get_string().take_value();
+        std::cout << nodeName << std::endl;
+
         auto meshField = node->find_field_unordered("mesh");
         auto cameraField = node->find_field_unordered("camera");
         auto childListField = node->find_field_unordered("children");
 
-        std::string_view nodeName = node["name"]->get_string().take_value();
-        std::cout << nodeName << std::endl;
-
         if (meshField.has_value()) {
             auto meshID = meshField->get_uint64().value();
-            auto transform = parseTransform(node.value());
+            auto transform = parseTransform(*node);
             result.emplace_back(i, std::string(nodeName), GLTFMeshNode {
                                                               .transform = transform,
                                                               .meshID = meshID,
                                                           });
         } else if (cameraField.has_value()) {
             auto cameraID = cameraField->get_uint64().value();
-            auto transform = parseTransform(node.value());
+            auto transform = parseTransform(*node);
             result.emplace_back(i, std::string(nodeName), GLTFCameraNode {
                                                               .transform = transform,
                                                               .cameraID = cameraID,
                                                           });
         } else if (childListField.has_value()) {
             auto childListArray = childListField->get_array();
+            const auto childCount = childListArray.count_elements().value();
+            childListArray->reset();
 
-            std::vector<std::uint64_t> childList(childListArray.count_elements());
-            for (size_t j = 0; j < childListArray.count_elements(); ++j) {
-                childList.push_back(childListArray.at(i).get_uint64());
+            std::vector<std::uint64_t> childList(childCount);
+            for (auto childID : childListArray) {
+                childList.push_back(childID);
             }
 
             result.emplace_back(i, std::string(nodeName), GLTFChildListNode {
                                                               .children = childList,
                                                           });
         } else {
-            auto transform = parseTransform(node.value());
+            auto transform = parseTransform(*node);
             result.emplace_back(i, std::string(nodeName), GLTFProxyNode {
                                                               .transform = transform,
                                                           });
@@ -423,7 +426,7 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 
     auto nodeListField = gltf.find_field_unordered("nodes");
     if (!nodeListField.has_value())
-        return {};
+        return { };
 
     result.sceneNodes = parseNodeList(nodeListField->get_array());
 
