@@ -25,6 +25,8 @@ include_directories("${GLFW_SOURCE_DIR}/deps")
 add_subdirectory(ThirdParty/GLFW)
 add_subdirectory(ThirdParty/GLM)
 add_subdirectory(ThirdParty/simdjson)
+
+add_compile_definitions(SIMDJSON_DEVELOPMENT_CHECKS=1)
 get_target_property(SIMDJSON_REAL simdjson::simdjson ALIASED_TARGET)
 get_target_property(SIMDJSON_INCLUDES ${SIMDJSON_REAL} INTERFACE_INCLUDE_DIRECTORIES)
 set_target_properties(${SIMDJSON_REAL} PROPERTIES

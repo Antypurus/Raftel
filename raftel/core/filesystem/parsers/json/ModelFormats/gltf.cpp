@@ -423,26 +423,124 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
 #else
 std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeList)
 {
+    std::vector<GLTFNode> resultGLTFNodes;
+
     size_t nodeID = 0;
     for (auto node : nodeList) {
+        // by default nodes are proxy nodes until something changes that
+        bool nodeHasMatrixTransform = false;
+        GLTFTransformComponents nodeTransformComponents = { };
+        GLTFTransformMatrix nodeTransformMatrix = { };
+        GLTFTransform nodeTransform = { };
+        GLTFNodeType nodetype = GLTFNodeType::Proxy;
+        std::vector<std::uint64_t> nodeChildList;
+        std::uint64_t nodeMeshID = 0;
+        std::uint64_t nodeCameraID = 0;
+        std::string nodeName = "";
+
         auto nodeObject = node.get_object().take_value();
         for (auto field : nodeObject) {
-            // by default nodes are proxy nodes until something changes that
-            GLTFNodeType nodetype = GLTFNodeType::Proxy;
 
             auto fieldName = field.key().take_value();
-            if (fieldName == "mesh") {
-                // mesh type node
+            if (fieldName == "name") {
+                nodeName = field->value().get_string().value();
+            } else if (fieldName == "mesh") {
                 nodetype = GLTFNodeType::Mesh;
+                nodeMeshID = field->value().get_uint64();
             } else if (fieldName == "camera") {
-                // camera type node
                 nodetype = GLTFNodeType::Camera;
+                nodeCameraID = field->value().get_uint64();
             } else if (fieldName == "children") {
-                // child list type node
                 nodetype = GLTFNodeType::ChildList;
+                auto childListArray = field->value().get_array();
+                nodeChildList.reserve(childListArray.count_elements());
+                childListArray->reset();
+                for (auto childNodeID : childListArray) {
+                    nodeChildList.push_back(childNodeID.get_uint64());
+                }
+            } else if (fieldName == "matrix") {
+                nodeHasMatrixTransform = true;
+                auto matrixArray = field->value().get_array();
+
+                float m[16] { 0.0f };
+                glm::length_t iter = 0;
+                for (auto value : matrixArray) {
+                    m[iter] = (float)value->get_double();
+                    iter++;
+                }
+                nodeTransformMatrix = GLTFTransformMatrix {
+                    .modelMatrix = glm::mat4x4(
+                        m[0], m[1], m[2], m[3],
+                        m[4], m[5], m[6], m[7],
+                        m[8], m[9], m[10], m[11],
+                        m[12], m[13], m[14], m[15]),
+                };
+            } else if (fieldName == "translation") {
+                auto translationArray = field->value().get_array().take_value();
+                glm::length_t iter = 0;
+                for (auto value : translationArray) {
+                    nodeTransformComponents.translation[iter] = (float)value.get_double();
+                    iter++;
+                }
+            } else if (fieldName == "rotation") {
+                auto rotationArray = field->value().get_array();
+                glm::length_t iter = 0;
+                for (auto value : rotationArray) {
+                    nodeTransformComponents.rotation[iter] = (float)value.get_double();
+                    iter++;
+                }
+            } else if (fieldName == "scale") {
+                auto scaleArray = field->value().get_array();
+                glm::length_t iter = 0;
+                for (auto value : scaleArray) {
+                    nodeTransformComponents.scale[iter] = (float)value.get_double();
+                    iter++;
+                }
             }
         }
+
+        if (nodeHasMatrixTransform) {
+            nodeTransform = nodeTransformMatrix;
+        } else {
+            nodeTransform = nodeTransformComponents;
+        }
+
+        switch (nodetype) {
+        case (GLTFNodeType::Proxy): {
+            resultGLTFNodes.emplace_back(nodeID, nodeName, GLTFProxyNode {
+                                                               .transform = nodeTransform,
+                                                           });
+            break;
+        }
+        case (GLTFNodeType::Camera): {
+            resultGLTFNodes.emplace_back(nodeID, nodeName, GLTFCameraNode {
+                                                               .transform = nodeTransform,
+                                                               .cameraID = nodeCameraID,
+                                                           });
+            break;
+        }
+        case (GLTFNodeType::Mesh): {
+            resultGLTFNodes.emplace_back(nodeID, nodeName, GLTFMeshNode {
+                                                               .transform = nodeTransform,
+                                                               .meshID = nodeMeshID,
+                                                           });
+            break;
+        }
+        case (GLTFNodeType::ChildList): {
+            resultGLTFNodes.emplace_back(nodeID, nodeName, GLTFChildListNode {
+                                                               .children = std::move(nodeChildList),
+                                                           });
+            break;
+        }
+        default: {
+            std::unreachable();
+            break;
+        }
+        }
+
+        ++nodeID;
     }
+
     return { };
 }
 #endif

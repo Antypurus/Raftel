@@ -22,7 +22,7 @@ int main()
 {
     Logger::CreateLogger();
 
-    SIMPLE_MEASURE(parsers::model::GLTFParser::parse("C:\\Users\\craky\\Desktop\\Models\\Sponza\\sponza\\NewSponza_Main_glTF_003.gltf"));
+    SIMPLE_MEASURE_WITH_UNIT(parsers::model::GLTFParser::parse("C:\\Users\\craky\\Desktop\\Models\\Sponza\\sponza\\NewSponza_Main_glTF_003.gltf"), std::chrono::microseconds);
     return 0;
 
     WindowingSystem& windowingSystem = WindowingSystem::GetInstance();
