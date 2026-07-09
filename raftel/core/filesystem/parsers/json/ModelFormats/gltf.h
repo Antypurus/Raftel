@@ -83,6 +83,7 @@ public:
     };
     GLTFNodeType nodeType;
 
+public:
     GLTFNode(std::uint64_t id, std::string name, GLTFProxyNode proxy);
     GLTFNode(std::uint64_t id, std::string name, GLTFMeshNode mesh);
     GLTFNode(std::uint64_t id, std::string name, GLTFCameraNode camera);
@@ -108,6 +109,5 @@ public:
 
 private:
     static std::vector<GLTFNode> parseNodeList(simdjson::ondemand::array nodeList);
-    static GLTFTransform parseTransform(simdjson::ondemand::object node);
 };
 }
