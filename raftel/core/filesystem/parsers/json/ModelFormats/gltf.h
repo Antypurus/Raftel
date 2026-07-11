@@ -103,11 +103,35 @@ public:
     std::vector<GLTFNode> sceneNodes;
 };
 
+enum class GLTFCameraType {
+    Perspective,
+    Orthographics
+};
+
+struct GLTFPerspectiveCamera {
+    double aspectRation = 0.0;
+};
+
+struct GLTFOrtograhpicCamera {
+    double zfar = 0.0;
+};
+
+struct GLTFCamera {
+    std::uint64_t id;
+    std::string name;
+    union {
+        GLTFPerspectiveCamera perspectiveCamera;
+        GLTFOrtograhpicCamera orthographicsCamera;
+    };
+    GLTFCameraType cameraType;
+};
+
 struct GLTFParser {
 public:
     static std::optional<GLTFModel> parse(std::string_view path);
 
 private:
     static std::vector<GLTFNode> parseNodeList(simdjson::ondemand::array nodeList);
+    static std::vector<GLTFCamera> parseCameraList(simdjson::ondemand::array cameraList);
 };
 }

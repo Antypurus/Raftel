@@ -286,10 +286,10 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
         std::uint64_t nodeMeshID = 0;
         std::uint64_t nodeCameraID = 0;
         std::string nodeName = "";
+        std::vector<std::string> nodeExtensions;
 
         auto nodeObject = node.get_object().take_value();
         for (auto field : nodeObject) {
-
             auto fieldName = field.key().take_value();
             if (fieldName == "name") {
                 nodeName = field->value().get_string().value();
@@ -345,6 +345,10 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
                     nodeTransformComponents.scale[iter] = (float)value.get_double();
                     iter++;
                 }
+            } else if (fieldName == "extensions") {
+                // needs propper per  extension handling i guess
+                auto extension = field->value().raw_json_token();
+                nodeExtensions.emplace_back(extension);
             }
         }
 
@@ -393,6 +397,11 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
     return resultGLTFNodes;
 }
 
+std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array cameraList)
+{
+    return { };
+}
+
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 {
     GLTFModel result;
@@ -405,13 +414,17 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     // const auto defaultScene = gltf["scene"].get_uint64().value();
     //  auto sceneNodes = gltf["scenes"]->get_array().at(defaultScene)["nodes"].get_array();
 
-    auto nodeListField = gltf.find_field_unordered("nodes");
+    auto nodeListField = gltf["nodes"];
     if (!nodeListField.has_value())
         return { };
-
     result.sceneNodes = parseNodeList(nodeListField->get_array());
 
-    return result;
+    auto cameraListField = gltf["cameras"];
+    if (nodeListField.has_value()) {
+        auto cameraList = parseCameraList(cameraListField->get_array());
+    }
+
+    return std::move(result);
 }
 
 }

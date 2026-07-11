@@ -22,10 +22,8 @@ int main()
 {
     Logger::CreateLogger();
 
-    const auto model = parsers::model::GLTFParser::parse("C:\\Users\\craky\\Desktop\\Models\\Sponza\\sponza\\NewSponza_Main_glTF_003.gltf");
-    for (const auto& node : model->sceneNodes) {
-        LOG_INFO("{}", node.name);
-    }
+    SIMPLE_MEASURE_WITH_UNIT(parsers::model::GLTFParser::parse("C:\\Users\\craky\\Desktop\\Models\\Sponza\\sponza\\NewSponza_Main_glTF_003.gltf"), std::chrono::microseconds);
+    system("pause");
     return 0;
 
     WindowingSystem& windowingSystem = WindowingSystem::GetInstance();
