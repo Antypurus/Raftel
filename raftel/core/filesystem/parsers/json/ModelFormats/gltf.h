@@ -105,7 +105,7 @@ public:
 
 enum class GLTFCameraType {
     Perspective,
-    Orthographics
+    Orthographic
 };
 
 struct GLTFPerspectiveCamera {

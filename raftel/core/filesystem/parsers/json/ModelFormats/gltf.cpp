@@ -399,6 +399,52 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
 
 std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array cameraList)
 {
+    std::vector<GLTFCamera> result;
+
+    size_t cameraID = 0;
+    for (auto camera : cameraList) {
+        std::string cameraName;
+        GLTFCameraType cameraType;
+
+        auto cameraObject = camera.get_object().take_value();
+        for (auto field : cameraObject) {
+            const auto fieldName = field.key().take_value();
+            if (fieldName == "type") {
+                const auto typeField = field.value().get_string().take_value();
+                if (typeField == "perspective") {
+                    cameraType = GLTFCameraType::Perspective;
+                } else {
+                    cameraType = GLTFCameraType::Orthographic;
+                }
+            } else if (fieldName == "name") {
+                const auto nameField = field.value().get_string().take_value();
+                cameraName = nameField;
+            } else if (fieldName == "perspective") {
+                // parse perspective camera parameters
+            } else if (fieldName == "orthographic") {
+                // parse orthographic camera parameters
+            }
+        }
+
+        if (cameraType == GLTFCameraType::Perspective) {
+            result.push_back(GLTFCamera {
+                .id = cameraID,
+                .name = cameraName,
+                .perspectiveCamera = { },
+                .cameraType = cameraType,
+            });
+        } else {
+            result.push_back(GLTFCamera {
+                .id = cameraID,
+                .name = cameraName,
+                .perspectiveCamera = { },
+                .cameraType = cameraType,
+            });
+        }
+
+        cameraID++;
+    }
+
     return { };
 }
 
