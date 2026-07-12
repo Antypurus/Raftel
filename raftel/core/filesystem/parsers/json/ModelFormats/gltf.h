@@ -98,18 +98,16 @@ public:
     GLTFNode& operator=(GLTFNode&& other);
 };
 
-struct GLTFModel {
-public:
-    std::vector<GLTFNode> sceneNodes;
-};
-
 enum class GLTFCameraType {
     Perspective,
     Orthographic
 };
 
 struct GLTFPerspectiveCamera {
-    double aspectRation = 0.0;
+    double aspectRatio = 0.0f;
+    double yFOV = 0.0;
+    double zNear = 0.0f;
+    double zFar = 0.0f;
 };
 
 struct GLTFOrtograhpicCamera {
@@ -124,6 +122,12 @@ struct GLTFCamera {
         GLTFOrtograhpicCamera orthographicsCamera;
     };
     GLTFCameraType cameraType;
+};
+
+struct GLTFModel {
+public:
+    std::vector<GLTFNode> sceneNodes;
+    std::vector<GLTFCamera> cameras;
 };
 
 struct GLTFParser {

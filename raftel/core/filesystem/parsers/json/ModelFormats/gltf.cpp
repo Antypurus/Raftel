@@ -397,6 +397,39 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
     return resultGLTFNodes;
 }
 
+GLTFPerspectiveCamera parsePerspectiveCameraParameters(simdjson::ondemand::object perspectiveCameraObject)
+{
+    double aspectRatio = 16.0 / 9.0;
+    double yfov = glm::radians(90.0);
+    double znear = 0.001;
+    double zfar = 1000.0;
+    for (auto field : perspectiveCameraObject) {
+        const auto fieldName = field.key().take_value();
+        if (fieldName == "aspectRation") {
+            aspectRatio = field.value().get_double();
+        } else if (fieldName == "yfov") {
+            yfov = field.value().get_double();
+        } else if (fieldName == "znear") {
+            znear = field.value().get_double();
+        } else if (fieldName == "zfar") {
+            zfar = field.value().get_double();
+        }
+    }
+    return {
+        .aspectRatio = aspectRatio,
+        .yFOV = yfov,
+        .zNear = znear,
+        .zFar = zfar,
+    };
+}
+
+GLTFOrtograhpicCamera parseOrthographicCameraParameters(simdjson::ondemand::object orthographicCameraObject)
+{
+    for (auto field : orthographicCameraObject) {
+    }
+    return { };
+}
+
 std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array cameraList)
 {
     std::vector<GLTFCamera> result;
@@ -405,6 +438,8 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
     for (auto camera : cameraList) {
         std::string cameraName;
         GLTFCameraType cameraType;
+        GLTFPerspectiveCamera perspectiveCamera;
+        GLTFOrtograhpicCamera orthographicCamera;
 
         auto cameraObject = camera.get_object().take_value();
         for (auto field : cameraObject) {
@@ -421,8 +456,9 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
                 cameraName = nameField;
             } else if (fieldName == "perspective") {
                 // parse perspective camera parameters
+                perspectiveCamera = parsePerspectiveCameraParameters(field->value().get_object());
             } else if (fieldName == "orthographic") {
-                // parse orthographic camera parameters
+                orthographicCamera = parseOrthographicCameraParameters(field->value().get_object());
             }
         }
 
@@ -430,14 +466,14 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
             result.push_back(GLTFCamera {
                 .id = cameraID,
                 .name = cameraName,
-                .perspectiveCamera = { },
+                .perspectiveCamera = perspectiveCamera,
                 .cameraType = cameraType,
             });
         } else {
             result.push_back(GLTFCamera {
                 .id = cameraID,
                 .name = cameraName,
-                .perspectiveCamera = { },
+                .orthographicsCamera = orthographicCamera,
                 .cameraType = cameraType,
             });
         }
@@ -445,7 +481,7 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
         cameraID++;
     }
 
-    return { };
+    return result;
 }
 
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
@@ -467,7 +503,7 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 
     auto cameraListField = gltf["cameras"];
     if (nodeListField.has_value()) {
-        auto cameraList = parseCameraList(cameraListField->get_array());
+        result.cameras = parseCameraList(cameraListField->get_array());
     }
 
     return std::move(result);
