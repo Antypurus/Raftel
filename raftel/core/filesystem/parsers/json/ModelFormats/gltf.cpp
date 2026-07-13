@@ -425,9 +425,28 @@ GLTFPerspectiveCamera parsePerspectiveCameraParameters(simdjson::ondemand::objec
 
 GLTFOrtograhpicCamera parseOrthographicCameraParameters(simdjson::ondemand::object orthographicCameraObject)
 {
+    double xMag = 1.0;
+    double yMag = 1.0;
+    double znear = 0.001;
+    double zfar = 1000.0;
     for (auto field : orthographicCameraObject) {
+        const auto fieldName = field.key().take_value();
+        if (fieldName == "xmag") {
+            xMag = field.value().get_double();
+        } else if (fieldName == "ymag") {
+            yMag = field.value().get_double();
+        } else if (fieldName == "znear") {
+            znear = field.value().get_double();
+        } else if (fieldName == "zfar") {
+            zfar = field.value().get_double();
+        }
     }
-    return { };
+    return {
+        .xMag = xMag,
+        .yMag = yMag,
+        .zNear = znear,
+        .zFar = zfar,
+    };
 }
 
 std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array cameraList)

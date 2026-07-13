@@ -111,7 +111,10 @@ struct GLTFPerspectiveCamera {
 };
 
 struct GLTFOrtograhpicCamera {
-    double zfar = 0.0;
+    double xMag = 0.0;
+    double yMag = 0.0;
+    double zNear = 0.0;
+    double zFar = 0.0;
 };
 
 struct GLTFCamera {
