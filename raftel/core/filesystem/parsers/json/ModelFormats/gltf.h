@@ -127,10 +127,14 @@ struct GLTFCamera {
     GLTFCameraType cameraType;
 };
 
+struct GLTFMesh {
+};
+
 struct GLTFModel {
 public:
     std::vector<GLTFNode> sceneNodes;
     std::vector<GLTFCamera> cameras;
+    std::vector<GLTFMesh> meshes;
 };
 
 struct GLTFParser {
@@ -140,5 +144,6 @@ public:
 private:
     static std::vector<GLTFNode> parseNodeList(simdjson::ondemand::array nodeList);
     static std::vector<GLTFCamera> parseCameraList(simdjson::ondemand::array cameraList);
+    static std::vector<GLTFMesh> parseMeshList(simdjson::ondemand::array meshList);
 };
 }

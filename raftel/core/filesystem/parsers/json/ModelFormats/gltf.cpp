@@ -503,6 +503,11 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
     return result;
 }
 
+std::vector<GLTFMesh> GLTFParser::parseMeshList(simdjson::ondemand::array meshList)
+{
+    return {};
+}
+
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 {
     GLTFModel result;
@@ -523,6 +528,11 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     auto cameraListField = gltf["cameras"];
     if (nodeListField.has_value()) {
         result.cameras = parseCameraList(cameraListField->get_array());
+    }
+
+    auto meshListField = gltf["meshes"];
+    if(meshListField.has_value()){
+        result.meshes = parseMeshList(meshListField->get_array());
     }
 
     return std::move(result);
