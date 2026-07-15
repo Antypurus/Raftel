@@ -4,9 +4,11 @@
 #include <core/logger.h>
 #include <core/measure.h>
 
+#include <ppltasks.h>
 #include <simdjson.h>
 
 #include <iostream>
+#include <simdjson/generic/ondemand/array.h>
 
 namespace raftel::parsers::model {
 
@@ -110,7 +112,7 @@ GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFChildListNode childLi
 GLTFNode::GLTFNode()
     : id(0xFFFFFFFFFFFFFFFF)
     , name("")
-    , proxyNode({ })
+    , proxyNode({})
     , nodeType(GLTFNodeType::Proxy)
 {
 }
@@ -278,9 +280,9 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
     for (auto node : nodeList) {
         // by default nodes are proxy nodes until something changes that
         bool nodeHasMatrixTransform = false;
-        GLTFTransformComponents nodeTransformComponents = { };
-        GLTFTransformMatrix nodeTransformMatrix = { };
-        GLTFTransform nodeTransform = { };
+        GLTFTransformComponents nodeTransformComponents = {};
+        GLTFTransformMatrix nodeTransformMatrix = {};
+        GLTFTransform nodeTransform = {};
         GLTFNodeType nodetype = GLTFNodeType::Proxy;
         std::vector<std::uint64_t> nodeChildList;
         std::uint64_t nodeMeshID = 0;
@@ -451,7 +453,7 @@ GLTFOrtograhpicCamera parseOrthographicCameraParameters(simdjson::ondemand::obje
 
 std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array cameraList)
 {
-    std::vector<GLTFCamera> result;
+    std::vector<GLTFCamera> cameras;
 
     size_t cameraID = 0;
     for (auto camera : cameraList) {
@@ -482,14 +484,14 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
         }
 
         if (cameraType == GLTFCameraType::Perspective) {
-            result.push_back(GLTFCamera {
+            cameras.push_back(GLTFCamera {
                 .id = cameraID,
                 .name = cameraName,
                 .perspectiveCamera = perspectiveCamera,
                 .cameraType = cameraType,
             });
         } else {
-            result.push_back(GLTFCamera {
+            cameras.push_back(GLTFCamera {
                 .id = cameraID,
                 .name = cameraName,
                 .orthographicsCamera = orthographicCamera,
@@ -500,12 +502,48 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
         cameraID++;
     }
 
-    return result;
+    return cameras;
+}
+
+std::vector<int> parseMeshPrimitiveArray(simdjson::ondemand::array primitiveList)
+{
+    std::vector<int> primitives;
+    for (auto primitive : primitiveList) {
+        auto primitiveObject = primitive.get_object().take_value();
+        for (auto field : primitiveObject) {
+            const auto fieldName = field.key().take_value();
+            if (fieldName == "attribute") {
+
+            } else if (fieldName == "indices") {
+
+            } else if (fieldName == "material") {
+
+            } else if (fieldName == "mode") {
+            }
+        }
+    }
+    return primitives;
 }
 
 std::vector<GLTFMesh> GLTFParser::parseMeshList(simdjson::ondemand::array meshList)
 {
-    return {};
+    std::vector<GLTFMesh> meshes;
+    for (auto mesh : meshList) {
+        std::string meshName;
+
+        auto meshObject = mesh.get_object().take_value();
+        for (auto field : meshObject) {
+            const auto fieldName = field.key().take_value();
+            if (fieldName == "primitives") {
+                auto primitives = parseMeshPrimitiveArray(field.value().get_array());
+            } else if (fieldName == "name") {
+                const auto nameField = field.value().get_string().take_value();
+                meshName = nameField;
+            }
+        }
+    }
+
+    return meshes;
 }
 
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
@@ -522,7 +560,7 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 
     auto nodeListField = gltf["nodes"];
     if (!nodeListField.has_value())
-        return { };
+        return {};
     result.sceneNodes = parseNodeList(nodeListField->get_array());
 
     auto cameraListField = gltf["cameras"];
@@ -531,7 +569,7 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     }
 
     auto meshListField = gltf["meshes"];
-    if(meshListField.has_value()){
+    if (meshListField.has_value()) {
         result.meshes = parseMeshList(meshListField->get_array());
     }
 
