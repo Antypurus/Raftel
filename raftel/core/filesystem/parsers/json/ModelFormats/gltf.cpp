@@ -4,11 +4,9 @@
 #include <core/logger.h>
 #include <core/measure.h>
 
-#include <ppltasks.h>
 #include <simdjson.h>
 
 #include <iostream>
-#include <simdjson/generic/ondemand/array.h>
 
 namespace raftel::parsers::model {
 
@@ -505,22 +503,34 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
     return cameras;
 }
 
-std::vector<int> parseMeshPrimitiveArray(simdjson::ondemand::array primitiveList)
+std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array primitiveList)
 {
-    std::vector<int> primitives;
+    std::vector<GLTFMeshPrimitive> primitives;
     for (auto primitive : primitiveList) {
+        std::uint64_t materialIndex = GLTFMeshPrimitive::DEFAULT_MESH_INDEX;
+        std::uint64_t indicesAccesssorIndex = (std::uint64_t)-1;
+        std::uint64_t modeIndex = (std::uint64_t)-1;
+
         auto primitiveObject = primitive.get_object().take_value();
         for (auto field : primitiveObject) {
             const auto fieldName = field.key().take_value();
             if (fieldName == "attribute") {
 
             } else if (fieldName == "indices") {
-
+                indicesAccesssorIndex = field.value().get_uint64();
             } else if (fieldName == "material") {
-
+                materialIndex = field.value().get_uint64();
             } else if (fieldName == "mode") {
+                modeIndex = field.value().get_uint64();
             }
         }
+
+        ASSERT(indicesAccesssorIndex != (std::uint64_t)-1);
+        ASSERT(modeIndex != (std::uint64_t)-1);
+
+        primitives.push_back(GLTFMeshPrimitive{
+            .materialIndex = materialIndex,
+        });
     }
     return primitives;
 }

@@ -127,6 +127,13 @@ struct GLTFCamera {
     GLTFCameraType cameraType;
 };
 
+struct GLTFMeshPrimitive {
+  constexpr static std::uint64_t DEFAULT_MESH_INDEX = 0xFFFFFFFFFFFFFFFF;
+
+  const std::uint64_t materialIndex = DEFAULT_MESH_INDEX;
+
+};
+
 struct GLTFMesh {
 };
 
