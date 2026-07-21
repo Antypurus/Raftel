@@ -507,7 +507,7 @@ std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array
 {
     std::vector<GLTFMeshPrimitive> primitives;
     for (auto primitive : primitiveList) {
-        std::uint64_t materialIndex = GLTFMeshPrimitive::DEFAULT_MESH_INDEX;
+        std::uint64_t materialIndex = GLTFMeshPrimitive::DEFAULT_INDEX;
         std::uint64_t indicesAccesssorIndex = (std::uint64_t)-1;
         std::uint64_t modeIndex = (std::uint64_t)-1;
 

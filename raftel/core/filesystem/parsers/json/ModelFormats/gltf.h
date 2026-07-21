@@ -127,11 +127,22 @@ struct GLTFCamera {
     GLTFCameraType cameraType;
 };
 
+enum class GLTFPrimitiveType {
+    Point = 0,
+    Line = 1,
+    LineLoop = 2,
+    LineStrip = 3,
+    Triangle = 4,
+    TriangleStrip = 5,
+    TriangleFan = 6
+};
+
 struct GLTFMeshPrimitive {
-  constexpr static std::uint64_t DEFAULT_MESH_INDEX = 0xFFFFFFFFFFFFFFFF;
+  constexpr static std::uint64_t DEFAULT_INDEX = 0xFFFFFFFFFFFFFFFF;
 
-  const std::uint64_t materialIndex = DEFAULT_MESH_INDEX;
-
+  const std::uint64_t materialIndex = DEFAULT_INDEX;
+  const std::uint64_t indicesAcessorIndex = DEFAULT_INDEX;
+  const std::uint64_t modeIndex = DEFAULT_INDEX;
 };
 
 struct GLTFMesh {
