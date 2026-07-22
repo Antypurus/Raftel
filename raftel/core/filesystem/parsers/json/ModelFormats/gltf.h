@@ -137,12 +137,21 @@ enum class GLTFPrimitiveType {
     TriangleFan = 6
 };
 
-struct GLTFMeshPrimitive {
-  constexpr static std::uint64_t DEFAULT_INDEX = 0xFFFFFFFFFFFFFFFF;
+constexpr std::uint64_t DEFAULT_INDEX = 0xFFFFFFFFFFFFFFFF;
 
-  const std::uint64_t materialIndex = DEFAULT_INDEX;
-  const std::uint64_t indicesAcessorIndex = DEFAULT_INDEX;
-  const std::uint64_t modeIndex = DEFAULT_INDEX;
+struct GLTFPrimitiveAttributes {
+    std::uint64_t positionIndex = DEFAULT_INDEX;
+    std::uint64_t tangentIndex = DEFAULT_INDEX;
+    std::uint64_t normalIndex = DEFAULT_INDEX;
+    std::uint64_t textureCoords0Index = DEFAULT_INDEX;
+    std::uint64_t textureCoords1Index = DEFAULT_INDEX;
+};
+
+struct GLTFMeshPrimitive {
+    const std::uint64_t materialIndex = DEFAULT_INDEX;
+    const std::uint64_t indicesAcessorIndex = DEFAULT_INDEX;
+    const GLTFPrimitiveType type;
+    const GLTFPrimitiveAttributes attributes;
 };
 
 struct GLTFMesh {

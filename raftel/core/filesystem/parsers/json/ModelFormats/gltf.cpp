@@ -503,33 +503,68 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
     return cameras;
 }
 
+GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::object attributes)
+{
+    std::uint64_t positionIndex = DEFAULT_INDEX;
+    std::uint64_t tangentIndex = DEFAULT_INDEX;
+    std::uint64_t normalIndex = DEFAULT_INDEX;
+    std::uint64_t textureCoords0Index = DEFAULT_INDEX;
+    std::uint64_t textureCoords1Index = DEFAULT_INDEX;
+
+    for (auto field : attributes) {
+        const auto fieldName = field.key().take_value();
+        if (fieldName == "POSITION") {
+            positionIndex = field.value().get_uint64();
+        } else if (fieldName == "TANGENT") {
+            tangentIndex = field.value().get_uint64();
+        } else if (fieldName == "NORMAL") {
+            normalIndex = field.value().get_uint64();
+        } else if (fieldName == "TEXCOORD_0") {
+            textureCoords0Index = field.value().get_uint64();
+        } else if (fieldName == "TEXCOORD_1") {
+            textureCoords0Index = field.value().get_uint64();
+        }
+    }
+
+    return GLTFPrimitiveAttributes {
+        .positionIndex = positionIndex,
+        .tangentIndex = tangentIndex,
+        .normalIndex = normalIndex,
+        .textureCoords0Index = textureCoords0Index,
+        .textureCoords1Index = textureCoords1Index,
+    };
+}
+
 std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array primitiveList)
 {
     std::vector<GLTFMeshPrimitive> primitives;
     for (auto primitive : primitiveList) {
-        std::uint64_t materialIndex = GLTFMeshPrimitive::DEFAULT_INDEX;
+        std::uint64_t materialIndex = DEFAULT_INDEX;
         std::uint64_t indicesAccesssorIndex = (std::uint64_t)-1;
-        std::uint64_t modeIndex = (std::uint64_t)-1;
+        GLTFPrimitiveType primitiveType;
+        GLTFPrimitiveAttributes primitiveAttributes;
 
         auto primitiveObject = primitive.get_object().take_value();
         for (auto field : primitiveObject) {
             const auto fieldName = field.key().take_value();
             if (fieldName == "attribute") {
-
+                primitiveAttributes = parsePrimitiveAttributes(field.value().get_object());
             } else if (fieldName == "indices") {
                 indicesAccesssorIndex = field.value().get_uint64();
             } else if (fieldName == "material") {
                 materialIndex = field.value().get_uint64();
             } else if (fieldName == "mode") {
-                modeIndex = field.value().get_uint64();
+                primitiveType = (GLTFPrimitiveType)field.value().get_uint64().value();
             }
         }
 
         ASSERT(indicesAccesssorIndex != (std::uint64_t)-1);
-        ASSERT(modeIndex != (std::uint64_t)-1);
 
-        primitives.push_back(GLTFMeshPrimitive{
+        primitives.push_back(GLTFMeshPrimitive {
             .materialIndex = materialIndex,
+            .indicesAcessorIndex = indicesAccesssorIndex,
+            .type = primitiveType,
+            .attributes = primitiveAttributes,
         });
     }
     return primitives;
