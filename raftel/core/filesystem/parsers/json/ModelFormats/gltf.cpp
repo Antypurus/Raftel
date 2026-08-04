@@ -474,7 +474,6 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
                 const auto nameField = field.value().get_string().take_value();
                 cameraName = nameField;
             } else if (fieldName == "perspective") {
-                // parse perspective camera parameters
                 perspectiveCamera = parsePerspectiveCameraParameters(field->value().get_object());
             } else if (fieldName == "orthographic") {
                 orthographicCamera = parseOrthographicCameraParameters(field->value().get_object());
@@ -510,6 +509,9 @@ GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::object attr
     std::uint64_t normalIndex = DEFAULT_INDEX;
     std::uint64_t textureCoords0Index = DEFAULT_INDEX;
     std::uint64_t textureCoords1Index = DEFAULT_INDEX;
+    std::uint64_t colorIndex = DEFAULT_INDEX;
+    std::uint64_t jointsIndex = DEFAULT_INDEX;
+    std::uint64_t weightsIndex = DEFAULT_INDEX;
 
     for (auto field : attributes) {
         const auto fieldName = field.key().take_value();
@@ -523,6 +525,12 @@ GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::object attr
             textureCoords0Index = field.value().get_uint64();
         } else if (fieldName == "TEXCOORD_1") {
             textureCoords0Index = field.value().get_uint64();
+        } else if (fieldName == "COLOR_0") {
+            colorIndex = field.value().get_uint64();
+        } else if (fieldName == "JOINTS_0") {
+            jointsIndex = field.value().get_uint64();
+        } else if (fieldName == "WEIGHTS_0") {
+            weightsIndex = field.value().get_uint64();
         }
     }
 
@@ -532,6 +540,9 @@ GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::object attr
         .normalIndex = normalIndex,
         .textureCoords0Index = textureCoords0Index,
         .textureCoords1Index = textureCoords1Index,
+        .colorIndex = colorIndex,
+        .jointsIndex = jointsIndex,
+        .weightsIndex = weightsIndex,
     };
 }
 
@@ -575,17 +586,21 @@ std::vector<GLTFMesh> GLTFParser::parseMeshList(simdjson::ondemand::array meshLi
     std::vector<GLTFMesh> meshes;
     for (auto mesh : meshList) {
         std::string meshName;
+        std::vector<GLTFMeshPrimitive> primitives;
 
         auto meshObject = mesh.get_object().take_value();
         for (auto field : meshObject) {
             const auto fieldName = field.key().take_value();
             if (fieldName == "primitives") {
-                auto primitives = parseMeshPrimitiveArray(field.value().get_array());
+                primitives = parseMeshPrimitiveArray(field.value().get_array());
             } else if (fieldName == "name") {
                 const auto nameField = field.value().get_string().take_value();
                 meshName = nameField;
             }
         }
+
+        meshes.push_back(GLTFMesh{
+        });
     }
 
     return meshes;

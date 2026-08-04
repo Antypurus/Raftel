@@ -145,6 +145,9 @@ struct GLTFPrimitiveAttributes {
     std::uint64_t normalIndex = DEFAULT_INDEX;
     std::uint64_t textureCoords0Index = DEFAULT_INDEX;
     std::uint64_t textureCoords1Index = DEFAULT_INDEX;
+    std::uint64_t colorIndex = DEFAULT_INDEX;
+    std::uint64_t jointsIndex = DEFAULT_INDEX;
+    std::uint64_t weightsIndex = DEFAULT_INDEX;
 };
 
 struct GLTFMeshPrimitive {
