@@ -110,7 +110,7 @@ GLTFNode::GLTFNode(std::uint64_t id, std::string name, GLTFChildListNode childLi
 GLTFNode::GLTFNode()
     : id(0xFFFFFFFFFFFFFFFF)
     , name("")
-    , proxyNode({})
+    , proxyNode({ })
     , nodeType(GLTFNodeType::Proxy)
 {
 }
@@ -278,9 +278,9 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
     for (auto node : nodeList) {
         // by default nodes are proxy nodes until something changes that
         bool nodeHasMatrixTransform = false;
-        GLTFTransformComponents nodeTransformComponents = {};
-        GLTFTransformMatrix nodeTransformMatrix = {};
-        GLTFTransform nodeTransform = {};
+        GLTFTransformComponents nodeTransformComponents = { };
+        GLTFTransformMatrix nodeTransformMatrix = { };
+        GLTFTransform nodeTransform = { };
         GLTFNodeType nodetype = GLTFNodeType::Proxy;
         std::vector<std::uint64_t> nodeChildList;
         std::uint64_t nodeMeshID = 0;
@@ -566,6 +566,13 @@ std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array
                 materialIndex = field.value().get_uint64();
             } else if (fieldName == "mode") {
                 primitiveType = (GLTFPrimitiveType)field.value().get_uint64().value();
+            } else if (fieldName == "targets") {
+                auto targetsArray = field.value().get_array();
+                LOG_WARNING("UNHANDLED TARGETS ARRAY IN PRIMITIVE PARSING");
+            } else if (fieldName == "extensions") {
+                LOG_WARNING("UNHANDLED EXTENSIONS ARRAY IN MESH PRIMITIVE PARSING");
+            } else if (fieldName == "extras") {
+                LOG_WARNING("UNHANDLED EXTRAS ARRAY IN MESH PRIMITIVE PARSING");
             }
         }
 
@@ -587,6 +594,7 @@ std::vector<GLTFMesh> GLTFParser::parseMeshList(simdjson::ondemand::array meshLi
     for (auto mesh : meshList) {
         std::string meshName;
         std::vector<GLTFMeshPrimitive> primitives;
+        std::vector<double> morphWeights;
 
         auto meshObject = mesh.get_object().take_value();
         for (auto field : meshObject) {
@@ -596,10 +604,22 @@ std::vector<GLTFMesh> GLTFParser::parseMeshList(simdjson::ondemand::array meshLi
             } else if (fieldName == "name") {
                 const auto nameField = field.value().get_string().take_value();
                 meshName = nameField;
+            } else if (fieldName == "weights") {
+                auto weightsArray = field.value().get_array();
+                for (auto weight : weightsArray) {
+                    morphWeights.push_back(weight.get_double().take_value());
+                }
+            } else if (fieldName == "extensions") {
+                LOG_WARNING("UNHANDLED EXTENSIONS ARRAY IN MESH LIST PARSING");
+            } else if (fieldName == "extras") {
+                LOG_WARNING("UNHANDLED EXTRAS ARRAY IN MESH LIST PARSING");
             }
         }
 
-        meshes.push_back(GLTFMesh{
+        meshes.emplace_back(GLTFMesh {
+            .name = std::move(meshName),
+            .primitives = std::move(primitives),
+            .morphWeights = std::move(morphWeights),
         });
     }
 
@@ -620,7 +640,7 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 
     auto nodeListField = gltf["nodes"];
     if (!nodeListField.has_value())
-        return {};
+        return { };
     result.sceneNodes = parseNodeList(nodeListField->get_array());
 
     auto cameraListField = gltf["cameras"];

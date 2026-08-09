@@ -158,6 +158,9 @@ struct GLTFMeshPrimitive {
 };
 
 struct GLTFMesh {
+    std::string name;
+    std::vector<GLTFMeshPrimitive> primitives;
+    std::vector<double> morphWeights;
 };
 
 struct GLTFModel {
