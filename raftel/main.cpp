@@ -23,6 +23,10 @@ int main()
     Logger::CreateLogger();
 
     const auto model = parsers::model::GLTFParser::parse("C:\\Users\\craky\\Desktop\\Models\\Sponza\\sponza\\NewSponza_Main_glTF_003.gltf");
+    for(auto& mesh: model.value().meshes) {
+        LOG_INFO("{}", mesh.name);
+    }
+
     system("pause");
     return 0;
 

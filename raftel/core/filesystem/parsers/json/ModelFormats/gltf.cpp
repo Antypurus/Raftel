@@ -397,7 +397,7 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
     return resultGLTFNodes;
 }
 
-GLTFPerspectiveCamera parsePerspectiveCameraParameters(simdjson::ondemand::object perspectiveCameraObject)
+static GLTFPerspectiveCamera parsePerspectiveCameraParameters(simdjson::ondemand::object perspectiveCameraObject)
 {
     double aspectRatio = 16.0 / 9.0;
     double yfov = glm::radians(90.0);
@@ -423,7 +423,7 @@ GLTFPerspectiveCamera parsePerspectiveCameraParameters(simdjson::ondemand::objec
     };
 }
 
-GLTFOrtograhpicCamera parseOrthographicCameraParameters(simdjson::ondemand::object orthographicCameraObject)
+static GLTFOrtograhpicCamera parseOrthographicCameraParameters(simdjson::ondemand::object orthographicCameraObject)
 {
     double xMag = 1.0;
     double yMag = 1.0;
@@ -502,7 +502,7 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
     return cameras;
 }
 
-GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::object attributes)
+static GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::object attributes)
 {
     std::uint64_t positionIndex = DEFAULT_INDEX;
     std::uint64_t tangentIndex = DEFAULT_INDEX;
@@ -521,7 +521,7 @@ GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::object attr
             tangentIndex = field.value().get_uint64();
         } else if (fieldName == "NORMAL") {
             normalIndex = field.value().get_uint64();
-        } else if (fieldName == "TEXCOORD_0") {
+        } else if (fieldName == "TEXCOORD_0") { // NOTE: apparently there can be an infinite amount of TEXCOORD_<N> entries that we might need to handle, so I need to revamp this. same for color, joints and weights.
             textureCoords0Index = field.value().get_uint64();
         } else if (fieldName == "TEXCOORD_1") {
             textureCoords0Index = field.value().get_uint64();
@@ -546,12 +546,17 @@ GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::object attr
     };
 }
 
+std::vector<GLTFPrimitiveMorphTarget> parsePrimitiveMorphTargets(simdjson::ondemand::array morphTargetList)
+{
+    return { };
+};
+
 std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array primitiveList)
 {
     std::vector<GLTFMeshPrimitive> primitives;
     for (auto primitive : primitiveList) {
         std::uint64_t materialIndex = DEFAULT_INDEX;
-        std::uint64_t indicesAccesssorIndex = (std::uint64_t)-1;
+        std::uint64_t indicesAccesssorIndex = DEFAULT_INDEX;
         GLTFPrimitiveType primitiveType;
         GLTFPrimitiveAttributes primitiveAttributes;
 

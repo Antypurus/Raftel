@@ -150,6 +150,24 @@ struct GLTFPrimitiveAttributes {
     std::uint64_t weightsIndex = DEFAULT_INDEX;
 };
 
+/**
+ * Morph targets are just deltas to be added to base values of geometry
+ * and are used for vertex animation/blending.
+ *
+ * think something like:
+ * finalPosition = basePosition + Σ (weight[i] * targetDelta[i])
+ *
+ * as far as I understand the delta is applied to the acessor index. so instead
+ * of accessisng index i you access i + delta. then you have morph weights that
+ * blend between the base value and the morphed value (as depicted above for the
+ * position example)
+ */
+struct GLTFPrimitiveMorphTarget {
+    size_t positionTargetDelta = 0;
+    size_t normalTargetDelta = 0;
+    size_t tangentTargetDelta = 0;
+};
+
 struct GLTFMeshPrimitive {
     const std::uint64_t materialIndex = DEFAULT_INDEX;
     const std::uint64_t indicesAcessorIndex = DEFAULT_INDEX;
