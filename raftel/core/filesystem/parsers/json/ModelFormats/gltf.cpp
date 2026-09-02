@@ -548,7 +548,26 @@ static GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::obje
 
 std::vector<GLTFPrimitiveMorphTarget> parsePrimitiveMorphTargets(simdjson::ondemand::array morphTargetList)
 {
-    return { };
+    std::vector<GLTFPrimitiveMorphTarget> morphTargets;
+    for (auto morphTargetEntry : morphTargetList) {
+        auto morphTargetObject = morphTargetEntry.get_object().take_value();
+
+        GLTFPrimitiveMorphTarget morphTarget;
+        for (auto attribute : morphTargetObject) {
+            const auto attributeName = attribute.key().take_value();
+            if (attributeName == "POSITION") {
+                morphTarget.positionTargetDelta = attribute.value().get_uint64();
+            } else if (attributeName == "NORMAL") {
+                morphTarget.normalTargetDelta = attribute.value().get_uint64();
+            } else if (attributeName == "TANGENT") {
+                morphTarget.tangentTargetDelta = attribute.value().get_uint64();
+            } else {
+                LOG_WARNING("Unsupported morph target attribute found: {}", attributeName.raw());
+            }
+        }
+        morphTargets.push_back(morphTarget);
+    }
+    return morphTargets;
 };
 
 std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array primitiveList)
@@ -559,6 +578,7 @@ std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array
         std::uint64_t indicesAccesssorIndex = DEFAULT_INDEX;
         GLTFPrimitiveType primitiveType;
         GLTFPrimitiveAttributes primitiveAttributes;
+        std::vector<GLTFPrimitiveMorphTarget> morphTargets;
 
         auto primitiveObject = primitive.get_object().take_value();
         for (auto field : primitiveObject) {
@@ -572,8 +592,7 @@ std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array
             } else if (fieldName == "mode") {
                 primitiveType = (GLTFPrimitiveType)field.value().get_uint64().value();
             } else if (fieldName == "targets") {
-                auto targetsArray = field.value().get_array();
-                LOG_WARNING("UNHANDLED TARGETS ARRAY IN PRIMITIVE PARSING");
+                morphTargets = parsePrimitiveMorphTargets(field.value().get_array());
             } else if (fieldName == "extensions") {
                 LOG_WARNING("UNHANDLED EXTENSIONS ARRAY IN MESH PRIMITIVE PARSING");
             } else if (fieldName == "extras") {
@@ -581,13 +600,12 @@ std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array
             }
         }
 
-        ASSERT(indicesAccesssorIndex != (std::uint64_t)-1);
-
         primitives.push_back(GLTFMeshPrimitive {
             .materialIndex = materialIndex,
             .indicesAcessorIndex = indicesAccesssorIndex,
             .type = primitiveType,
             .attributes = primitiveAttributes,
+            .morphTargets = std::move(morphTargets),
         });
     }
     return primitives;

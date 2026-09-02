@@ -173,6 +173,7 @@ struct GLTFMeshPrimitive {
     const std::uint64_t indicesAcessorIndex = DEFAULT_INDEX;
     const GLTFPrimitiveType type;
     const GLTFPrimitiveAttributes attributes;
+    const std::vector<GLTFPrimitiveMorphTarget> morphTargets;
 };
 
 struct GLTFMesh {
