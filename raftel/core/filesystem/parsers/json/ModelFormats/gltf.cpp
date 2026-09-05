@@ -652,6 +652,78 @@ std::vector<GLTFMesh> GLTFParser::parseMeshList(simdjson::ondemand::array meshLi
 std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::array accesssorList)
 {
     std::vector<GLTFAccessor> accesssors;
+    for (auto accessor : accesssorList) {
+        std::string accesssorName = "";
+        size_t bufferViewIndex = 0;
+        size_t bufferSize = 0;
+        size_t bufferByteOffset = 0;
+        GLTFDataType bufferDataType = GLTFDataType::None;
+        GLTFElementType bufferElementType = GLTFElementType::None;
+        bool normalized = false;
+        bool sparse = false;
+
+        auto accessorObject = accessor.get_object().take_value();
+        for (auto field : accessorObject) {
+            const auto fieldName = field.key().take_value();
+            if (fieldName == "bufferView") {
+                bufferViewIndex = field.value().get_uint64();
+            } else if (fieldName == "byteOffset") {
+                bufferByteOffset = field.value().get_uint64();
+            } else if (fieldName == "componentType") {
+                bufferDataType = (GLTFDataType)field.value().get_uint64().take_value();
+            } else if (fieldName == "normalized") {
+                normalized = field.value().get_bool();
+            } else if (fieldName == "count") {
+                bufferSize = field.value().get_uint64();
+            } else if (fieldName == "type") {
+                const auto typeString = field.value().get_string().take_value();
+                if (typeString == "SCALAR") {
+                    bufferElementType = GLTFElementType::Scalar;
+                } else if (typeString == "VEC2") {
+                    bufferElementType = GLTFElementType::Vec2;
+                } else if (typeString == "VEC3") {
+                    bufferElementType = GLTFElementType::Vec3;
+                } else if (typeString == "VEC4") {
+                    bufferElementType = GLTFElementType::Vec4;
+                } else if (typeString == "MAT2") {
+                    bufferElementType = GLTFElementType::Mat2x2;
+                } else if (typeString == "MAT3") {
+                    bufferElementType = GLTFElementType::Mat3x3;
+                } else if (typeString == "MAT4") {
+                    bufferElementType = GLTFElementType::Mat4x4;
+                } else if (typeString == "string") {
+                    bufferElementType = GLTFElementType::String;
+                } else {
+                    LOG_WARNING("Unrecognized GLTF accessor type: {}", typeString);
+                }
+            } else if (fieldName == "sparse") {
+                sparse = field.value().get_bool();
+            } else if (fieldName == "name") {
+                accesssorName = field.value().get_string().take_value();
+            } else if (fieldName == "min") {
+                LOG_WARNING("Unhandled GLTF accessor min field");
+            } else if (fieldName == "max") {
+                LOG_WARNING("Unhandled GLTF accessor max field");
+            } else if (fieldName == "extensions") {
+                LOG_WARNING("Unhandlded GLTF accessor extension list");
+            } else if (fieldName == "extras") {
+                LOG_WARNING("Unhandled GLTF accessor extras list");
+            } else {
+                LOG_WARNING("Unrecognized GLTF accessor field: {}", fieldName.raw());
+            }
+        }
+
+        accesssors.emplace_back(GLTFAccessor {
+            .name = std::move(accesssorName),
+            .bufferViewIndex = bufferViewIndex,
+            .bufferSize = bufferSize,
+            .bufferByteOffset = bufferByteOffset,
+            .dataType = bufferDataType,
+            .elementType = bufferElementType,
+            .normalized = normalized,
+            .sparse = sparse,
+        });
+    }
     return accesssors;
 }
 
@@ -690,5 +762,4 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 
     return std::move(result);
 }
-
 }

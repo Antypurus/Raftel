@@ -191,7 +191,9 @@ enum class GLTFDataType {
     Short = 5122,
     UnsignedShort = 5123,
     UnsignedInt = 5125,
-    Float = 5126
+    Float = 5126,
+    // Following value only here to mark uninitialized enum
+    None = -1
 };
 
 // additionally accessor also indicate the arity of the elements of a buffer.
@@ -205,19 +207,21 @@ enum class GLTFElementType {
     Mat2x2,
     Mat3x3,
     Mat4x4,
-    String
+    String,
+    // Following value only here to mark uninitialized enum
+    None = -1
 };
 
 // i guess the best way to think about accessors is a buffer view descriptions
 struct GLTFAccessor {
-    std::string name;
-    size_t bufferViewIndex;
-    size_t bufferSize;
-    size_t bufferByteOffset;
-    GLTFDataType dataType;
-    GLTFElementType elementType;
-    bool normalized; // NOTE: cannot be set to true when dataType is Float or UnsignedInt
-    bool sparse;
+    std::string name = "";
+    size_t bufferViewIndex = 0;
+    size_t bufferSize = 0;
+    size_t bufferByteOffset = 0;
+    GLTFDataType dataType = GLTFDataType::None;
+    GLTFElementType elementType = GLTFElementType::None;
+    bool normalized = false; // NOTE: cannot be set to true when dataType is Float or UnsignedInt
+    bool sparse = false;
 };
 
 struct GLTFModel {
