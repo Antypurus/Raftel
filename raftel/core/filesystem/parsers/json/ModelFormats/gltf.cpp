@@ -649,6 +649,11 @@ std::vector<GLTFMesh> GLTFParser::parseMeshList(simdjson::ondemand::array meshLi
     return meshes;
 }
 
+std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::array accesssorList)
+{
+    return { };
+}
+
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 {
     GLTFModel result;
@@ -662,8 +667,9 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     //  auto sceneNodes = gltf["scenes"]->get_array().at(defaultScene)["nodes"].get_array();
 
     auto nodeListField = gltf["nodes"];
-    if (!nodeListField.has_value())
+    if (!nodeListField.has_value()) {
         return { };
+    }
     result.sceneNodes = parseNodeList(nodeListField->get_array());
 
     auto cameraListField = gltf["cameras"];
@@ -674,6 +680,11 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     auto meshListField = gltf["meshes"];
     if (meshListField.has_value()) {
         result.meshes = parseMeshList(meshListField->get_array());
+    }
+
+    auto accessorListField = gltf["accessors"];
+    if (accessorListField.has_value()) {
+        result.accessors = parseAccessorList(accessorListField->get_array());
     }
 
     return std::move(result);

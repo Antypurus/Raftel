@@ -182,11 +182,15 @@ struct GLTFMesh {
     std::vector<double> morphWeights;
 };
 
+struct GLTFAccessor {
+};
+
 struct GLTFModel {
 public:
     std::vector<GLTFNode> sceneNodes;
     std::vector<GLTFCamera> cameras;
     std::vector<GLTFMesh> meshes;
+    std::vector<GLTFAccessor> accessors;
 };
 
 struct GLTFParser {
@@ -197,5 +201,6 @@ private:
     static std::vector<GLTFNode> parseNodeList(simdjson::ondemand::array nodeList);
     static std::vector<GLTFCamera> parseCameraList(simdjson::ondemand::array cameraList);
     static std::vector<GLTFMesh> parseMeshList(simdjson::ondemand::array meshList);
+    static std::vector<GLTFAccessor> parseAccessorList(simdjson::ondemand::array accesssorList);
 };
 }
