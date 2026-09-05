@@ -651,7 +651,8 @@ std::vector<GLTFMesh> GLTFParser::parseMeshList(simdjson::ondemand::array meshLi
 
 std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::array accesssorList)
 {
-    return { };
+    std::vector<GLTFAccessor> accesssors;
+    return accesssors;
 }
 
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)

@@ -182,7 +182,42 @@ struct GLTFMesh {
     std::vector<double> morphWeights;
 };
 
+// an accesssor indicates how the data in a buffer should be interpreted,
+// this enum contains the possible interpretations of that data and their
+// identifiers for GLTF.
+enum class GLTFDataType {
+    Byte = 5120,
+    UnsignedByte = 5121,
+    Short = 5122,
+    UnsignedShort = 5123,
+    UnsignedInt = 5125,
+    Float = 5126
+};
+
+// additionally accessor also indicate the arity of the elements of a buffer.
+// So we combine the element type with the data type to fully understand how
+// a buffer of data should be interpreted
+enum class GLTFElementType {
+    Scalar,
+    Vec2,
+    Vec3,
+    Vec4,
+    Mat2x2,
+    Mat3x3,
+    Mat4x4,
+    String
+};
+
+// i guess the best way to think about accessors is a buffer view descriptions
 struct GLTFAccessor {
+    std::string name;
+    size_t bufferViewIndex;
+    size_t bufferSize;
+    size_t bufferByteOffset;
+    GLTFDataType dataType;
+    GLTFElementType elementType;
+    bool normalized; // NOTE: cannot be set to true when dataType is Float or UnsignedInt
+    bool sparse;
 };
 
 struct GLTFModel {
