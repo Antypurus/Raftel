@@ -220,6 +220,8 @@ struct GLTFAccessor {
     size_t bufferByteOffset = 0;
     GLTFDataType dataType = GLTFDataType::None;
     GLTFElementType elementType = GLTFElementType::None;
+    std::vector<double> elementMinLimits = { };
+    std::vector<double> elementMaxLimits = { };
     bool normalized = false; // NOTE: cannot be set to true when dataType is Float or UnsignedInt
     bool sparse = false;
 };

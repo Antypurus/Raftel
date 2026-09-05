@@ -649,6 +649,15 @@ std::vector<GLTFMesh> GLTFParser::parseMeshList(simdjson::ondemand::array meshLi
     return meshes;
 }
 
+std::vector<double> parseMinMaxArray(simdjson::ondemand::array limitArray)
+{
+    std::vector<double> result;
+    for (auto limit : limitArray) {
+        result.push_back(limit.get_double());
+    }
+    return result;
+}
+
 std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::array accesssorList)
 {
     std::vector<GLTFAccessor> accesssors;
@@ -659,6 +668,8 @@ std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::arra
         size_t bufferByteOffset = 0;
         GLTFDataType bufferDataType = GLTFDataType::None;
         GLTFElementType bufferElementType = GLTFElementType::None;
+        std::vector<double> elementMinLimits;
+        std::vector<double> elementMaxLimits;
         bool normalized = false;
         bool sparse = false;
 
@@ -701,9 +712,9 @@ std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::arra
             } else if (fieldName == "name") {
                 accesssorName = field.value().get_string().take_value();
             } else if (fieldName == "min") {
-                LOG_WARNING("Unhandled GLTF accessor min field");
+                elementMinLimits = parseMinMaxArray(field.value().get_array());
             } else if (fieldName == "max") {
-                LOG_WARNING("Unhandled GLTF accessor max field");
+                elementMaxLimits = parseMinMaxArray(field.value().get_array());
             } else if (fieldName == "extensions") {
                 LOG_WARNING("Unhandlded GLTF accessor extension list");
             } else if (fieldName == "extras") {
@@ -720,6 +731,8 @@ std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::arra
             .bufferByteOffset = bufferByteOffset,
             .dataType = bufferDataType,
             .elementType = bufferElementType,
+            .elementMinLimits = std::move(elementMinLimits),
+            .elementMaxLimits = std::move(elementMaxLimits),
             .normalized = normalized,
             .sparse = sparse,
         });
