@@ -456,7 +456,7 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
     size_t cameraID = 0;
     for (auto camera : cameraList) {
         std::string cameraName;
-        GLTFCameraType cameraType;
+        GLTFCameraType cameraType = GLTFCameraType::Orthographic;
         GLTFPerspectiveCamera perspectiveCamera;
         GLTFOrtograhpicCamera orthographicCamera;
 
@@ -524,7 +524,7 @@ static GLTFPrimitiveAttributes parsePrimitiveAttributes(simdjson::ondemand::obje
         } else if (fieldName == "TEXCOORD_0") { // NOTE: apparently there can be an infinite amount of TEXCOORD_<N> entries that we might need to handle, so I need to revamp this. same for color, joints and weights.
             textureCoords0Index = field.value().get_uint64();
         } else if (fieldName == "TEXCOORD_1") {
-            textureCoords0Index = field.value().get_uint64();
+            textureCoords1Index = field.value().get_uint64();
         } else if (fieldName == "COLOR_0") {
             colorIndex = field.value().get_uint64();
         } else if (fieldName == "JOINTS_0") {
@@ -576,14 +576,14 @@ std::vector<GLTFMeshPrimitive> parseMeshPrimitiveArray(simdjson::ondemand::array
     for (auto primitive : primitiveList) {
         std::uint64_t materialIndex = DEFAULT_INDEX;
         std::uint64_t indicesAccesssorIndex = DEFAULT_INDEX;
-        GLTFPrimitiveType primitiveType;
+        GLTFPrimitiveType primitiveType = GLTFPrimitiveType::Triangle;
         GLTFPrimitiveAttributes primitiveAttributes;
         std::vector<GLTFPrimitiveMorphTarget> morphTargets;
 
         auto primitiveObject = primitive.get_object().take_value();
         for (auto field : primitiveObject) {
             const auto fieldName = field.key().take_value();
-            if (fieldName == "attribute") {
+            if (fieldName == "attributes") {
                 primitiveAttributes = parsePrimitiveAttributes(field.value().get_object());
             } else if (fieldName == "indices") {
                 indicesAccesssorIndex = field.value().get_uint64();
@@ -759,9 +759,10 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     result.sceneNodes = parseNodeList(nodeListField->get_array());
 
     auto cameraListField = gltf["cameras"];
-    if (nodeListField.has_value()) {
-        result.cameras = parseCameraList(cameraListField->get_array());
+    if (!nodeListField.has_value()) {
+        return { };
     }
+    result.cameras = parseCameraList(cameraListField->get_array());
 
     auto meshListField = gltf["meshes"];
     if (meshListField.has_value()) {
@@ -772,6 +773,9 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     if (accessorListField.has_value()) {
         result.accessors = parseAccessorList(accessorListField->get_array());
     }
+
+    // auto bufferViewListField = gltf["bufferViews"];
+    // auto bufferListField = gltf["buffers"];
 
     return std::move(result);
 }
