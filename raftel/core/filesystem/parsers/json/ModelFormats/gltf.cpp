@@ -759,7 +759,7 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     result.sceneNodes = parseNodeList(nodeListField->get_array());
 
     auto cameraListField = gltf["cameras"];
-    if (!nodeListField.has_value()) {
+    if (!cameraListField.has_value()) {
         return { };
     }
     result.cameras = parseCameraList(cameraListField->get_array());
