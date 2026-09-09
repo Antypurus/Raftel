@@ -226,6 +226,20 @@ struct GLTFAccessor {
     bool sparse = false;
 };
 
+enum class GLTFBufferType {
+    ArrayBuffer,
+    ElementArrayBuffer,
+    None
+};
+
+struct GLTFBufferView {
+    size_t bufferIndex = DEFAULT_INDEX;
+    size_t bufferOffset = 0;
+    size_t bufferLenght = 0;
+    size_t bufferStride = 1;
+    GLTFBufferType bufferType = GLTFBufferType::None;
+};
+
 struct GLTFModel {
 public:
     std::vector<GLTFNode> sceneNodes;
