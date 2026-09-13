@@ -246,6 +246,7 @@ public:
     std::vector<GLTFCamera> cameras;
     std::vector<GLTFMesh> meshes;
     std::vector<GLTFAccessor> accessors;
+    std::vector<GLTFBufferView> bufferViews;
 };
 
 struct GLTFParser {
@@ -257,5 +258,6 @@ private:
     static std::vector<GLTFCamera> parseCameraList(simdjson::ondemand::array cameraList);
     static std::vector<GLTFMesh> parseMeshList(simdjson::ondemand::array meshList);
     static std::vector<GLTFAccessor> parseAccessorList(simdjson::ondemand::array accesssorList);
+    static std::vector<GLTFBufferView> parseBufferViewList(simdjson::ondemand::array  bufferViewList);
 };
 }

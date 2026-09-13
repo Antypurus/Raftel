@@ -740,6 +740,11 @@ std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::arra
     return accesssors;
 }
 
+std::vector<GLTFBufferView> GLTFParser::parseBufferViewList(simdjson::ondemand::array bufferViewList)
+{
+    return { };
+}
+
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 {
     GLTFModel result;
@@ -774,7 +779,11 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
         result.accessors = parseAccessorList(accessorListField->get_array());
     }
 
-    // auto bufferViewListField = gltf["bufferViews"];
+    auto bufferViewListField = gltf["bufferViews"];
+    if (bufferViewListField.has_value()) {
+        result.bufferViews = parseBufferViewList(bufferViewListField);
+    }
+
     // auto bufferListField = gltf["buffers"];
 
     return std::move(result);
