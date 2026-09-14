@@ -227,15 +227,16 @@ struct GLTFAccessor {
 };
 
 enum class GLTFBufferType {
-    ArrayBuffer,
-    ElementArrayBuffer,
+    ArrayBuffer = 34962,
+    ElementArrayBuffer = 34963,
     None
 };
 
 struct GLTFBufferView {
+    std::string name = "";
     size_t bufferIndex = DEFAULT_INDEX;
     size_t bufferOffset = 0;
-    size_t bufferLenght = 0;
+    size_t bufferLength = 0;
     size_t bufferStride = 1;
     GLTFBufferType bufferType = GLTFBufferType::None;
 };
@@ -258,6 +259,6 @@ private:
     static std::vector<GLTFCamera> parseCameraList(simdjson::ondemand::array cameraList);
     static std::vector<GLTFMesh> parseMeshList(simdjson::ondemand::array meshList);
     static std::vector<GLTFAccessor> parseAccessorList(simdjson::ondemand::array accesssorList);
-    static std::vector<GLTFBufferView> parseBufferViewList(simdjson::ondemand::array  bufferViewList);
+    static std::vector<GLTFBufferView> parseBufferViewList(simdjson::ondemand::array bufferViewList);
 };
 }

@@ -742,24 +742,63 @@ std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::arra
 
 std::vector<GLTFBufferView> GLTFParser::parseBufferViewList(simdjson::ondemand::array bufferViewList)
 {
+    std::vector<GLTFBufferView> result;
     for (auto bufferView : bufferViewList) {
+        std::string bufferName = "";
+        size_t bufferIndex = DEFAULT_INDEX;
+        size_t bufferOffset = 0;
+        size_t bufferLength = 0;
+        size_t bufferStride = 1;
+        GLTFBufferType bufferType = GLTFBufferType::None;
+
         auto bufferViewObject = bufferView.get_object().take_value();
         for (auto field : bufferViewObject) {
             const auto fieldName = field.key().take_value();
             if (fieldName == "buffer") {
+                bufferIndex = field.value().get_uint64();
             } else if (fieldName == "byteOffset") {
+                bufferOffset = field.value().get_uint64();
             } else if (fieldName == "byteLength") {
+                bufferLength = field.value().get_uint64();
             } else if (fieldName == "byteStride") {
+                bufferStride = field.value().get_uint64();
             } else if (fieldName == "target") {
+                const auto typeValue = field.value().get_uint64().take_value();
+                switch (typeValue) {
+                case ((std::uint64_t)GLTFBufferType::ArrayBuffer): {
+                    bufferType = GLTFBufferType::ArrayBuffer;
+                    break;
+                }
+                case ((std::uint64_t)GLTFBufferType::ElementArrayBuffer): {
+                    bufferType = GLTFBufferType::ElementArrayBuffer;
+                    break;
+                }
+                default: {
+                    LOG_WARNING("Found unrecognized buffer view type value: {}", typeValue);
+                    break;
+                }
+                }
             } else if (fieldName == "name") {
+                bufferName = field.value().get_string().take_value();
             } else if (fieldName == "extensions") {
+                LOG_WARNING("Unhandled extensions array for buffer view");
             } else if (fieldName == "extras") {
+                LOG_WARNING("Unhandled extras array for buffer view");
             } else {
                 LOG_WARNING("Unrecognized buffer view object field: {}", fieldName.raw());
             }
         }
+
+        result.emplace_back(GLTFBufferView {
+            .name = std::move(bufferName),
+            .bufferIndex = bufferIndex,
+            .bufferOffset = bufferOffset,
+            .bufferLength = bufferLength,
+            .bufferStride = bufferStride,
+            .bufferType = bufferType,
+        });
     }
-    return { };
+    return result;
 }
 
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
