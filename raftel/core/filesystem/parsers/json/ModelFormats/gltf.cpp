@@ -742,6 +742,23 @@ std::vector<GLTFAccessor> GLTFParser::parseAccessorList(simdjson::ondemand::arra
 
 std::vector<GLTFBufferView> GLTFParser::parseBufferViewList(simdjson::ondemand::array bufferViewList)
 {
+    for (auto bufferView : bufferViewList) {
+        auto bufferViewObject = bufferView.get_object().take_value();
+        for (auto field : bufferViewObject) {
+            const auto fieldName = field.key().take_value();
+            if (fieldName == "buffer") {
+            } else if (fieldName == "byteOffset") {
+            } else if (fieldName == "byteLength") {
+            } else if (fieldName == "byteStride") {
+            } else if (fieldName == "target") {
+            } else if (fieldName == "name") {
+            } else if (fieldName == "extensions") {
+            } else if (fieldName == "extras") {
+            } else {
+                LOG_WARNING("Unrecognized buffer view object field: {}", fieldName.raw());
+            }
+        }
+    }
     return { };
 }
 
