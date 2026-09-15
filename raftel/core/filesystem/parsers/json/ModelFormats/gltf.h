@@ -241,12 +241,16 @@ struct GLTFBufferView {
     GLTFBufferType bufferType = GLTFBufferType::None;
 };
 
+struct GLTFBuffer {
+};
+
 struct GLTFModel {
 public:
     std::vector<GLTFNode> sceneNodes;
     std::vector<GLTFCamera> cameras;
     std::vector<GLTFMesh> meshes;
     std::vector<GLTFAccessor> accessors;
+    std::vector<GLTFBuffer> buffers;
     std::vector<GLTFBufferView> bufferViews;
 };
 
@@ -260,5 +264,6 @@ private:
     static std::vector<GLTFMesh> parseMeshList(simdjson::ondemand::array meshList);
     static std::vector<GLTFAccessor> parseAccessorList(simdjson::ondemand::array accesssorList);
     static std::vector<GLTFBufferView> parseBufferViewList(simdjson::ondemand::array bufferViewList);
+    static std::vector<GLTFBuffer> parseBufferList(simdjson::ondemand::array bufferList);
 };
 }

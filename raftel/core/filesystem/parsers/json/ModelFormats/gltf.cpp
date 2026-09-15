@@ -801,6 +801,11 @@ std::vector<GLTFBufferView> GLTFParser::parseBufferViewList(simdjson::ondemand::
     return result;
 }
 
+std::vector<GLTFBuffer> GLTFParser::parseBufferList(simdjson::ondemand::array bufferList)
+{
+    return { };
+}
+
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 {
     GLTFModel result;
@@ -817,22 +822,22 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     if (!nodeListField.has_value()) {
         return { };
     }
-    result.sceneNodes = parseNodeList(nodeListField->get_array());
+    result.sceneNodes = parseNodeList(nodeListField);
 
     auto cameraListField = gltf["cameras"];
     if (!cameraListField.has_value()) {
         return { };
     }
-    result.cameras = parseCameraList(cameraListField->get_array());
+    result.cameras = parseCameraList(cameraListField);
 
     auto meshListField = gltf["meshes"];
     if (meshListField.has_value()) {
-        result.meshes = parseMeshList(meshListField->get_array());
+        result.meshes = parseMeshList(meshListField);
     }
 
     auto accessorListField = gltf["accessors"];
     if (accessorListField.has_value()) {
-        result.accessors = parseAccessorList(accessorListField->get_array());
+        result.accessors = parseAccessorList(accessorListField);
     }
 
     auto bufferViewListField = gltf["bufferViews"];
@@ -840,7 +845,10 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
         result.bufferViews = parseBufferViewList(bufferViewListField);
     }
 
-    // auto bufferListField = gltf["buffers"];
+    auto bufferListField = gltf["buffers"];
+    if (bufferListField.has_value()) {
+        result.buffers = parseBufferList(bufferListField);
+    }
 
     return std::move(result);
 }
