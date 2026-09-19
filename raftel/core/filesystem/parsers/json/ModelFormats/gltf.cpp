@@ -867,36 +867,24 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
     // const auto defaultScene = gltf["scene"].get_uint64().value();
     //  auto sceneNodes = gltf["scenes"]->get_array().at(defaultScene)["nodes"].get_array();
 
-    auto nodeListField = gltf["nodes"];
-    if (!nodeListField.has_value()) {
-        return { };
-    }
-    result.sceneNodes = parseNodeList(nodeListField);
-
-    auto cameraListField = gltf["cameras"];
-    if (!cameraListField.has_value()) {
-        return { };
-    }
-    result.cameras = parseCameraList(cameraListField);
-
-    auto meshListField = gltf["meshes"];
-    if (meshListField.has_value()) {
-        result.meshes = parseMeshList(meshListField);
-    }
-
-    auto accessorListField = gltf["accessors"];
-    if (accessorListField.has_value()) {
-        result.accessors = parseAccessorList(accessorListField);
-    }
-
-    auto bufferViewListField = gltf["bufferViews"];
-    if (bufferViewListField.has_value()) {
-        result.bufferViews = parseBufferViewList(bufferViewListField);
-    }
-
-    auto bufferListField = gltf["buffers"];
-    if (bufferListField.has_value()) {
-        result.buffers = parseBufferList(bufferListField);
+    for (auto field : gltf.get_object()) {
+        const auto fieldName = field.key().take_value();
+        auto value = field.value();
+        if (fieldName == "nodes") {
+            result.sceneNodes = parseNodeList(value);
+        } else if (fieldName == "cameras") {
+            result.cameras = parseCameraList(value);
+        } else if (fieldName == "meshses") {
+            result.meshes = parseMeshList(value);
+        } else if (fieldName == "accesssors") {
+            result.accessors = parseAccessorList(value);
+        } else if (fieldName == "bufferViews") {
+            result.bufferViews = parseBufferViewList(value);
+        } else if (fieldName == "buffers") {
+            result.buffers = parseBufferList(value);
+        } else {
+            LOG_WARNING("Unhandled GLTF Field");
+        }
     }
 
     return std::move(result);
