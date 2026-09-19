@@ -806,6 +806,27 @@ std::vector<GLTFBuffer> GLTFParser::parseBufferList(simdjson::ondemand::array bu
     return { };
 }
 
+/*
+ *  List of Root-Level GLTF Fields as per specification:
+ *   - extensionsUsed           (string array)
+ *   - extensionsRequired       (string array)
+ *   - accessors                (accessor array)
+ *   - animations               (animation array)
+ *   - asset                    (asset array)
+ *   - buffers                  (buffer array)
+ *   - bufferViews              (bufferView array)
+ *   - cameras                  (camera array)
+ *   - images                   (image array)
+ *   - materials                (material array)
+ *   - meshes                   (mesh array)
+ *   - nodes                    (node array)
+ *   - samplers                 (sampler array)
+ *   - scene                    (default scene index)
+ *   - scenes                   (scene array)
+ *   - skins                    (skin array)
+ *   - textures                 (texture array)
+ */
+
 std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
 {
     GLTFModel result;
