@@ -803,7 +803,35 @@ std::vector<GLTFBufferView> GLTFParser::parseBufferViewList(simdjson::ondemand::
 
 std::vector<GLTFBuffer> GLTFParser::parseBufferList(simdjson::ondemand::array bufferList)
 {
-    return { };
+    std::vector<GLTFBuffer> result;
+    for (auto buffer : bufferList) {
+        std::string uri = "";
+        std::string name = "";
+
+        auto bufferObject = buffer.get_object().take_value();
+        for (auto field : bufferObject) {
+            const auto fieldName = field.key().take_value();
+            if (fieldName == "uri") {
+                uri = field.value().get_string().take_value();
+            } else if (fieldName == "byteLength") {
+                // NOTE: ignored due to not being needed. could theorethically be used to preallocate the buffer for the string, however, due to the way simdjson works that would be a lot of work to the point of likely taking longer than what is already reported to us by simdjson.
+            } else if (fieldName == "name") {
+                name = field.value().get_string().take_value();
+            } else if (fieldName == "extensions") {
+                LOG_WARNING("Unhandled buffer extension list");
+            } else if (fieldName == "extras") {
+                LOG_WARNING("Unhandled buffer extras list");
+            } else {
+                LOG_WARNING("Unrecognized buffer field: {}", fieldName.raw());
+            }
+        }
+
+        result.emplace_back(GLTFBuffer {
+            .bufferURI = std::move(uri),
+            .name = std::move(name),
+        });
+    }
+    return result;
 }
 
 /*

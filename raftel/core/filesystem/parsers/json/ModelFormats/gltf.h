@@ -242,6 +242,8 @@ struct GLTFBufferView {
 };
 
 struct GLTFBuffer {
+    std::string bufferURI = "";
+    std::string name = "";
 };
 
 struct GLTFModel {
