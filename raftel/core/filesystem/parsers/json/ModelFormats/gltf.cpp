@@ -874,16 +874,42 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
             result.sceneNodes = parseNodeList(value);
         } else if (fieldName == "cameras") {
             result.cameras = parseCameraList(value);
-        } else if (fieldName == "meshses") {
+        } else if (fieldName == "meshes") {
             result.meshes = parseMeshList(value);
-        } else if (fieldName == "accesssors") {
+        } else if (fieldName == "accessors") {
             result.accessors = parseAccessorList(value);
         } else if (fieldName == "bufferViews") {
             result.bufferViews = parseBufferViewList(value);
         } else if (fieldName == "buffers") {
             result.buffers = parseBufferList(value);
+        } else if (fieldName == "animations") {
+            LOG_WARNING("Unhandled GLTF Animation Array");
+        } else if (fieldName == "asset") {
+            LOG_WARNING("Unhandled GLTF Asset Array");
+        } else if (fieldName == "images") {
+            LOG_WARNING("Unhandled GLTF Image Array");
+        } else if (fieldName == "materials") {
+            LOG_WARNING("Unhandled GLTF Material Array");
+        } else if (fieldName == "skins") {
+            LOG_WARNING("Unhandled GLTF Skin Array");
+        } else if (fieldName == "textures") {
+            LOG_WARNING("Unhandled GLTF Texture Array");
+        } else if (fieldName == "scene") {
+            LOG_WARNING("Unhandled GLTF Default Scene Index");
+        } else if (fieldName == "scenes") {
+            LOG_WARNING("Unhandled GLTF Scene Array");
+        } else if (fieldName == "samplers") {
+            LOG_WARNING("Unhandled GLTF Sampler Array");
+        } else if (fieldName == "extensionsUsed") {
+            LOG_WARNING("Unhandled GLTF Used Extension Array");
+        } else if (fieldName == "extensionsRequired") {
+            LOG_WARNING("Unhandled GLTF Required Extension Array");
+        } else if (fieldName == "extensions") {
+            LOG_WARNING("Unhandled GLTF Extensions Array");
+        } else if (fieldName == "extras") {
+            LOG_WARNING("Unhandled GLTF Extras Array");
         } else {
-            LOG_WARNING("Unhandled GLTF Field");
+            LOG_WARNING("Unrecognized GLTF Field: {}", fieldName.raw());
         }
     }
 
