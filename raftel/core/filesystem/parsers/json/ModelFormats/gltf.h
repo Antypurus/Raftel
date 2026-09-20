@@ -285,8 +285,9 @@ struct GLTFMaterial {
     std::string name = "";
     std::array<double, 3> emissiveFactors = DEFAULT_EMISSIVE_FACTORS;
     GLTFPbrMetallicRoughness metallicRoughness;
-    std::optional<GLTFNormalTextureInfo> normalTexture = std::nullopt;
-    std::optional<GLTFOcclusionTextureInfo> occlusionTexture = std::nullopt;
+    std::optional<GLTFNormalTextureInfo> normalTextureInfo = std::nullopt;
+    std::optional<GLTFOcclusionTextureInfo> occlusionTextureInfo = std::nullopt;
+    std::optional<GLTFTextureInfo> emissiveTextureInfo = std::nullopt;
 };
 
 struct GLTFModel {

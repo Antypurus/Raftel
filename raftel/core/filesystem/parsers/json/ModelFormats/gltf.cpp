@@ -995,8 +995,9 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
         std::string materialName = "";
         std::array<double, 3> emissiveFactors = GLTFMaterial::DEFAULT_EMISSIVE_FACTORS;
         GLTFPbrMetallicRoughness metallicRoughness;
-        std::optional<GLTFNormalTextureInfo> normalTexture = std::nullopt;
-        std::optional<GLTFOcclusionTextureInfo> occlusionTexture = std::nullopt;
+        std::optional<GLTFNormalTextureInfo> normalTextureInfo = std::nullopt;
+        std::optional<GLTFOcclusionTextureInfo> occlusionTextureInfo = std::nullopt;
+        std::optional<GLTFTextureInfo> emissiveTextureInfo = std::nullopt;
 
         auto materialObject = material.get_object().take_value();
         for (auto field : materialObject) {
@@ -1006,11 +1007,11 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
             } else if (fieldName == "pbrMetallicRoughness") {
                 metallicRoughness = parsePRBMetallicRougness(field.value());
             } else if (fieldName == "normalTexture") {
-                normalTexture = parseNormalTextureInfo(field.value().get_object());
+                normalTextureInfo = parseNormalTextureInfo(field.value());
             } else if (fieldName == "occlusionTexture") {
-                occlusionTexture = parseOcclusionTextureInfo(field.value().get_object());
+                occlusionTextureInfo = parseOcclusionTextureInfo(field.value());
             } else if (fieldName == "emissiveTexture") {
-                LOG_WARNING("Unhandled GLTF Material Emissive Texture Field");
+                emissiveTextureInfo = parseTextureInfo(field.value());
             } else if (fieldName == "emissiveFactor") {
                 auto emissiveFactorArray = field.value().get_array();
                 size_t it = 0;
@@ -1036,8 +1037,9 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
             .name = std::move(materialName),
             .emissiveFactors = emissiveFactors,
             .metallicRoughness = metallicRoughness,
-            .normalTexture = normalTexture,
-            .occlusionTexture = occlusionTexture,
+            .normalTextureInfo = normalTextureInfo,
+            .occlusionTextureInfo = occlusionTextureInfo,
+            .emissiveTextureInfo = emissiveTextureInfo,
         });
     }
     return result;
