@@ -834,11 +834,69 @@ std::vector<GLTFBuffer> GLTFParser::parseBufferList(simdjson::ondemand::array bu
     return result;
 }
 
+static GLTFTextureInfo parseTextureInfo(simdjson::ondemand::object textureInfoObject)
+{
+    size_t index = DEFAULT_INDEX;
+    size_t meshTextureCoordIndex = GLTFTextureInfo::DEFAULT_MESH_TEXTURE_INDEX;
+
+    for (auto field : textureInfoObject) {
+        const auto fieldName = field.key().take_value();
+        if (fieldName == "index") {
+            index = field.value();
+        } else if (fieldName == "texCoord") {
+            meshTextureCoordIndex = field.value();
+        } else if (fieldName == "extensions") {
+            LOG_WARNING("Unhandled GLTF Texture Info extension list");
+        } else if (fieldName == "extras") {
+            LOG_WARNING("Unhandled GLTF Texture Info extras list");
+        } else {
+            LOG_ERROR("Unregonized GLTF Texture Info Field: {}", fieldName.raw());
+        }
+    }
+
+    return GLTFTextureInfo {
+        .index = index,
+        .meshTextureCoordIndex = meshTextureCoordIndex,
+    };
+}
+
+static GLTFPbrMetallicRoughness parsePRBMetallicRougness(simdjson::ondemand::object pbrMetallicRoughnessObject)
+{
+    std::array<double, 4> baseColor = GLTFPbrMetallicRoughness::DEFAULT_BASE_COLOR;
+    std::optional<GLTFTextureInfo> baseColorTextureInfo = std::nullopt;
+
+    for (auto field : pbrMetallicRoughnessObject) {
+        const auto fieldName = field.key().take_value();
+        if (fieldName == "baseColorFactor") {
+            LOG_ERROR("Unhandled GLTF PBR Metallic Roughness Base Color Factor Field");
+        } else if (fieldName == "baseColorTexture") {
+            baseColorTextureInfo = parseTextureInfo(field.value());
+        } else if (fieldName == "metallicFactor") {
+            LOG_ERROR("Unhandled GLTF PBR Metallic Roughness Metallic Factor Field");
+        } else if (fieldName == "roughnessFactor") {
+            LOG_ERROR("Unhandled GLTF PBR Metallic Roughness Roughness Factor Field");
+        } else if (fieldName == "metallicRoughnessTexture") {
+            LOG_ERROR("Unhandled GLTF PBR Metallic Roughness Metallic Roughness Texture Field");
+        } else if (fieldName == "extensions") {
+            LOG_ERROR("Unhandled GLTF PBR Metallic Roughness Extensions Field");
+        } else if (fieldName == "extras") {
+            LOG_ERROR("Unhandled GLTF PBR Metallic Roughness Extras Field");
+        } else {
+            LOG_ERROR("Unrecognized GLTF PBR Metallic Roughness Field: {}", fieldName.raw());
+        }
+    }
+
+    return {
+        .baseColor = baseColor,
+    };
+}
+
 std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::array materialList)
 {
     std::vector<GLTFMaterial> result;
     for (auto material : materialList) {
         std::string materialName = "";
+        GLTFPbrMetallicRoughness metallicRoughness = { };
 
         auto materialObject = material.get_object().take_value();
         for (auto field : materialObject) {
@@ -846,7 +904,7 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
             if (fieldName == "name") {
                 materialName = field.value().get_string().take_value();
             } else if (fieldName == "pbrMetallicRoughness") {
-                LOG_WARNING("Unhandled GLTF Material PBR Metallic Roughness Field");
+                metallicRoughness = parsePRBMetallicRougness(field.value());
             } else if (fieldName == "normalTexture") {
                 LOG_WARNING("Unhandled GLTF Material Normal Texture Field");
             } else if (fieldName == "occlusionTexture") {

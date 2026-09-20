@@ -241,6 +241,19 @@ struct GLTFBufferView {
     GLTFBufferType bufferType = GLTFBufferType::None;
 };
 
+struct GLTFTextureInfo {
+    constexpr static size_t DEFAULT_MESH_TEXTURE_INDEX = 0;
+
+    size_t index = DEFAULT_INDEX;
+    size_t meshTextureCoordIndex = DEFAULT_MESH_TEXTURE_INDEX;
+};
+
+struct GLTFPbrMetallicRoughness {
+    constexpr static std::array<double, 4> DEFAULT_BASE_COLOR = { 1.0, 1.0, 1.0, 1.0 };
+
+    std::array<double, 4> baseColor = DEFAULT_BASE_COLOR;
+};
+
 struct GLTFBuffer {
     std::string bufferURI = "";
     std::string name = "";
