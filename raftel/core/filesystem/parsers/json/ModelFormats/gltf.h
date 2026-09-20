@@ -250,8 +250,14 @@ struct GLTFTextureInfo {
 
 struct GLTFPbrMetallicRoughness {
     constexpr static std::array<double, 4> DEFAULT_BASE_COLOR = { 1.0, 1.0, 1.0, 1.0 };
+    constexpr static double DEFAULT_METALLIC_FACTOR = 1.0;
+    constexpr static double DEFAULT_ROUGHNESS_FACTOR = 1.0;
 
     std::array<double, 4> baseColor = DEFAULT_BASE_COLOR;
+    double metallicFactor = DEFAULT_METALLIC_FACTOR;
+    double roughnessFactor = DEFAULT_ROUGHNESS_FACTOR;
+    std::optional<GLTFTextureInfo> baseColorTextureInfo = std::nullopt;
+    std::optional<GLTFTextureInfo> metallicRoughnessTextureInfo = std::nullopt;
 };
 
 struct GLTFBuffer {
