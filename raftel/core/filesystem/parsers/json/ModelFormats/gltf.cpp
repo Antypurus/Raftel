@@ -998,6 +998,7 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
         std::optional<GLTFNormalTextureInfo> normalTextureInfo = std::nullopt;
         std::optional<GLTFOcclusionTextureInfo> occlusionTextureInfo = std::nullopt;
         std::optional<GLTFTextureInfo> emissiveTextureInfo = std::nullopt;
+        GLTFAlphaMode alphaMode = GLTFMaterial::DEFAULT_ALPHA_MODE;
 
         auto materialObject = material.get_object().take_value();
         for (auto field : materialObject) {
@@ -1019,7 +1020,16 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
                     emissiveFactors[it++] = factor;
                 }
             } else if (fieldName == "alphaMode") {
-                LOG_WARNING("Unhandled GLTF Material Alpha Mode Field");
+                const auto alphaModeValue = field.value().get_string().take_value();
+                if (alphaModeValue == "OPAQUE") {
+                    alphaMode = GLTFAlphaMode::Opaque;
+                } else if (alphaModeValue == "MASK") {
+                    alphaMode = GLTFAlphaMode::Mask;
+                } else if (alphaModeValue == "BLEND") {
+                    alphaMode = GLTFAlphaMode::Blend;
+                } else {
+                    LOG_ERROR("Unrecognized GLTF Alpha Mode Value: {}", alphaModeValue);
+                }
             } else if (fieldName == "alphaCutoff") {
                 LOG_WARNING("Unhandled GLTF Material Alpha Cutoff Field");
             } else if (fieldName == "doubleSided") {
@@ -1029,7 +1039,7 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
             } else if (fieldName == "extras") {
                 LOG_WARNING("Unhandled GLTF Material Extras Field");
             } else {
-                LOG_WARNING("Unrecognized GLTF Material Field: {}", fieldName.raw());
+                LOG_ERROR("Unrecognized GLTF Material Field: {}", fieldName.raw());
             }
         }
 
@@ -1040,6 +1050,7 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
             .normalTextureInfo = normalTextureInfo,
             .occlusionTextureInfo = occlusionTextureInfo,
             .emissiveTextureInfo = emissiveTextureInfo,
+            .alphaMode = alphaMode,
         });
     }
     return result;

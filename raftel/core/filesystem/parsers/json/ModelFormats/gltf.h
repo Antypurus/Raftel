@@ -279,8 +279,15 @@ struct GLTFBuffer {
     std::string name = "";
 };
 
+enum class GLTFAlphaMode {
+    Opaque,
+    Mask,
+    Blend,
+};
+
 struct GLTFMaterial {
     constexpr static std::array<double, 3> DEFAULT_EMISSIVE_FACTORS = { 0.0, 0.0, 0.0 };
+    constexpr static GLTFAlphaMode DEFAULT_ALPHA_MODE = GLTFAlphaMode::Opaque;
 
     std::string name = "";
     std::array<double, 3> emissiveFactors = DEFAULT_EMISSIVE_FACTORS;
@@ -288,6 +295,7 @@ struct GLTFMaterial {
     std::optional<GLTFNormalTextureInfo> normalTextureInfo = std::nullopt;
     std::optional<GLTFOcclusionTextureInfo> occlusionTextureInfo = std::nullopt;
     std::optional<GLTFTextureInfo> emissiveTextureInfo = std::nullopt;
+    GLTFAlphaMode alphaMode = DEFAULT_ALPHA_MODE;
 };
 
 struct GLTFModel {
