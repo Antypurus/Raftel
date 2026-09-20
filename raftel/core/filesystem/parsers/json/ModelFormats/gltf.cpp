@@ -993,7 +993,8 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
     std::vector<GLTFMaterial> result;
     for (auto material : materialList) {
         std::string materialName = "";
-        GLTFPbrMetallicRoughness metallicRoughness = { };
+        std::array<double, 3> emissiveFactors = GLTFMaterial::DEFAULT_EMISSIVE_FACTORS;
+        GLTFPbrMetallicRoughness metallicRoughness;
         std::optional<GLTFNormalTextureInfo> normalTexture = std::nullopt;
         std::optional<GLTFOcclusionTextureInfo> occlusionTexture = std::nullopt;
 
@@ -1011,7 +1012,11 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
             } else if (fieldName == "emissiveTexture") {
                 LOG_WARNING("Unhandled GLTF Material Emissive Texture Field");
             } else if (fieldName == "emissiveFactor") {
-                LOG_WARNING("Unhandled GLTF Material Emissive Factors Field");
+                auto emissiveFactorArray = field.value().get_array();
+                size_t it = 0;
+                for (auto factor : emissiveFactorArray) {
+                    emissiveFactors[it++] = factor;
+                }
             } else if (fieldName == "alphaMode") {
                 LOG_WARNING("Unhandled GLTF Material Alpha Mode Field");
             } else if (fieldName == "alphaCutoff") {
@@ -1029,6 +1034,7 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
 
         result.emplace_back(GLTFMaterial {
             .name = std::move(materialName),
+            .emissiveFactors = emissiveFactors,
             .metallicRoughness = metallicRoughness,
             .normalTexture = normalTexture,
             .occlusionTexture = occlusionTexture,

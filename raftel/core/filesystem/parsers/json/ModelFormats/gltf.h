@@ -280,8 +280,10 @@ struct GLTFBuffer {
 };
 
 struct GLTFMaterial {
+    constexpr static std::array<double, 3> DEFAULT_EMISSIVE_FACTORS = { 0.0, 0.0, 0.0 };
+
     std::string name = "";
-    std::array<double, 3> emissiveFactors = { 0.0, 0.0, 0.0 };
+    std::array<double, 3> emissiveFactors = DEFAULT_EMISSIVE_FACTORS;
     GLTFPbrMetallicRoughness metallicRoughness;
     std::optional<GLTFNormalTextureInfo> normalTexture = std::nullopt;
     std::optional<GLTFOcclusionTextureInfo> occlusionTexture = std::nullopt;
