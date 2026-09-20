@@ -882,6 +882,70 @@ static GLTFTextureInfo parseTextureInfo(simdjson::ondemand::object textureInfoOb
     };
 }
 
+static GLTFNormalTextureInfo parseNormalTextureInfo(simdjson::ondemand::object normalTextureInfoObject)
+{
+    size_t index = DEFAULT_INDEX;
+    size_t meshTextureCoordIndex = GLTFTextureInfo::DEFAULT_MESH_TEXTURE_INDEX;
+    double scale = GLTFNormalTextureInfo::DEFAULT_SCALE;
+
+    for (auto field : normalTextureInfoObject) {
+        const auto fieldName = field.key().take_value();
+        if (fieldName == "index") {
+            index = field.value();
+        } else if (fieldName == "texCoord") {
+            meshTextureCoordIndex = field.value();
+        } else if (fieldName == "scale") {
+            scale = field.value();
+        } else if (fieldName == "extensions") {
+            LOG_WARNING("Unhandled GLTF Normal Texture Info extension list");
+        } else if (fieldName == "extras") {
+            LOG_WARNING("Unhandled GLTF Normal Texture Info extras list");
+        } else {
+            LOG_ERROR("Unrecognized GLTF Normal Texture Info Field: {}", fieldName.raw());
+        }
+    }
+
+    return GLTFNormalTextureInfo {
+        .textureInfo = {
+            .index = index,
+            .meshTextureCoordIndex = meshTextureCoordIndex,
+        },
+        .scale = scale,
+    };
+}
+
+static GLTFOcclusionTextureInfo parseOcclusionTextureInfo(simdjson::ondemand::object occlusionTextureInfoObject)
+{
+    size_t index = DEFAULT_INDEX;
+    size_t meshTextureCoordIndex = GLTFTextureInfo::DEFAULT_MESH_TEXTURE_INDEX;
+    double strength = GLTFOcclusionTextureInfo::DEFAULT_STRENGTH;
+
+    for (auto field : occlusionTextureInfoObject) {
+        const auto fieldName = field.key().take_value();
+        if (fieldName == "index") {
+            index = field.value();
+        } else if (fieldName == "texCoord") {
+            meshTextureCoordIndex = field.value();
+        } else if (fieldName == "strength") {
+            strength = field.value();
+        } else if (fieldName == "extensions") {
+            LOG_WARNING("Unhandled GLTF Occlusion Texture Info extension list");
+        } else if (fieldName == "extras") {
+            LOG_WARNING("Unhandled GLTF Occlusion Texture Info extras list");
+        } else {
+            LOG_ERROR("Unrecognized GLTF Occlusion Texture Info Field: {}", fieldName.raw());
+        }
+    }
+
+    return GLTFOcclusionTextureInfo {
+        .textureInfo = {
+            .index = index,
+            .meshTextureCoordIndex = meshTextureCoordIndex,
+        },
+        .strength = strength,
+    };
+}
+
 static GLTFPbrMetallicRoughness parsePRBMetallicRougness(simdjson::ondemand::object pbrMetallicRoughnessObject)
 {
     std::array<double, 4> baseColor = GLTFPbrMetallicRoughness::DEFAULT_BASE_COLOR;
@@ -930,6 +994,8 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
     for (auto material : materialList) {
         std::string materialName = "";
         GLTFPbrMetallicRoughness metallicRoughness = { };
+        std::optional<GLTFNormalTextureInfo> normalTexture = std::nullopt;
+        std::optional<GLTFOcclusionTextureInfo> occlusionTexture = std::nullopt;
 
         auto materialObject = material.get_object().take_value();
         for (auto field : materialObject) {
@@ -939,9 +1005,9 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
             } else if (fieldName == "pbrMetallicRoughness") {
                 metallicRoughness = parsePRBMetallicRougness(field.value());
             } else if (fieldName == "normalTexture") {
-                LOG_WARNING("Unhandled GLTF Material Normal Texture Field");
+                normalTexture = parseNormalTextureInfo(field.value().get_object());
             } else if (fieldName == "occlusionTexture") {
-                LOG_WARNING("Unhandled GLTF Material Occlusion Texture Field");
+                occlusionTexture = parseOcclusionTextureInfo(field.value().get_object());
             } else if (fieldName == "emissiveTexture") {
                 LOG_WARNING("Unhandled GLTF Material Emissive Texture Field");
             } else if (fieldName == "emissiveFactor") {
@@ -963,6 +1029,9 @@ std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::arra
 
         result.emplace_back(GLTFMaterial {
             .name = std::move(materialName),
+            .metallicRoughness = metallicRoughness,
+            .normalTexture = normalTexture,
+            .occlusionTexture = occlusionTexture,
         });
     }
     return result;

@@ -248,6 +248,20 @@ struct GLTFTextureInfo {
     size_t meshTextureCoordIndex = DEFAULT_MESH_TEXTURE_INDEX;
 };
 
+struct GLTFNormalTextureInfo {
+    constexpr static double DEFAULT_SCALE = 1.0;
+
+    GLTFTextureInfo textureInfo;
+    double scale = DEFAULT_SCALE;
+};
+
+struct GLTFOcclusionTextureInfo {
+    constexpr static double DEFAULT_STRENGTH = 1.0;
+
+    GLTFTextureInfo textureInfo;
+    double strength = DEFAULT_STRENGTH;
+};
+
 struct GLTFPbrMetallicRoughness {
     constexpr static std::array<double, 4> DEFAULT_BASE_COLOR = { 1.0, 1.0, 1.0, 1.0 };
     constexpr static double DEFAULT_METALLIC_FACTOR = 1.0;
@@ -268,6 +282,9 @@ struct GLTFBuffer {
 struct GLTFMaterial {
     std::string name = "";
     std::array<double, 3> emissiveFactors = { 0.0, 0.0, 0.0 };
+    GLTFPbrMetallicRoughness metallicRoughness;
+    std::optional<GLTFNormalTextureInfo> normalTexture = std::nullopt;
+    std::optional<GLTFOcclusionTextureInfo> occlusionTexture = std::nullopt;
 };
 
 struct GLTFModel {
