@@ -349,6 +349,10 @@ std::vector<GLTFNode> GLTFParser::parseNodeList(simdjson::ondemand::array nodeLi
                 // needs propper per  extension handling i guess
                 auto extension = field->value().raw_json_token();
                 nodeExtensions.emplace_back(extension);
+            } else if (fieldName == "extras") {
+                LOG_WARNING("Unhandled GLTF Node extras fields");
+            } else {
+                LOG_ERROR("Unrecognized GLTF Node field: {}", fieldName.raw());
             }
         }
 
@@ -405,7 +409,7 @@ static GLTFPerspectiveCamera parsePerspectiveCameraParameters(simdjson::ondemand
     double zfar = 1000.0;
     for (auto field : perspectiveCameraObject) {
         const auto fieldName = field.key().take_value();
-        if (fieldName == "aspectRation") {
+        if (fieldName == "aspectRatio") {
             aspectRatio = field.value().get_double();
         } else if (fieldName == "yfov") {
             yfov = field.value().get_double();
@@ -413,6 +417,12 @@ static GLTFPerspectiveCamera parsePerspectiveCameraParameters(simdjson::ondemand
             znear = field.value().get_double();
         } else if (fieldName == "zfar") {
             zfar = field.value().get_double();
+        } else if (fieldName == "extensions") {
+            LOG_WARNING("Unhandled GLTF camera extensions field");
+        } else if (fieldName == "extras") {
+            LOG_WARNING("Unhandled GLTF camera extras field");
+        } else {
+            LOG_ERROR("Unrecognized GLTF camera field: {}", fieldName.raw());
         }
     }
     return {
@@ -439,6 +449,12 @@ static GLTFOrtograhpicCamera parseOrthographicCameraParameters(simdjson::ondeman
             znear = field.value().get_double();
         } else if (fieldName == "zfar") {
             zfar = field.value().get_double();
+        } else if (fieldName == "extensions") {
+            LOG_WARNING("Unhandled GLTF camera extensions field");
+        } else if (fieldName == "extras") {
+            LOG_WARNING("Unhandled GLTF camera extras field");
+        } else {
+            LOG_ERROR("Unrecognized GLTF camera field: {}", fieldName.raw());
         }
     }
     return {
@@ -477,6 +493,12 @@ std::vector<GLTFCamera> GLTFParser::parseCameraList(simdjson::ondemand::array ca
                 perspectiveCamera = parsePerspectiveCameraParameters(field->value().get_object());
             } else if (fieldName == "orthographic") {
                 orthographicCamera = parseOrthographicCameraParameters(field->value().get_object());
+            } else if (fieldName == "extensions") {
+                LOG_WARNING("Unhandled GLTF camera extensions field");
+            } else if (fieldName == "extras") {
+                LOG_WARNING("Unhandled GLTF camera extras field");
+            } else {
+                LOG_ERROR("Unrecognized GLTF camera field: {}", fieldName.raw());
             }
         }
 
