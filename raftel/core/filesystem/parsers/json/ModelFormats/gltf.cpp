@@ -834,6 +834,49 @@ std::vector<GLTFBuffer> GLTFParser::parseBufferList(simdjson::ondemand::array bu
     return result;
 }
 
+std::vector<GLTFMaterial> GLTFParser::parseMaterialList(simdjson::ondemand::array materialList)
+{
+    std::vector<GLTFMaterial> result;
+    for (auto material : materialList) {
+        std::string materialName = "";
+
+        auto materialObject = material.get_object().take_value();
+        for (auto field : materialObject) {
+            const auto fieldName = field.key().take_value();
+            if (fieldName == "name") {
+                materialName = field.value().get_string().take_value();
+            } else if (fieldName == "pbrMetallicRoughness") {
+                LOG_WARNING("Unhandled GLTF Material PBR Metallic Roughness Field");
+            } else if (fieldName == "normalTexture") {
+                LOG_WARNING("Unhandled GLTF Material Normal Texture Field");
+            } else if (fieldName == "occlusionTexture") {
+                LOG_WARNING("Unhandled GLTF Material Occlusion Texture Field");
+            } else if (fieldName == "emissiveTexture") {
+                LOG_WARNING("Unhandled GLTF Material Emissive Texture Field");
+            } else if (fieldName == "emissiveFactor") {
+                LOG_WARNING("Unhandled GLTF Material Emissive Factors Field");
+            } else if (fieldName == "alphaMode") {
+                LOG_WARNING("Unhandled GLTF Material Alpha Mode Field");
+            } else if (fieldName == "alphaCutoff") {
+                LOG_WARNING("Unhandled GLTF Material Alpha Cutoff Field");
+            } else if (fieldName == "doubleSided") {
+                LOG_WARNING("Unhandled GLTF Material Double Sided Field");
+            } else if (fieldName == "extensions") {
+                LOG_WARNING("Unhandled GLTF Material Extensions Field");
+            } else if (fieldName == "extras") {
+                LOG_WARNING("Unhandled GLTF Material Extras Field");
+            } else {
+                LOG_WARNING("Unrecognized GLTF Material Field: {}", fieldName.raw());
+            }
+        }
+
+        result.emplace_back(GLTFMaterial {
+            .name = std::move(materialName),
+        });
+    }
+    return result;
+}
+
 /*
  *  List of Root-Level GLTF Fields as per specification:
  *   - extensionsUsed           (string array)
@@ -889,7 +932,7 @@ std::optional<GLTFModel> GLTFParser::parse(std::string_view path)
         } else if (fieldName == "images") {
             LOG_WARNING("Unhandled GLTF Image Array");
         } else if (fieldName == "materials") {
-            LOG_WARNING("Unhandled GLTF Material Array");
+            result.materials = parseMaterialList(value);
         } else if (fieldName == "skins") {
             LOG_WARNING("Unhandled GLTF Skin Array");
         } else if (fieldName == "textures") {

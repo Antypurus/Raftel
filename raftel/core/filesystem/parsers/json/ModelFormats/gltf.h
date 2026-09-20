@@ -246,6 +246,11 @@ struct GLTFBuffer {
     std::string name = "";
 };
 
+struct GLTFMaterial {
+    std::string name = "";
+    std::array<double, 3> emissiveFactors = { 0.0, 0.0, 0.0 };
+};
+
 struct GLTFModel {
 public:
     std::vector<GLTFNode> sceneNodes;
@@ -254,6 +259,7 @@ public:
     std::vector<GLTFAccessor> accessors;
     std::vector<GLTFBuffer> buffers;
     std::vector<GLTFBufferView> bufferViews;
+    std::vector<GLTFMaterial> materials;
 };
 
 struct GLTFParser {
@@ -267,5 +273,6 @@ private:
     static std::vector<GLTFAccessor> parseAccessorList(simdjson::ondemand::array accesssorList);
     static std::vector<GLTFBufferView> parseBufferViewList(simdjson::ondemand::array bufferViewList);
     static std::vector<GLTFBuffer> parseBufferList(simdjson::ondemand::array bufferList);
+    static std::vector<GLTFMaterial> parseMaterialList(simdjson::ondemand::array materialList);
 };
 }
